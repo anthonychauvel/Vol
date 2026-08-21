@@ -253,6 +253,14 @@
   .seg button{background:none;border:none;color:var(--muted);font-family:var(--sans);
     font-size:13px;font-weight:600;padding:7px 16px;border-radius:999px;cursor:pointer}
   .seg button.on{background:var(--amber);color:#1a1305}
+  /* onglets Vols : 5 boutons sur 2 lignes (3+2) au lieu de déborder */
+  #modeSeg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+    background:none;border:none;padding:0;border-radius:0}
+  #modeSeg button{width:100%;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:11px;padding:9px 6px;font-size:12.5px;color:var(--muted);line-height:1.15}
+  #modeSeg button.on{background:var(--brass-face);color:#2c1d06;border-color:var(--brass-rim);
+    box-shadow:0 1px 0 rgba(255,244,214,.55) inset,0 -5px 8px rgba(90,58,16,.28) inset;
+    text-shadow:0 1px 0 rgba(255,240,200,.35)}
 
   /* calendrier */
   .cal{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
