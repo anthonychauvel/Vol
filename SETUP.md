@@ -152,8 +152,10 @@ Puis une vraie requête :
 
 # Aéroports de départ
 
-L'app couvre désormais **72 aéroports** : 67 en France (métropole + outre-mer) et
-5 frontaliers utiles (Bruxelles ×2, Amsterdam, Luxembourg, Genève).
+L'app couvre **72 aéroports** de référence en France (67 métropole + outre-mer) et
+5 frontaliers (Bruxelles ×2, Amsterdam, Luxembourg, Genève) — mais tu n'y es pas
+limité : la recherche accepte **n'importe quelle ville ou aéroport du monde**, en
+départ comme en destination.
 
 - **Recherche** en haut : ville, code IATA ou nom de région, insensible aux accents
   (`nimes` trouve Nîmes, `bez` trouve Béziers).
@@ -164,6 +166,16 @@ L'app couvre désormais **72 aéroports** : 67 en France (métropole + outre-mer
   par défaut. Réglage mémorisé sur l'appareil (`ESCALE_FAV_V1`).
 - Le dernier aéroport choisi est **rechargé automatiquement** au lancement suivant.
 - La mention **« saisonnier »** signale les plateformes à desserte réduite ou estivale.
+- **Recherche mondiale** : tape une ville hors liste (Miami, Pékin, Fort-de-France…),
+  une suggestion « Ajouter » apparaît sous le champ. Le lieu ajouté est **mémorisé**
+  sur l'appareil (`ESCALE_ORIG_CUSTOM_V1` pour les départs, `ESCALE_DEST_CUSTOM_V1`
+  pour les destinations) et reste dans ta liste aux prochaines ouvertures.
+- Les départs ajoutés apparaissent sous le filtre **★ Mes ajouts** ; une destination
+  ajoutée se retire avec la petite croix sur sa carte.
+- L'autocomplétion passe par `/api/place` (proxy Travelpayouts, **sans token**), avec
+  repli direct sur l'endpoint public si la fonction n'est pas encore déployée.
+- Les **destinations** par défaut couvrent désormais le monde (Amériques, Afrique,
+  Moyen-Orient, Asie, Océanie, outre-mer) en plus de l'Europe.
 - Les listes de compagnies sont **indicatives** : elles bougent chaque saison. Les
   aéroports sans liste affichent un message honnête plutôt qu'une liste inventée.
 
@@ -183,6 +195,7 @@ L'app couvre désormais **72 aéroports** : 67 en France (métropole + outre-mer
 /functions/api/anywhere.js    → /api/anywhere   (le moins cher vers partout, cache)
 /functions/api/cities.js      → /api/cities     (noms de villes IATA, sans token)
 /functions/api/live.js        → /api/live       (prix temps réel, bascule SerpApi → SearchApi)
+/functions/api/place.js       → /api/place      (recherche ville/aéroport monde, sans token)
 /SETUP.md
 /PRIX-LIVE-API.md             (comparatif des API de tarifs, août 2026)
 ```
@@ -192,7 +205,7 @@ L'app couvre désormais **72 aéroports** : 67 en France (métropole + outre-mer
 - Les prix automatiques viennent du **cache Aviasales** (2 à 7 jours) : indicatifs,
   à reconfirmer sur la page de l'offre avant de payer. Le bouton ⚡ sert précisément à ça.
 - `/api/cities` ne nécessite **pas** de token (fichiers publics).
-- Le service worker est passé en `escale-v3` : au premier lancement après déploiement,
+- Le service worker est passé en `escale-v4` : au premier lancement après déploiement,
   l'ancien cache est purgé automatiquement.
 - **Icônes** : la marque (crâne au chapeau, longue-vue et rose des vents, sabres croisés)
   est déclinée en deux jeux. Les fichiers `icon-*.png` servent partout (iOS, favicon,

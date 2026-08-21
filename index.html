@@ -101,6 +101,32 @@
   .aptnone{color:var(--muted);font-size:12.5px;font-style:italic;padding:14px;text-align:center}
   .aptcount{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:7px;text-align:right}
 
+  /* --- suggestions monde (autocomplétion départ & destination) --- */
+  .acsug{margin-top:8px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel-2)}
+  .acsug .achd{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);padding:8px 11px 5px}
+  .acrow{display:flex;align-items:center;gap:10px;padding:9px 11px;cursor:pointer;
+    border-top:1px solid var(--line)}
+  .acrow:hover{background:#16303c}
+  .acrow .acplus{color:var(--amber);font-size:15px;font-weight:700;line-height:1}
+  .acrow .acmain{min-width:0;flex:1}
+  .acrow .accity{font-size:13.5px;color:var(--ink)}
+  .acrow .acsub{font-size:11px;color:var(--muted)}
+  .acrow .acbadge{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;
+    color:#c79a4e;border:1px solid #3f6675;border-radius:6px;padding:2px 5px}
+  .acrow .accode{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--amber)}
+  .acbusy{font-size:12px;color:var(--muted);font-style:italic;padding:9px 11px}
+  .destsearch{position:relative;margin-bottom:11px}
+  .destsearch input{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:11px;
+    color:var(--ink);font-family:var(--sans);font-size:14px;padding:10px 34px 10px 12px;outline:none}
+  .destsearch input:focus{border-color:var(--amber)}
+  .destsearch input::placeholder{color:#5c7c88}
+  .destsearch .clr{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;
+    color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;display:none}
+  .destsearch .clr.show{display:block}
+  .rmdest{color:#7f97a1;font-size:11px;margin-left:7px;cursor:pointer;padding:2px 4px;border-radius:5px}
+  .rmdest:hover{color:var(--oxblood);background:#2a1518}
+
   /* --- prix live --- */
   .live{flex-shrink:0;background:var(--panel-2);border:1px solid var(--line);color:var(--amber);
     border-radius:10px;padding:10px 11px;font-size:14px;cursor:pointer;line-height:1}
@@ -361,6 +387,7 @@
     <div class="regions" id="regions"></div>
     <div class="aptscroll"><div id="aptGroups"></div></div>
     <div class="aptcount" id="aptCount"></div>
+    <div id="aptAc"></div>
     <div class="airlines" id="airlines"><div class="a-hd" id="alHd">Compagnies</div><div class="chips" id="chips"></div></div>
   </section>
 
@@ -411,9 +438,15 @@
       <button data-mode="list" class="on">Ma sélection</button>
       <button data-mode="anywhere">N'importe où</button>
     </div>
+    <div class="destsearch" id="destSearchWrap">
+      <input id="destSearch" type="search" inputmode="search" autocomplete="off"
+             placeholder="Filtrer, ou chercher une ville dans le monde (Pékin, Miami…)">
+      <button class="clr" id="destClear" aria-label="Effacer">×</button>
+    </div>
+    <div id="destAc"></div>
     <div class="dests" id="dests"></div>
     <div class="note">
-      <b>Touche une destination</b> pour ouvrir son <b>calendrier de prix</b> : chaque jour est coloré du moins cher (vert) au plus cher (rouge), et les jours <b>en vert entouré = vol direct</b> (le plus court). <b>Durées</b> estimées à vol d'oiseau ; <b>prix</b> indicatifs (cache Aviasales ≤ 7 j). Le bouton <b>Chercher</b> ouvre Skyscanner pour le prix ferme. Le bouton <b>⚡</b> (si la clé SerpApi est branchée) va chercher le <b>tarif réel du moment</b> sur Google Flights — quota limité, donc uniquement sur appui.
+      <b>Touche une destination</b> pour ouvrir son <b>calendrier de prix</b> : chaque jour est coloré du moins cher (vert) au plus cher (rouge), et les jours <b>en vert entouré = vol direct</b> (le plus court). Le champ de recherche accepte <b>n'importe quelle ville du monde</b> : elle s'ajoute à ta liste et y reste. Idem pour le <b>départ</b>. <b>Durées</b> estimées à vol d'oiseau ; <b>prix</b> indicatifs (cache Aviasales ≤ 7 j). Le bouton <b>Chercher</b> ouvre Skyscanner pour le prix ferme. Le bouton <b>⚡</b> (si la clé SerpApi est branchée) va chercher le <b>tarif réel du moment</b> sur Google Flights — quota limité, donc uniquement sur appui.
     </div>
   </section>
 
@@ -556,7 +589,8 @@ const REGIONS = [
   {k:"med",   n:"Méditerranée"},
   {k:"corse", n:"Corse"},
   {k:"dom",   n:"Outre-mer"},
-  {k:"front", n:"Frontaliers"}
+  {k:"front", n:"Frontaliers"},
+  {k:"mine",  n:"★ Mes ajouts"}
 ];
 const RNAME={}; REGIONS.forEach(r=>RNAME[r.k]=r.n);
 const DESTS = [
@@ -581,7 +615,25 @@ const DESTS = [
   {n:"Split",i:"SPU",lat:43.539,lng:16.298},{n:"Dubrovnik",i:"DBV",lat:42.561,lng:18.268},
   {n:"Malte",i:"MLA",lat:35.857,lng:14.478},{n:"Istanbul",i:"IST",lat:41.262,lng:28.742},
   {n:"Marrakech",i:"RAK",lat:31.607,lng:-8.036},{n:"Agadir",i:"AGA",lat:30.325,lng:-9.413},
-  {n:"Djerba",i:"DJE",lat:33.875,lng:10.775},{n:"Tenerife",i:"TFS",lat:28.044,lng:-16.572}
+  {n:"Djerba",i:"DJE",lat:33.875,lng:10.775},{n:"Tenerife",i:"TFS",lat:28.044,lng:-16.572},
+  /* ---- long-courrier / monde ---- */
+  {n:"Paris",i:"PAR",lat:49.010,lng:2.548},{n:"New York",i:"JFK",lat:40.641,lng:-73.778},
+  {n:"Miami",i:"MIA",lat:25.795,lng:-80.287},{n:"Montréal",i:"YUL",lat:45.470,lng:-73.741},
+  {n:"Los Angeles",i:"LAX",lat:33.942,lng:-118.408},{n:"Cancún",i:"CUN",lat:21.036,lng:-86.877},
+  {n:"Pointe-à-Pitre",i:"PTP",lat:16.265,lng:-61.532},{n:"Fort-de-France",i:"FDF",lat:14.591,lng:-61.003},
+  {n:"São Paulo",i:"GRU",lat:-23.435,lng:-46.473},{n:"Buenos Aires",i:"EZE",lat:-34.822,lng:-58.535},
+  {n:"Mexico",i:"MEX",lat:19.436,lng:-99.072},{n:"Dakar",i:"DSS",lat:14.671,lng:-17.073},
+  {n:"Abidjan",i:"ABJ",lat:5.261,lng:-3.926},{n:"Casablanca",i:"CMN",lat:33.367,lng:-7.590},
+  {n:"Le Caire",i:"CAI",lat:30.111,lng:31.400},{n:"Nairobi",i:"NBO",lat:-1.319,lng:36.928},
+  {n:"Johannesburg",i:"JNB",lat:-26.139,lng:28.246},{n:"La Réunion",i:"RUN",lat:-20.887,lng:55.510},
+  {n:"Maurice",i:"MRU",lat:-20.430,lng:57.683},{n:"Tunis",i:"TUN",lat:36.851,lng:10.227},
+  {n:"Dubaï",i:"DXB",lat:25.253,lng:55.365},{n:"Doha",i:"DOH",lat:25.273,lng:51.608},
+  {n:"Tel Aviv",i:"TLV",lat:32.011,lng:34.887},{n:"Beyrouth",i:"BEY",lat:33.821,lng:35.488},
+  {n:"Pékin",i:"PEK",lat:40.080,lng:116.585},{n:"Shanghai",i:"PVG",lat:31.143,lng:121.805},
+  {n:"Tokyo",i:"HND",lat:35.552,lng:139.780},{n:"Bangkok",i:"BKK",lat:13.690,lng:100.750},
+  {n:"Singapour",i:"SIN",lat:1.359,lng:103.989},{n:"Delhi",i:"DEL",lat:28.556,lng:77.100},
+  {n:"Bali",i:"DPS",lat:-8.748,lng:115.167},{n:"Hong Kong",i:"HKG",lat:22.308,lng:113.918},
+  {n:"Séoul",i:"ICN",lat:37.463,lng:126.440},{n:"Sydney",i:"SYD",lat:-33.939,lng:151.175}
 ];
 
 /* ================= ÉTAT ================= */
@@ -617,6 +669,16 @@ function isoWeek(d){const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.get
 
 /* ================= AÉROPORTS ================= */
 const LS_FAV="ESCALE_FAV_V1", LS_ORIG="ESCALE_ORIGIN_V1";
+const LS_ORIGC="ESCALE_ORIG_CUSTOM_V1", LS_DESTC="ESCALE_DEST_CUSTOM_V1";
+function loadArr(k){try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:[];}catch(_){return [];}}
+function saveArr(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(_){}}
+let CUSTOM_ORIG=loadArr(LS_ORIGC);   // aéroports/villes de départ ajoutés (monde)
+let CUSTOM_DEST=loadArr(LS_DESTC);   // destinations ajoutées (monde)
+function originPool(){return AIRPORTS.concat(CUSTOM_ORIG);}
+function findAirport(code){return originPool().find(a=>a.code===code)||null;}
+function allDests(){const seen=new Set(DESTS.map(d=>d.i));
+  return DESTS.concat(CUSTOM_DEST.filter(d=>!seen.has(d.i)));}
+CUSTOM_DEST.forEach(d=>NAMES[d.i]=d.n);
 const DEF_FAV=["NTE","RNS","BES","CDG","ORY","BVA"];
 let favs=[]; try{favs=JSON.parse(localStorage.getItem(LS_FAV))||DEF_FAV.slice();}catch(_){favs=DEF_FAV.slice();}
 if(!Array.isArray(favs)||!favs.length)favs=DEF_FAV.slice();
@@ -629,12 +691,17 @@ const chips=document.getElementById("chips"),alBox=document.getElementById("airl
 
 function norm(x){return (x||"").toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();}
 
-regionsBox.innerHTML=REGIONS.map(r=>`<div class="rg${r.k===aptRegion?" on":""}" data-rg="${r.k}">${r.n}</div>`).join("");
-regionsBox.querySelectorAll(".rg").forEach(el=>el.onclick=()=>{
-  aptRegion=el.dataset.rg;
-  regionsBox.querySelectorAll(".rg").forEach(x=>x.classList.toggle("on",x===el));
-  renderAirports();
-});
+function paintRegions(){
+  regionsBox.innerHTML=REGIONS
+    .filter(r=>r.k!=="mine"||CUSTOM_ORIG.length)
+    .map(r=>`<div class="rg${r.k===aptRegion?" on":""}" data-rg="${r.k}">${r.n}</div>`).join("");
+  regionsBox.querySelectorAll(".rg").forEach(el=>el.onclick=()=>{
+    aptRegion=el.dataset.rg;
+    regionsBox.querySelectorAll(".rg").forEach(x=>x.classList.toggle("on",x===el));
+    renderAirports();
+  });
+}
+paintRegions();
 
 searchEl.addEventListener("input",()=>{
   aptQuery=searchEl.value.trim();
@@ -656,9 +723,11 @@ function renderAirports(){
   let list;
   if(aptQuery){
     const q=norm(aptQuery);
-    list=AIRPORTS.filter(a=>norm(a.code).includes(q)||norm(a.city).includes(q)||norm(RNAME[a.r]).includes(q));
+    list=originPool().filter(a=>norm(a.code).includes(q)||norm(a.city).includes(q)||norm(RNAME[a.r]||"").includes(q));
   }else if(aptRegion==="fav"){
-    list=AIRPORTS.filter(a=>favs.includes(a.code));
+    list=originPool().filter(a=>favs.includes(a.code));
+  }else if(aptRegion==="mine"){
+    list=CUSTOM_ORIG.slice();
   }else if(aptRegion==="all"){
     list=AIRPORTS.slice();
   }else{
@@ -681,7 +750,9 @@ function renderAirports(){
   }
 
   document.getElementById("aptCount").textContent=
-    list.length+" aéroport"+(list.length>1?"s":"")+" · "+AIRPORTS.length+" au total";
+    list.length+" aéroport"+(list.length>1?"s":"")+" · "+AIRPORTS.length+" en France"
+    +(CUSTOM_ORIG.length?" · +"+CUSTOM_ORIG.length+" ajoutés":"");
+  runOriginAc(list);
 
   aptGroups.querySelectorAll(".star").forEach(el=>el.onclick=(ev)=>{
     ev.stopPropagation();
@@ -693,7 +764,7 @@ function renderAirports(){
 }
 
 function selectApt(code){
-  const a=AIRPORTS.find(x=>x.code===code); if(!a)return;
+  const a=findAirport(code); if(!a)return;
   origin=a;
   try{localStorage.setItem(LS_ORIG,code);}catch(_){}
   document.getElementById("aptSel").textContent=a.code+" · "+a.city;
@@ -710,7 +781,109 @@ function selectApt(code){
 
 renderAirports();
 // restaure le dernier aéroport utilisé
-try{const last=localStorage.getItem(LS_ORIG); if(last&&AIRPORTS.some(x=>x.code===last)) selectApt(last);}catch(_){}
+try{const last=localStorage.getItem(LS_ORIG); if(last&&findAirport(last)) selectApt(last);}catch(_){}
+
+/* ================= AUTOCOMPLÉTION MONDE (villes & aéroports) ================= */
+function normPlace(p){
+  if(!p||!p.code)return null;
+  const c=p.coordinates||{};
+  const lat=typeof c.lat==="number"?c.lat:(typeof p.lat==="number"?p.lat:null);
+  const lng=typeof c.lon==="number"?c.lon:(typeof c.lng==="number"?c.lng:(typeof p.lng==="number"?p.lng:null));
+  if(lat==null||lng==null)return null;
+  return {code:String(p.code).toUpperCase(),type:p.type==="airport"?"airport":"city",
+    name:p.name||p.city_name||p.code,city:p.city_name||p.name||p.code,
+    country:p.country_name||p.country_code||"",lat,lng};
+}
+async function acSearch(term){
+  const q=(term||"").trim(); if(q.length<2)return [];
+  const urls=[`${API_BASE}/api/place?term=${encodeURIComponent(q)}`,
+    `https://autocomplete.travelpayouts.com/places2?locale=fr&types[]=city&types[]=airport&term=${encodeURIComponent(q)}`];
+  for(const u of urls){
+    try{const r=await fetch(u); if(!r.ok)continue; const j=await r.json();
+      const arr=Array.isArray(j)?j:[]; const out=arr.map(normPlace).filter(Boolean);
+      if(out.length)return out;
+    }catch(_){}
+  }
+  return [];
+}
+function acRow(p,label){
+  const badge=p.type==="airport"?"aéroport":"ville";
+  return `<div class="acrow" data-code="${p.code}">
+    <span class="acplus">+</span>
+    <div class="acmain"><div class="accity">${p.city}${p.country?`<span class="acsub"> · ${p.country}</span>`:""}</div>
+      <div class="acsub">${label}</div></div>
+    <span class="acbadge">${badge}</span><span class="accode">${p.code}</span></div>`;
+}
+let _acStore={};   // mémorise les objets lieu par code pour l'ajout
+function acStash(list){list.forEach(p=>_acStore[p.code]=p);}
+
+/* --- départ --- */
+let _acOrigTok=0;
+async function runOriginAc(localList){
+  const box=document.getElementById("aptAc");
+  const q=aptQuery.trim();
+  if(q.length<2){box.innerHTML="";return;}
+  const tok=++_acOrigTok;
+  box.innerHTML='<div class="acsug"><div class="acbusy">recherche dans le monde…</div></div>';
+  const res=await acSearch(q);
+  if(tok!==_acOrigTok)return;
+  const localCodes=new Set(originPool().map(a=>a.code));
+  const add=res.filter(p=>!localCodes.has(p.code));
+  if(!add.length){box.innerHTML="";return;}
+  acStash(add);
+  box.innerHTML=`<div class="acsug"><div class="achd">Ajouter un départ (monde entier)</div>`
+    +add.map(p=>acRow(p,"utiliser comme aéroport de départ")).join("")+`</div>`;
+  box.querySelectorAll(".acrow").forEach(el=>el.onclick=()=>addOrigin(el.dataset.code));
+}
+function addOrigin(code){
+  const p=_acStore[code]; if(!p)return;
+  if(!CUSTOM_ORIG.some(a=>a.code===code)){
+    CUSTOM_ORIG.push({code:p.code,city:p.city,lat:p.lat,lng:p.lng,r:"mine",world:1});
+    saveArr(LS_ORIGC,CUSTOM_ORIG);
+  }
+  searchEl.value="";aptQuery="";clearEl.classList.remove("show");
+  document.getElementById("aptAc").innerHTML="";
+  paintRegions();selectApt(code);
+}
+
+/* --- destination --- */
+const destSearchEl=document.getElementById("destSearch"),destClearEl=document.getElementById("destClear");
+let destQuery="", _acDestTok=0;
+let destDebounce=null;
+destSearchEl.addEventListener("input",()=>{
+  destQuery=destSearchEl.value.trim();
+  destClearEl.classList.toggle("show",!!destQuery);
+  renderDispatch();                       // filtre instantané de la liste
+  clearTimeout(destDebounce);
+  destDebounce=setTimeout(runDestAc,280); // recherche monde différée
+});
+destClearEl.onclick=()=>{destSearchEl.value="";destQuery="";destClearEl.classList.remove("show");
+  document.getElementById("destAc").innerHTML="";renderDispatch();destSearchEl.focus();};
+async function runDestAc(){
+  const box=document.getElementById("destAc");
+  if(mode!=="list"||destQuery.length<2){box.innerHTML="";return;}
+  const tok=++_acDestTok;
+  box.innerHTML='<div class="acsug"><div class="acbusy">recherche dans le monde…</div></div>';
+  const res=await acSearch(destQuery);
+  if(tok!==_acDestTok)return;
+  const have=new Set(allDests().map(d=>d.i));
+  const add=res.filter(p=>!have.has(p.code));
+  if(!add.length){box.innerHTML="";return;}
+  acStash(add);
+  box.innerHTML=`<div class="acsug"><div class="achd">Ajouter une destination (monde entier)</div>`
+    +add.map(p=>acRow(p,"ajouter à ma liste")).join("")+`</div>`;
+  box.querySelectorAll(".acrow").forEach(el=>el.onclick=()=>addDest(el.dataset.code));
+}
+function addDest(code){
+  const p=_acStore[code]; if(!p)return;
+  if(!CUSTOM_DEST.some(d=>d.i===code)){
+    CUSTOM_DEST.push({n:p.city,i:p.code,lat:p.lat,lng:p.lng,world:1});
+    saveArr(LS_DESTC,CUSTOM_DEST);NAMES[p.code]=p.city;
+  }
+  destSearchEl.value="";destQuery="";destClearEl.classList.remove("show");
+  document.getElementById("destAc").innerHTML="";
+  renderDispatch();refresh();
+}
 
 /* ================= TOGGLE TRAJET ================= */
 document.getElementById("tripSeg").querySelectorAll("button").forEach(b=>{b.onclick=()=>{
@@ -724,7 +897,12 @@ document.getElementById("tripSeg").querySelectorAll("button").forEach(b=>{b.oncl
 document.getElementById("modeSeg").querySelectorAll("button").forEach(b=>{b.onclick=()=>{
   document.querySelectorAll("#modeSeg button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
   mode=b.dataset.mode;renderDispatch();refresh();};});
-function renderDispatch(){ if(mode==="list") renderDests(); else renderAnywhere(); }
+function renderDispatch(){
+  const dsw=document.getElementById("destSearchWrap");
+  if(dsw)dsw.style.display=(mode==="list")?"block":"none";
+  if(mode!=="list")document.getElementById("destAc").innerHTML="";
+  if(mode==="list") renderDests(); else renderAnywhere();
+}
 
 /* ================= CALENDRIER PRINCIPAL ================= */
 const MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
@@ -768,9 +946,12 @@ document.querySelectorAll(".band").forEach(b=>b.onclick=()=>{
   band=b.dataset.band;renderDispatch();refresh();});
 
 /* ================= DESTINATIONS ================= */
-function withDur(){return DESTS.map(d=>({...d,min:origin?estMinutes(haversine(origin,{lat:d.lat,lng:d.lng})):null}));}
+function withDur(){return allDests().map(d=>({...d,min:origin?estMinutes(haversine(origin,{lat:d.lat,lng:d.lng})):null}));}
 function inBand(min){if(band==="all"||min==null)return true;const[a,b]=band.split("-").map(Number);const h=min/60;return h>=a&&h<b;}
-function currentList(){let l=withDur().filter(d=>inBand(d.min));if(origin)l.sort((a,b)=>a.min-b.min);return l;}
+function currentList(){let l=withDur().filter(d=>inBand(d.min));
+  if(typeof destQuery==="string"&&destQuery){const q=norm(destQuery);
+    l=l.filter(d=>norm(d.n).includes(q)||norm(d.i).includes(q));}
+  if(origin)l.sort((a,b)=>a.min-b.min);return l;}
 function skyURL(to){const yy=s=>s.slice(2,4)+s.slice(5,7)+s.slice(8,10);
   let u=`https://www.skyscanner.fr/transport/vols/${origin.code.toLowerCase()}/${to.toLowerCase()}/`;
   if(dep)u+=yy(dep)+"/";if(!oneWay&&dep&&ret)u+=yy(ret)+"/";return u;}
@@ -781,7 +962,7 @@ function renderDests(){
   box.innerHTML=list.map((d,idx)=>`
     <div class="dest">
       <div class="info" data-open="${idx}">
-        <div class="name">${d.n}<span class="iata">${d.i}</span><span class="cal-ic">📅 prix/jour</span></div>
+        <div class="name">${d.n}<span class="iata">${d.i}</span>${d.world?`<span class="rmdest" data-rm="${d.i}" title="Retirer">✕</span>`:""}<span class="cal-ic">📅 prix/jour</span></div>
         <div class="meta">
           ${d.min!=null?`<span class="dur">${fmtDur(d.min)}</span>`:`<span class="dur" style="color:var(--muted)">choisis un départ</span>`}
           <span class="price" data-price="${d.i}"></span>
@@ -793,6 +974,9 @@ function renderDests(){
     </div>`).join("");
   box.querySelectorAll(".go").forEach(b=>b.onclick=()=>window.open(skyURL(list[+b.dataset.i].i),"_blank"));
   box.querySelectorAll(".live").forEach(b=>b.onclick=()=>runLiveRow(list[+b.dataset.live],b));
+  box.querySelectorAll(".rmdest").forEach(el=>el.onclick=(ev)=>{ev.stopPropagation();
+    const code=el.dataset.rm;CUSTOM_DEST=CUSTOM_DEST.filter(d=>d.i!==code);saveArr(LS_DESTC,CUSTOM_DEST);
+    renderDispatch();refresh();});
   box.querySelectorAll(".info").forEach(el=>el.onclick=()=>{
     if(!origin){document.getElementById("dateHint").classList.add("show");return;}
     openPriceCal(list[+el.dataset.open]);});
