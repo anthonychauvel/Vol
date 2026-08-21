@@ -173,8 +173,11 @@ L'app couvre désormais **72 aéroports** : 67 en France (métropole + outre-mer
 /index.html
 /manifest.json
 /sw.js
-/icon-192.png
-/icon-512.png
+/icon-192.png              ← icône « any »
+/icon-512.png              ← icône « any » + marque affichée dans l'en-tête
+/icon-maskable-192.png     ← icône « maskable » (Android, marge de sûreté)
+/icon-maskable-512.png     ← icône « maskable »
+/favicon.png               ← onglet navigateur
 /functions/api/prices.js      → /api/prices     (prix d'une route, cache)
 /functions/api/calendar.js    → /api/calendar   (calendrier de prix par jour, cache)
 /functions/api/anywhere.js    → /api/anywhere   (le moins cher vers partout, cache)
@@ -189,6 +192,13 @@ L'app couvre désormais **72 aéroports** : 67 en France (métropole + outre-mer
 - Les prix automatiques viennent du **cache Aviasales** (2 à 7 jours) : indicatifs,
   à reconfirmer sur la page de l'offre avant de payer. Le bouton ⚡ sert précisément à ça.
 - `/api/cities` ne nécessite **pas** de token (fichiers publics).
-- Le service worker est passé en `escale-v2` : au premier lancement après déploiement,
+- Le service worker est passé en `escale-v3` : au premier lancement après déploiement,
   l'ancien cache est purgé automatiquement.
+- **Icônes** : la marque (crâne au chapeau, longue-vue et rose des vents, sabres croisés)
+  est déclinée en deux jeux. Les fichiers `icon-*.png` servent partout (iOS, favicon,
+  en-tête de l'app) ; les `icon-maskable-*.png` ont une marge plus large pour survivre
+  au rognage circulaire d'Android. Sur iPhone, l'icône de l'écran d'accueil ne se met à
+  jour qu'après avoir **retiré puis réajouté** le raccourci.
+- Pour enlever la marque de l'en-tête sans toucher aux icônes : supprime la ligne
+  `<img class="mark" …>` dans `index.html`.
 - Installer en app sur iPhone : Safari ▸ Partager ▸ « Sur l'écran d'accueil ».

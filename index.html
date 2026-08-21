@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#0e1b24">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Escale · recherche de vols perso</title>
@@ -23,7 +25,11 @@
     padding:env(safe-area-inset-top) 0 4rem;-webkit-font-smoothing:antialiased}
   .wrap{max-width:640px;margin:0 auto;padding:0 16px}
 
-  header{padding:26px 0 14px}
+  header{padding:26px 0 14px;display:flex;align-items:flex-start;gap:13px}
+  header .mark{width:46px;height:46px;flex-shrink:0;margin-top:2px;
+    border-radius:11px;background:var(--panel-2);border:1px solid var(--line);
+    padding:3px;object-fit:contain}
+  header .htxt{min-width:0}
   .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;
     color:var(--amber);margin:0 0 6px}
   h1{margin:0;font-size:25px;line-height:1.15;letter-spacing:-.01em;font-weight:800}
@@ -205,9 +211,12 @@
 <body>
 <div class="wrap">
   <header>
+    <img class="mark" src="icon-512.png" alt="" width="46" height="46">
+    <div class="htxt">
     <p class="eyebrow">Départ ✈ recherche perso</p>
     <h1>Trouver un vol <span>— tes aéroports, tes dates, le prix par jour</span></h1>
     <p class="sub">Aéroport, type de trajet, dates (n° de semaine + paire/impaire), filtre durée. Touche une destination pour le calendrier de prix couleur.</p>
+    </div>
   </header>
 
   <section>

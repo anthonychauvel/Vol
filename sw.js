@@ -2,8 +2,10 @@
 // - Le "shell" (page + icônes) est mis en cache → lancement instantané et hors-ligne.
 // - Les appels /api/ passent toujours par le réseau (données fraîches, jamais en cache).
 
-const CACHE = "escale-v2";
-const SHELL = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
+const CACHE = "escale-v3";
+const SHELL = ["./", "./index.html", "./manifest.json",
+  "./icon-192.png", "./icon-512.png",
+  "./icon-maskable-192.png", "./icon-maskable-512.png", "./favicon.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
