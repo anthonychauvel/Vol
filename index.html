@@ -13,9 +13,20 @@
 <title>Escale · recherche de vols perso</title>
 <style>
   :root{
-    --bg:#0e1b24;--panel:#132631;--panel-2:#0b161d;--line:#20404e;
-    --ink:#e8f1f2;--muted:#7fa0ab;--amber:#f5b64a;--amber-dim:#3a2f18;
-    --green:#5fcf8e;--pair:#1d3a4a;--impair:#132631;--radius:14px;
+    /* — Laiton & Abysse : palette corsaire métallisée — */
+    --abyss:#060d12;--bg:#0a1620;--panel:#11242e;--panel-2:#0a141b;--line:#2a4a58;
+    --ink:#f2ecdd;--muted:#8ba2ac;
+    --amber:#f3c360;              /* or doublon (base) */
+    --amber-dim:#382a12;
+    --gold-hi:#ffe9ad;--gold-lo:#9a6a26;--gold-deep:#654618;
+    --green:#5bc7a2;             /* vert-de-gris : patine, vol direct */
+    --oxblood:#c65048;           /* danger, quota épuisé */
+    --pair:#1d3a4a;--impair:#122129;--radius:14px;
+    /* faces métalliques réutilisables */
+    --brass-face:linear-gradient(157deg,#ffe9ad 0%,#f3c565 19%,#e0a63e 44%,#b7802d 60%,#e8ba58 82%,#ffe2a1 100%);
+    --brass-face-hi:linear-gradient(157deg,#fff2c8 0%,#ffd987 22%,#f0bd54 50%,#cf9636 66%,#ffcf78 100%);
+    --brass-rim:#7c5620;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"URW Palladio L",Georgia,"Times New Roman",serif;
     --mono:"SF Mono",ui-monospace,"Roboto Mono",Menlo,Consolas,monospace;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
@@ -206,6 +217,127 @@
   .grad{height:12px;width:120px;border-radius:6px;background:linear-gradient(90deg,hsl(120 55% 32%),hsl(60 55% 34%),hsl(0 55% 34%))}
   .pleg .dot{width:12px;height:12px;border-radius:4px;box-shadow:0 0 0 2px var(--green) inset;display:inline-block}
   .ov-status{color:var(--muted);font-size:13px;text-align:center;padding:26px;font-style:italic}
+
+  /* ============================================================
+     RESKIN « LAITON & ABYSSE » — surcouche métallisée corsaire
+     ============================================================ */
+
+  body{
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(58,120,132,.16), transparent 60%),
+      radial-gradient(90% 60% at 50% 120%, rgba(120,86,26,.10), transparent 60%),
+      linear-gradient(180deg,#0a1620 0%,#081218 55%,#060d12 100%);
+    background-attachment:fixed;
+  }
+
+  /* — hiérarchie typographique : plaques gravées (serif) vs instruments (mono) — */
+  h1{font-family:var(--serif);font-weight:700;font-size:27px;letter-spacing:.004em;
+     color:#f6d992;
+     text-shadow:0 1px 0 rgba(0,0,0,.6),0 -1px 0 rgba(255,240,200,.10);}
+  h1 span{font-family:var(--sans);font-weight:500;color:var(--muted);text-shadow:none;font-size:.62em}
+  .step h2{font-family:var(--serif);font-weight:700;font-size:17px;color:#efe6d2;letter-spacing:.01em}
+  .step b{color:var(--amber);font-size:12.5px;letter-spacing:.06em;opacity:.9}
+  .eyebrow{color:var(--amber);opacity:.92}
+
+  /* — TÊTE : plaque de laiton rivetée, avec reflet qui balaie l'or au chargement — */
+  header{position:relative;overflow:hidden;margin:18px 0 6px;padding:17px 17px 15px;
+    border-radius:16px;gap:14px;
+    background:linear-gradient(158deg,#14262f 0%,#0b161d 62%,#0e1f28 100%);
+    border:1px solid var(--line);
+    box-shadow:
+      0 0 0 1px rgba(233,200,119,.16) inset,
+      0 1px 0 rgba(255,238,190,.07) inset,
+      0 -18px 34px rgba(0,0,0,.42) inset,
+      0 12px 30px rgba(0,0,0,.45);}
+  header::after{content:"";position:absolute;inset:6px;border-radius:12px;pointer-events:none;
+    background:
+      radial-gradient(circle at 11px 11px,          #f0d38a 0 2px, rgba(120,84,24,.6) 2.4px, transparent 3.2px),
+      radial-gradient(circle at calc(100% - 11px) 11px,      #f0d38a 0 2px, rgba(120,84,24,.6) 2.4px, transparent 3.2px),
+      radial-gradient(circle at 11px calc(100% - 11px),      #f0d38a 0 2px, rgba(120,84,24,.6) 2.4px, transparent 3.2px),
+      radial-gradient(circle at calc(100% - 11px) calc(100% - 11px), #f0d38a 0 2px, rgba(120,84,24,.6) 2.4px, transparent 3.2px);}
+  header::before{content:"";position:absolute;top:0;left:0;width:60%;height:100%;pointer-events:none;
+    background:linear-gradient(100deg,transparent 0%,rgba(255,244,214,.14) 45%,rgba(255,255,255,.24) 50%,rgba(255,244,214,.12) 55%,transparent 100%);
+    transform:translateX(-140%) skewX(-16deg);
+    animation:plateGlint 2600ms ease-out .35s 1 both;}
+  @keyframes plateGlint{to{transform:translateX(230%) skewX(-16deg)}}
+
+  header .mark{width:52px;height:52px;margin-top:1px;border-radius:13px;padding:4px;
+    background:radial-gradient(circle at 50% 35%,#16303c,#0a151c);
+    border:1px solid #caa24e;
+    box-shadow:0 0 0 1px rgba(0,0,0,.4) inset,0 0 16px rgba(240,190,90,.22),0 2px 6px rgba(0,0,0,.4);
+    animation:markWake 1400ms ease-out .2s 1 both;}
+  @keyframes markWake{0%{opacity:0;transform:scale(.9) rotate(-4deg)}
+    60%{opacity:1;box-shadow:0 0 0 1px rgba(0,0,0,.4) inset,0 0 30px rgba(240,190,90,.5)}
+    100%{opacity:1;transform:none}}
+
+  /* — plaque « struck metal » réutilisable — */
+  .apt.on{background:linear-gradient(180deg,#20333c,#122129);
+    border-color:#caa24e;
+    box-shadow:0 0 0 1px #caa24e inset,0 0 15px rgba(240,190,90,.16),0 1px 0 rgba(255,240,200,.06) inset;}
+  .apt.on .code{color:var(--amber);text-shadow:0 0 10px rgba(240,190,90,.35)}
+  .apt:not(.on):hover{border-color:#3f6675;transform:translateY(-1px)}
+  .apt .star.on{color:var(--amber);text-shadow:0 0 8px rgba(240,190,90,.5)}
+
+  .rg.on,.seg button.on,.band.on{
+    background:var(--brass-face)!important;color:#2c1d06!important;border-color:var(--brass-rim)!important;
+    box-shadow:0 1px 0 rgba(255,244,214,.6) inset,0 -6px 9px rgba(90,58,16,.32) inset,0 2px 5px rgba(0,0,0,.32);
+    text-shadow:0 1px 0 rgba(255,240,200,.4);font-weight:700;}
+  .band.on{color:#2c1d06}
+
+  /* — bouton d'action : doublon frappé, avec reflet au survol — */
+  .go{position:relative;overflow:hidden;
+    background:var(--brass-face);color:#2c1d06;border:1px solid var(--brass-rim);
+    box-shadow:0 1px 0 rgba(255,244,214,.6) inset,0 -7px 11px rgba(90,58,16,.34) inset,0 3px 7px rgba(0,0,0,.36);
+    text-shadow:0 1px 0 rgba(255,240,200,.4);font-weight:800;letter-spacing:.02em;}
+  .go::after{content:"";position:absolute;top:0;left:0;width:55%;height:100%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
+    transform:translateX(-160%) skewX(-18deg);transition:none;}
+  .go:not(:disabled):hover{background:var(--brass-face-hi);transform:translateY(-1px)}
+  .go:not(:disabled):hover::after{animation:coinGlint 700ms ease-out 1}
+  .go:not(:disabled):active{transform:translateY(0);
+    box-shadow:0 2px 5px rgba(0,0,0,.4) inset,0 1px 0 rgba(255,244,214,.3) inset;}
+  .go:disabled{background:#22323a;color:var(--muted);border-color:var(--line);
+    box-shadow:none;text-shadow:none;}
+  @keyframes coinGlint{to{transform:translateX(220%) skewX(-18deg)}}
+
+  /* — ⚡ prix live : petite pièce de laiton — */
+  .live{background:var(--brass-face);color:#2c1d06;border:1px solid var(--brass-rim);
+    box-shadow:0 1px 0 rgba(255,244,214,.55) inset,0 -5px 8px rgba(90,58,16,.3) inset,0 2px 5px rgba(0,0,0,.3);}
+  .live:not(:disabled):hover{background:var(--brass-face-hi)}
+  .live:disabled{background:#22323a;color:var(--muted);border-color:var(--line);box-shadow:none}
+  .live.busy{background:#22323a;color:var(--muted);box-shadow:none}
+
+  /* — cartes destinations : coffres au trésor discrets — */
+  .dest{background:linear-gradient(180deg,#12242e,#0d1a22);
+    box-shadow:0 1px 0 rgba(255,240,200,.04) inset,0 2px 8px rgba(0,0,0,.28);}
+  .dest .name .iata{color:#c79a4e}
+  .dur{color:var(--amber)}
+  .price.show{color:var(--green);text-shadow:0 0 8px rgba(91,199,162,.25)}
+
+  /* — accents patine / prix live — */
+  .pricelive{color:#ffd98a}
+  .livebar{background:linear-gradient(180deg,#12242e,#0c1820);border-color:#2f4f5d}
+  .livebar .res{color:#ffd98a}
+  .livebar button{background:var(--brass-face);color:#2c1d06;border:1px solid var(--brass-rim);
+    box-shadow:0 1px 0 rgba(255,244,214,.55) inset,0 2px 5px rgba(0,0,0,.3);text-shadow:0 1px 0 rgba(255,240,200,.35)}
+  .livebar button:not(:disabled):hover{background:var(--brass-face-hi)}
+  .livebar button:disabled{background:#22323a;color:var(--muted);border-color:var(--line);box-shadow:none;text-shadow:none}
+
+  /* — calendrier de prix : jours au trésor — */
+  .pday.direct{box-shadow:0 0 0 2px var(--green) inset,0 0 10px rgba(91,199,162,.3)}
+  .pday.sel{outline-color:var(--amber)}
+  .grad{background:linear-gradient(90deg,hsl(158 46% 34%),hsl(46 55% 40%),hsl(8 60% 42%))}
+
+  /* — chips compagnies : petites cocardes — */
+  .chip{background:#16303c;border-color:#2f5060}
+
+  footer{color:#8a7a4e;letter-spacing:.04em;font-style:italic}
+
+  /* — repli mouvement réduit : plus de reflets ni d'éveil — */
+  @media (prefers-reduced-motion:reduce){
+    header::before,.go::after{display:none}
+    header .mark{animation:none}
+  }
 </style>
 </head>
 <body>
@@ -213,14 +345,14 @@
   <header>
     <img class="mark" src="icon-512.png" alt="" width="46" height="46">
     <div class="htxt">
-    <p class="eyebrow">Départ ✈ recherche perso</p>
-    <h1>Trouver un vol <span>— tes aéroports, tes dates, le prix par jour</span></h1>
+    <p class="eyebrow">Carnet de bord · chasse au bon vol</p>
+    <h1>Mettre le cap <span>— tes ports, tes dates, le prix jour par jour</span></h1>
     <p class="sub">Aéroport, type de trajet, dates (n° de semaine + paire/impaire), filtre durée. Touche une destination pour le calendrier de prix couleur.</p>
     </div>
   </header>
 
   <section>
-    <div class="step"><b>01</b><h2>Aéroport de départ</h2><small id="aptSel">—</small></div>
+    <div class="step"><b>I</b><h2>Port d’attache</h2><small id="aptSel">—</small></div>
     <div class="aptsearch">
       <input id="aptSearch" type="search" inputmode="search" autocomplete="off"
              placeholder="Chercher : ville, code IATA, département…">
@@ -233,7 +365,7 @@
   </section>
 
   <section>
-    <div class="step"><b>02</b><h2>Trajet &amp; dates</h2><small id="rangeLabel"></small></div>
+    <div class="step"><b>II</b><h2>Cap &amp; dates</h2><small id="rangeLabel"></small></div>
     <div class="seg" id="tripSeg">
       <button data-ow="0" class="on">Aller-retour</button>
       <button data-ow="1">Aller simple</button>
@@ -263,7 +395,7 @@
   </section>
 
   <section>
-    <div class="step"><b>03</b><h2>Durée de vol</h2><small>estimée à vol d'oiseau</small></div>
+    <div class="step"><b>III</b><h2>Traversée</h2><small>estimée à vol d'oiseau</small></div>
     <div class="bands" id="bands">
       <div class="band on" data-band="all">Toutes</div>
       <div class="band" data-band="0-2">&lt; 2 h</div>
@@ -274,7 +406,7 @@
   </section>
 
   <section>
-    <div class="step"><b>04</b><h2>Destinations</h2><small id="destCount"></small></div>
+    <div class="step"><b>IV</b><h2>Butin en vue</h2><small id="destCount"></small></div>
     <div class="seg" id="modeSeg" style="margin-bottom:12px">
       <button data-mode="list" class="on">Ma sélection</button>
       <button data-mode="anywhere">N'importe où</button>
@@ -285,7 +417,7 @@
     </div>
   </section>
 
-  <footer>ESCALE</footer>
+  <footer>⚓ ESCALE · « le meilleur cap, au meilleur prix »</footer>
 </div>
 
 <!-- OVERLAY CALENDRIER DE PRIX -->

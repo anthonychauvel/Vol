@@ -201,4 +201,8 @@ L'app couvre désormais **72 aéroports** : 67 en France (métropole + outre-mer
   jour qu'après avoir **retiré puis réajouté** le raccourci.
 - Pour enlever la marque de l'en-tête sans toucher aux icônes : supprime la ligne
   `<img class="mark" …>` dans `index.html`.
+- **Thème « Laiton & Abysse »** : interface corsaire métallisée — plaque de laiton
+  rivetée en tête (avec un reflet qui balaie l'or au chargement), boutons en doublons
+  frappés, patine vert-de-gris pour les vols directs. Le reflet et l'animation d'éveil
+  de la marque respectent « Réduire les animations » (réglages système).
 - Installer en app sur iPhone : Safari ▸ Partager ▸ « Sur l'écran d'accueil ».
