@@ -150,6 +150,37 @@ Puis une vraie requête :
 
 ---
 
+# Onglets Vols
+
+Cinq modes, tous alimentés par le cache Travelpayouts (gratuit, illimité) sauf le ⚡ live :
+
+- **Ma sélection** : ta liste de destinations (monde entier), calendrier de prix, ⚡ à la demande.
+- **N'importe où** : le vol le moins cher vers partout depuis un départ.
+- **Comparateur** : jusqu'à **5 aéroports de départ** → toutes les villes desservies, triées par un
+  **score prix↔durée** réglable au curseur. Idéal quand plusieurs aéroports te sont accessibles et
+  que tu n'as pas d'idée de destination. Le meilleur départ est indiqué pour chaque ville.
+- **Croisé** : **2 à 3 voyageurs**, chacun son aéroport (ex. Bretagne + Bruxelles) → uniquement les
+  destinations que **tout le monde** peut rejoindre, avec 3 tris : **coût total**, **équitable**
+  (personne ne paie trop), **durée moyenne**. Chaque carte détaille prix + durée par voyageur.
+- **Séjour** : vol + hôtel combinés, coût total du voyage par destination.
+
+Un **filtre Direct / Avec escale / Tous** (sous le filtre durée) s'applique à **Ma sélection**,
+**N'importe où** et **Comparateur** : les vols **directs sont remontés en tête** (liseré vert,
+mention « direct »), pratique pour repérer d'un coup d'œil ce qui est joignable sans escale depuis
+un aéroport. L'info escale vient du cache (le tarif le moins cher trouvé) : indicative, comme les prix.
+
+Les départs du Comparateur et les voyageurs du Croisé sont mémorisés (`ESCALE_CMP_V1`,
+`ESCALE_CROSS_V1`). Chaque vue interroge une fois `/api/anywhere` par départ — gratuit et sans
+quota. Le ⚡ live reste réservé à la vérification d'une route précise, une fois repérée.
+
+# Hôtels & voiture
+
+- **Escale à terre** : hôtels via le cache Hotellook (`/api/hotels`, ton `TP_TOKEN`, gratuit) ou
+  ⚡ Google Hotels (mêmes crédits que les vols). Filtres : distance au centre, note mini, catégorie,
+  **chambre privative uniquement** (exclut auberges de jeunesse et dortoirs), voyageurs.
+- **Louer une voiture** : lien Discover Cars pré-rempli (ville + dates). Pour l'affilier à ton compte,
+  renseigne `DISCOVERCARS_MARKER` en haut du script quand tu auras ton marker Travelpayouts.
+
 # Aéroports de départ
 
 L'app couvre **72 aéroports** de référence en France (67 métropole + outre-mer) et
@@ -196,6 +227,7 @@ départ comme en destination.
 /functions/api/cities.js      → /api/cities     (noms de villes IATA, sans token)
 /functions/api/live.js        → /api/live       (prix temps réel, bascule SerpApi → SearchApi)
 /functions/api/place.js       → /api/place      (recherche ville/aéroport monde, sans token)
+/functions/api/hotels.js      → /api/hotels     (hôtels en cache Hotellook, ton TP_TOKEN)
 /SETUP.md
 /PRIX-LIVE-API.md             (comparatif des API de tarifs, août 2026)
 ```
@@ -205,7 +237,7 @@ départ comme en destination.
 - Les prix automatiques viennent du **cache Aviasales** (2 à 7 jours) : indicatifs,
   à reconfirmer sur la page de l'offre avant de payer. Le bouton ⚡ sert précisément à ça.
 - `/api/cities` ne nécessite **pas** de token (fichiers publics).
-- Le service worker est passé en `escale-v4` : au premier lancement après déploiement,
+- Le service worker est passé en `escale-v6` : au premier lancement après déploiement,
   l'ancien cache est purgé automatiquement.
 - **Icônes** : la marque (crâne au chapeau, longue-vue et rose des vents, sabres croisés)
   est déclinée en deux jeux. Les fichiers `icon-*.png` servent partout (iOS, favicon,

@@ -125,6 +125,111 @@
     color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;display:none}
   .destsearch .clr.show{display:block}
   .rmdest{color:#7f97a1;font-size:11px;margin-left:7px;cursor:pointer;padding:2px 4px;border-radius:5px}
+
+  /* --- hôtels --- */
+  .hfilters{display:flex;flex-direction:column;gap:8px;margin-bottom:11px}
+  .frow{display:flex;align-items:center;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .frow::-webkit-scrollbar{display:none}
+  .flab{flex:0 0 auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);min-width:74px}
+  .fo{flex:0 0 auto;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;
+    padding:6px 11px;font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap;transition:.12s}
+  .fo.on{background:var(--brass-face);color:#2c1d06;border-color:var(--brass-rim);font-weight:700;
+    box-shadow:0 1px 0 rgba(255,244,214,.55) inset,0 -5px 8px rgba(90,58,16,.28) inset;
+    text-shadow:0 1px 0 rgba(255,240,200,.35)}
+  .hbtns{display:flex;gap:8px;margin-bottom:11px}
+  .hbtns button{flex:1;border-radius:11px;padding:11px;font-size:13.5px;font-weight:700;cursor:pointer;
+    font-family:var(--sans)}
+  .hsearchbtn{background:var(--panel-2);border:1px solid #3f6675;color:var(--ink)}
+  .hsearchbtn:hover{border-color:var(--amber)}
+  .hlivebtn{background:var(--brass-face);border:1px solid var(--brass-rim);color:#2c1d06;
+    box-shadow:0 1px 0 rgba(255,244,214,.55) inset,0 -6px 9px rgba(90,58,16,.3) inset}
+  .hlivebtn:disabled{background:#22323a;color:var(--muted);border-color:var(--line);box-shadow:none}
+  .hotel{background:linear-gradient(180deg,#12242e,#0d1a22);border:1px solid var(--line);
+    border-radius:12px;padding:11px 12px;margin-bottom:8px;
+    box-shadow:0 1px 0 rgba(255,240,200,.04) inset,0 2px 8px rgba(0,0,0,.28)}
+  .hotel .htop{display:flex;align-items:flex-start;gap:9px}
+  .hotel .hname{font-size:14px;font-weight:700;line-height:1.25;flex:1;min-width:0}
+  .hotel .hprice{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green);
+    text-align:right;flex-shrink:0;line-height:1.2}
+  .hotel .hprice small{display:block;font-size:10px;color:var(--muted);font-weight:400}
+  .hotel .hmeta{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;align-items:center}
+  .hbadge{font-family:var(--mono);font-size:10px;padding:3px 7px;border-radius:6px;
+    border:1px solid var(--line);color:var(--muted);background:var(--panel-2)}
+  .hbadge.note{color:#2c1d06;background:var(--brass-face);border-color:var(--brass-rim);font-weight:700}
+  .hbadge.note.bad{background:#3a2226;color:#e0a0a0;border-color:#5a3238}
+  .hbadge.dist{color:#8fd9c0;border-color:#2f5f52}
+  .hbadge.stars{color:var(--amber);border-color:#4d3d1c}
+  .hbadge.cancel{color:#8fd9c0;border-color:#2f5f52}
+  .hotel .hgo{display:inline-block;margin-top:9px;font-size:12.5px;color:var(--amber);
+    text-decoration:none;border-bottom:1px solid #4d3d1c}
+  .hnote{color:var(--muted);font-size:11.5px;margin-top:9px;font-style:italic}
+  .stayline{font-family:var(--mono);font-size:11.5px;color:#ffd98a;margin-top:4px;display:block}
+  .stayline b{color:var(--green)}
+  .dest.direct{border-left:3px solid var(--green)}
+  .cmpcard.direct{border-left:3px solid var(--green)}
+  .cbadge.dir,.hbadge.dir{color:#8fd9c0;border-color:#2f5f52}
+  .price .drc{color:var(--green)}
+
+  /* --- comparateur / croisé : sélection de départs --- */
+  .opicker{position:relative;margin-bottom:9px}
+  .opicker input{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:11px;
+    color:var(--ink);font-family:var(--sans);font-size:14px;padding:10px 12px;outline:none}
+  .opicker input:focus{border-color:var(--amber)}
+  .opicker input::placeholder{color:#5c7c88}
+  .odrop{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;background:var(--panel-2);
+    border:1px solid var(--line);border-radius:11px;overflow:hidden;max-height:230px;overflow-y:auto;display:none}
+  .odrop.show{display:block}
+  .odrow{display:flex;align-items:center;gap:9px;padding:9px 11px;cursor:pointer;border-top:1px solid var(--line)}
+  .odrow:first-child{border-top:none}.odrow:hover{background:#16303c}
+  .odrow .ocode{font-family:var(--mono);font-weight:700;color:var(--amber);font-size:13px}
+  .odrow .ocity{font-size:13px;color:var(--ink);flex:1;min-width:0}
+  .odrow .osub{font-size:11px;color:var(--muted)}
+  .ochips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px}
+  .ochip{display:flex;align-items:center;gap:6px;background:var(--brass-face);color:#2c1d06;
+    border:1px solid var(--brass-rim);border-radius:999px;padding:5px 6px 5px 11px;font-size:12.5px;font-weight:700;
+    box-shadow:0 1px 0 rgba(255,244,214,.5) inset}
+  .ochip .ox{cursor:pointer;font-size:14px;line-height:1;padding:1px 5px;border-radius:50%;color:#5a3a10}
+  .ochip .ox:hover{background:rgba(0,0,0,.15)}
+  .ochint{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin:-4px 0 10px}
+  /* curseur prix/durée */
+  .weigh{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:12px}
+  .weigh .wtop{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:7px}
+  .weigh .wtop b{color:var(--amber)}
+  .weigh input[type=range]{width:100%;accent-color:var(--amber);height:22px}
+  /* résultats comparateur */
+  .cmpcard{background:linear-gradient(180deg,#12242e,#0d1a22);border:1px solid var(--line);border-radius:12px;
+    padding:11px 12px;margin-bottom:8px;box-shadow:0 1px 0 rgba(255,240,200,.04) inset,0 2px 8px rgba(0,0,0,.28)}
+  .cmpcard .ctop{display:flex;align-items:baseline;gap:8px}
+  .cmpcard .cdest{font-size:15px;font-weight:700;flex:1;min-width:0}
+  .cmpcard .cprice{font-family:var(--mono);font-weight:700;color:var(--green);font-size:15px}
+  .cmpcard .cvia{font-family:var(--mono);font-size:11.5px;color:#c79a4e;margin-top:5px}
+  .cmpcard .cmeta{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .cmpcard .cbadge{font-family:var(--mono);font-size:10px;padding:3px 7px;border-radius:6px;border:1px solid var(--line);color:var(--muted)}
+  .cmpcard .cbadge.dur{color:#8fd9c0;border-color:#2f5f52}
+  .cmpcard .cbadge.best{color:var(--amber);border-color:#4d3d1c}
+  .cmpcard .cgo{margin-top:8px;display:inline-block;font-size:12.5px;color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c}
+  /* croisé */
+  .xsort{display:flex;gap:6px;margin-bottom:11px}
+  .xsort button{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:8px;
+    font-size:12px;color:var(--muted);cursor:pointer;font-family:var(--sans)}
+  .xsort button.on{background:var(--brass-face);color:#2c1d06;border-color:var(--brass-rim);font-weight:700}
+  .xcard{background:linear-gradient(180deg,#12242e,#0d1a22);border:1px solid var(--line);border-radius:12px;
+    padding:11px 12px;margin-bottom:8px}
+  .xcard .xhd{display:flex;align-items:baseline;gap:8px;margin-bottom:7px}
+  .xcard .xdest{font-size:15px;font-weight:700;flex:1;min-width:0}
+  .xcard .xtot{font-family:var(--mono);font-weight:700;color:var(--green);font-size:14px}
+  .xleg{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;border-top:1px solid var(--line)}
+  .xleg .xo{font-family:var(--mono);color:#c79a4e}
+  .xleg .xp{font-family:var(--mono);color:var(--ink)}
+  .xleg .xd{font-family:var(--mono);color:#8fd9c0;font-size:11px}
+  .xcard .xmetrics{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:6px}
+  /* bouton voiture */
+  .carbtn{display:block;width:100%;text-align:center;background:var(--panel-2);border:1px solid #3f6675;
+    color:var(--ink);border-radius:11px;padding:11px;font-size:13.5px;font-weight:700;margin-top:9px;
+    text-decoration:none;box-sizing:border-box}
+  .carbtn:hover{border-color:var(--amber)}
+  .carbtn span{color:var(--amber)}
   .rmdest:hover{color:var(--oxblood);background:#2a1518}
 
   /* --- prix live --- */
@@ -430,6 +535,11 @@
       <div class="band" data-band="3-4">3–4 h</div>
       <div class="band" data-band="4-99">&gt; 4 h</div>
     </div>
+    <div class="bands" id="stops" style="margin-top:8px">
+      <div class="band stop on" data-stop="all">Tous les vols</div>
+      <div class="band stop" data-stop="direct">Direct</div>
+      <div class="band stop" data-stop="1">Avec escale</div>
+    </div>
   </section>
 
   <section>
@@ -437,7 +547,38 @@
     <div class="seg" id="modeSeg" style="margin-bottom:12px">
       <button data-mode="list" class="on">Ma sélection</button>
       <button data-mode="anywhere">N'importe où</button>
+      <button data-mode="compare">Comparateur</button>
+      <button data-mode="cross">Croisé</button>
+      <button data-mode="stay">Séjour</button>
     </div>
+
+    <div id="cmpPanel" style="display:none">
+      <div class="ochint">Jusqu'à 5 aéroports de départ — vue d'ensemble des villes desservies au meilleur prix / plus court.</div>
+      <div class="opicker">
+        <input id="cmpInput" type="search" inputmode="search" autocomplete="off" placeholder="Ajouter un départ (ville, code, monde)">
+        <div class="odrop" id="cmpDrop"></div>
+      </div>
+      <div class="ochips" id="cmpChips"></div>
+      <div class="weigh">
+        <div class="wtop"><span>← <b>meilleur prix</b></span><span id="cmpWlab">équilibre</span><span><b>plus court</b> →</span></div>
+        <input type="range" id="cmpW" min="0" max="100" value="35">
+      </div>
+    </div>
+
+    <div id="xPanel" style="display:none">
+      <div class="ochint">2 à 3 voyageurs, chacun son départ — les destinations que <b>tous</b> peuvent rejoindre.</div>
+      <div class="opicker">
+        <input id="xInput" type="search" inputmode="search" autocomplete="off" placeholder="Ajouter un voyageur (son aéroport de départ)">
+        <div class="odrop" id="xDrop"></div>
+      </div>
+      <div class="ochips" id="xChips"></div>
+      <div class="xsort" id="xSort">
+        <button data-sort="total" class="on">Coût total</button>
+        <button data-sort="equity">Équitable</button>
+        <button data-sort="dur">Durée moy.</button>
+      </div>
+    </div>
+
     <div class="destsearch" id="destSearchWrap">
       <input id="destSearch" type="search" inputmode="search" autocomplete="off"
              placeholder="Filtrer, ou chercher une ville dans le monde (Pékin, Miami…)">
@@ -447,6 +588,52 @@
     <div class="dests" id="dests"></div>
     <div class="note">
       <b>Touche une destination</b> pour ouvrir son <b>calendrier de prix</b> : chaque jour est coloré du moins cher (vert) au plus cher (rouge), et les jours <b>en vert entouré = vol direct</b> (le plus court). Le champ de recherche accepte <b>n'importe quelle ville du monde</b> : elle s'ajoute à ta liste et y reste. Idem pour le <b>départ</b>. <b>Durées</b> estimées à vol d'oiseau ; <b>prix</b> indicatifs (cache Aviasales ≤ 7 j). Le bouton <b>Chercher</b> ouvre Skyscanner pour le prix ferme. Le bouton <b>⚡</b> (si la clé SerpApi est branchée) va chercher le <b>tarif réel du moment</b> sur Google Flights — quota limité, donc uniquement sur appui.
+    </div>
+  </section>
+
+  <section>
+    <div class="step"><b>V</b><h2>Escale à terre</h2><small id="hCount">hôtels</small></div>
+    <div class="destsearch">
+      <input id="hCity" type="search" inputmode="search" autocomplete="off"
+             placeholder="Ville (vide = destination choisie)">
+      <button class="clr" id="hCityClear" aria-label="Effacer">×</button>
+    </div>
+    <div class="hfilters">
+      <div class="frow"><span class="flab">Du centre</span>
+        <span class="fo" data-f="km" data-v="1">≤ 1 km</span>
+        <span class="fo on" data-f="km" data-v="3">≤ 3 km</span>
+        <span class="fo" data-f="km" data-v="5">≤ 5 km</span>
+        <span class="fo" data-f="km" data-v="0">Peu importe</span></div>
+      <div class="frow"><span class="flab">Note mini</span>
+        <span class="fo on" data-f="note" data-v="0">Toutes</span>
+        <span class="fo" data-f="note" data-v="7">3,5+</span>
+        <span class="fo" data-f="note" data-v="8">4,0+</span>
+        <span class="fo" data-f="note" data-v="9">4,5+</span></div>
+      <div class="frow"><span class="flab">Catégorie</span>
+        <span class="fo on" data-f="stars" data-v="2">2★ et +</span>
+        <span class="fo" data-f="stars" data-v="3">3★ et +</span>
+        <span class="fo" data-f="stars" data-v="4">4★ et +</span></div>
+      <div class="frow"><span class="flab">Chambre</span>
+        <span class="fo on" data-f="priv" data-v="1">Privative uniquement</span>
+        <span class="fo" data-f="priv" data-v="0">Tout accepter</span></div>
+      <div class="frow"><span class="flab">Voyageurs</span>
+        <span class="fo" data-f="ad" data-v="1">1 adulte</span>
+        <span class="fo on" data-f="ad" data-v="2">2 adultes</span>
+        <span class="fo" data-f="ad" data-v="3">3</span>
+        <span class="fo" data-f="ad" data-v="4">4</span></div>
+    </div>
+    <div class="hbtns">
+      <button class="hsearchbtn" id="hSearch">Chercher (cache, gratuit)</button>
+      <button class="hlivebtn" id="hLive">⚡ Live + notes</button>
+    </div>
+    <div id="hotels"></div>
+    <a class="carbtn" id="carLink" href="#" target="_blank" rel="noopener">🚗 <span>Louer une voiture</span> sur place (Discover Cars)</a>
+    <div class="note">
+      « <b>Privative uniquement</b> » écarte les auberges de jeunesse et dortoirs : on ne garde
+      que les établissements classés (2★ et plus), donc chambre et salle de bain à toi. Le bouton
+      <b>Chercher</b> utilise le cache Hotellook — gratuit, illimité, mais <b>sans note voyageurs</b>.
+      Le bouton <b>⚡</b> interroge Google Hotels : notes, avis, annulation gratuite et distance exacte,
+      au prix d'un crédit du quota mensuel.
     </div>
   </section>
 
@@ -640,6 +827,8 @@ const DESTS = [
 let origin=null, dep=null, ret=null, band="all", oneWay=false;
 let view=new Date(); view.setDate(1);
 let mode="list";
+let stops="all";           // all | direct | 1(avec escale)
+const _transfers={};       // code destination -> nb escales (Ma sélection, chargé avec les prix)
 const API_BASE="";
 // noms lisibles pour les codes IATA renvoyés par « n'importe où » (le reste s'affiche en code)
 const NAMES={};
@@ -901,7 +1090,17 @@ function renderDispatch(){
   const dsw=document.getElementById("destSearchWrap");
   if(dsw)dsw.style.display=(mode==="list")?"block":"none";
   if(mode!=="list")document.getElementById("destAc").innerHTML="";
-  if(mode==="list") renderDests(); else renderAnywhere();
+  const cp=document.getElementById("cmpPanel"),xp=document.getElementById("xPanel");
+  if(cp)cp.style.display=(mode==="compare")?"block":"none";
+  if(xp)xp.style.display=(mode==="cross")?"block":"none";
+  const stEl=document.getElementById("stops");
+  if(stEl)stEl.style.display=(mode==="list"||mode==="anywhere"||mode==="compare")?"flex":"none";
+  refreshCarLink();
+  if(mode==="list") renderDests();
+  else if(mode==="stay") renderStay();
+  else if(mode==="compare"){renderCmpChips();renderCompare();}
+  else if(mode==="cross"){renderXChips();renderCross();}
+  else renderAnywhere();
 }
 
 /* ================= CALENDRIER PRINCIPAL ================= */
@@ -941,9 +1140,21 @@ function pickDate(ds){
 document.getElementById("clearDates").onclick=()=>{dep=ret=null;drawCal();refresh();};
 
 /* ================= FILTRE DURÉE ================= */
-document.querySelectorAll(".band").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".band").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+document.querySelectorAll(".band[data-band]").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".band[data-band]").forEach(x=>x.classList.remove("on"));b.classList.add("on");
   band=b.dataset.band;renderDispatch();refresh();});
+document.querySelectorAll(".band[data-stop]").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".band[data-stop]").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+  stops=b.dataset.stop;
+  if(mode==="list")applyStopsListDom(); else renderDispatch();});
+/* vrai pour un nb d'escales donné selon le filtre ; null/undefined = inconnu → visible */
+function passStops(tr){
+  if(stops==="all")return true;
+  if(tr==null)return true;                 // inconnu : on n'exclut pas tant qu'on ne sait pas
+  if(stops==="direct")return tr===0;
+  return tr>=1;                            // "avec escale"
+}
+function stopRank(tr){return tr===0?0:(tr==null?1:2);}   // directs, puis inconnus, puis escales
 
 /* ================= DESTINATIONS ================= */
 function withDur(){return allDests().map(d=>({...d,min:origin?estMinutes(haversine(origin,{lat:d.lat,lng:d.lng})):null}));}
@@ -1001,13 +1212,34 @@ async function fetchPrices(){
       const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();
       if(myId!==priceReqId)return;
       if(j.price){
-        const tr=j.transfers===0?"direct":(j.transfers!=null?j.transfers+" esc":"");
-        const label="≈ "+j.price+" €"+(tr?" · "+tr:"");
+        _transfers[d.i]=(j.transfers==null?null:j.transfers);
+        const trTxt=j.transfers===0?'<span class="drc">direct</span>':(j.transfers!=null?j.transfers+" esc":"");
+        const label="≈ "+j.price+" €"+(trTxt?" · "+trTxt:"");
         el.innerHTML=j.link?`<a href="${j.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${label}</a>`:label;
         el.className="price show";
+        const row=el.closest(".dest"); if(row&&j.transfers===0)row.classList.add("direct");
       }else{el.textContent="";el.className="price";}
+      applyStopsListDom();
     }catch(_){el.textContent="";el.className="price";}
   }
+}
+
+/* réordonne et masque les lignes de Ma sélection selon le filtre escales,
+   sans refetch : opère directement sur le DOM une fois les prix connus */
+function applyStopsListDom(){
+  if(mode!=="list")return;
+  const box=document.getElementById("dests");
+  const rows=[...box.querySelectorAll(".dest")];
+  if(!rows.length)return;
+  rows.forEach(r=>{
+    const code=r.querySelector(".price")?.dataset.price;
+    const tr=code!=null?_transfers[code]:null;
+    r.style.display=passStops(tr)?"":"none";
+    r.dataset.rank=stopRank(tr);
+  });
+  const visible=rows.filter(r=>r.style.display!=="none");
+  visible.sort((a,b)=>(+a.dataset.rank)-(+b.dataset.rank));   // directs d'abord, ordre prix conservé sinon
+  visible.forEach(r=>box.appendChild(r));
 }
 
 /* ================= OVERLAY CALENDRIER DE PRIX ================= */
@@ -1167,6 +1399,336 @@ fetch(`${API_BASE}/api/live`).then(r=>r.json()).then(j=>{
   if(LIVE_OK){setQuota(j);renderDispatch();}
 }).catch(()=>{});
 
+/* ================= HÔTELS ================= */
+const LS_HF="ESCALE_HFILTERS_V1";
+let HF={km:3,note:0,stars:2,priv:1,ad:2};
+try{const v=JSON.parse(localStorage.getItem(LS_HF)); if(v&&typeof v==="object")HF=Object.assign(HF,v);}catch(_){}
+function saveHF(){try{localStorage.setItem(LS_HF,JSON.stringify(HF));}catch(_){}}
+
+function paintFilters(){
+  document.querySelectorAll(".fo").forEach(el=>{
+    el.classList.toggle("on",String(HF[el.dataset.f])===el.dataset.v);
+    el.onclick=()=>{HF[el.dataset.f]=parseFloat(el.dataset.v);saveHF();paintFilters();};
+  });
+}
+paintFilters();
+
+const hCityEl=document.getElementById("hCity"),hCityClr=document.getElementById("hCityClear");
+hCityEl.addEventListener("input",()=>hCityClr.classList.toggle("show",!!hCityEl.value.trim()));
+hCityClr.onclick=()=>{hCityEl.value="";hCityClr.classList.remove("show");};
+
+/* cible : ville tapée, sinon destination sélectionnée, sinon rien */
+function hotelTarget(){
+  const typed=hCityEl.value.trim();
+  if(typed)return {q:typed,lat:null,lng:null,label:typed};
+  if(calDest)return {q:calDest.n,lat:calDest.lat??null,lng:calDest.lng??null,label:calDest.n};
+  const l=currentList();
+  if(l.length===1)return {q:l[0].n,lat:l[0].lat,lng:l[0].lng,label:l[0].n};
+  return null;
+}
+/* dates : celles du voyage, sinon check-in demain + 2 nuits */
+function hotelDates(){
+  if(dep&&ret&&!oneWay)return {ci:dep,co:ret};
+  if(dep){const d=new Date(dep);d.setDate(d.getDate()+2);return {ci:dep,co:iso(d)};}
+  const a=new Date();a.setDate(a.getDate()+1);const b=new Date();b.setDate(b.getDate()+3);
+  return {ci:iso(a),co:iso(b)};
+}
+function nightsBetween(ci,co){return Math.max(1,Math.round((new Date(co)-new Date(ci))/86400000));}
+
+function starStr(n){return n?"★".repeat(Math.min(5,Math.round(n))):"";}
+function hotelCard(h,nights){
+  const note=h.rating!=null
+    ? `<span class="hbadge note${h.rating<3.5?" bad":""}">${h.rating.toFixed(1)}/5${h.reviews?` · ${h.reviews} avis`:""}</span>`
+    : `<span class="hbadge">note via ⚡</span>`;
+  const dist=h.distanceKm!=null?`<span class="hbadge dist">${h.distanceKm} km du centre</span>`:"";
+  const st=h.stars?`<span class="hbadge stars">${starStr(h.stars)}</span>`:"";
+  const cancel=h.freeCancellation?`<span class="hbadge cancel">annulation gratuite</span>`:"";
+  const am=(h.amenities||[]).slice(0,2).map(a=>`<span class="hbadge">${a}</span>`).join("");
+  const tot=h.priceTotal!=null?`<small>${h.priceTotal} € les ${nights} nuits</small>`:"";
+  return `<div class="hotel">
+    <div class="htop">
+      <div class="hname">${h.name}</div>
+      <div class="hprice">${h.pricePerNight} €<small>/ nuit</small>${tot}</div>
+    </div>
+    <div class="hmeta">${note}${st}${dist}${cancel}${am}</div>
+    ${h.url?`<a class="hgo" href="${h.url}" target="_blank" rel="noopener">Voir l'offre →</a>`:""}
+  </div>`;
+}
+function renderHotels(list,nights,meta){
+  const box=document.getElementById("hotels");
+  if(!list||!list.length){
+    box.innerHTML=`<div class="empty">${meta||"Aucun hébergement ne correspond à ces filtres."}</div>`;
+    document.getElementById("hCount").textContent="0 hôtel";return;
+  }
+  box.innerHTML=list.map(h=>hotelCard(h,nights)).join("");
+  document.getElementById("hCount").textContent=list.length+" hôtel"+(list.length>1?"s":"")+(meta?" · "+meta:"");
+}
+function hotelParams(t,d){
+  const p=new URLSearchParams({checkIn:d.ci,checkOut:d.co});
+  if(HF.km)p.set("maxKm",String(HF.km));
+  if(HF.stars)p.set("minStars",String(HF.stars));
+  p.set("privateOnly",HF.priv?"1":"0");
+  if(t.lat!=null&&t.lng!=null){p.set("lat",t.lat);p.set("lng",t.lng);}
+  return p;
+}
+async function searchHotelsCache(){
+  const t=hotelTarget();
+  if(!t){renderHotels(null,0,"Tape une ville, ou choisis une destination plus haut.");return;}
+  const d=hotelDates(),nights=nightsBetween(d.ci,d.co);
+  document.getElementById("hotels").innerHTML='<div class="empty">recherche des hébergements…</div>';
+  const p=hotelParams(t,d);p.set("location",t.q);
+  try{
+    const j=await (await fetch(`${API_BASE}/api/hotels?${p}`)).json();
+    renderHotels(j.hotels,nights,j.hotels&&j.hotels.length
+      ? `${t.label} · ${d.ci} → ${d.co} · cache`
+      : (j.note||"aucun tarif en cache pour cette ville / ces dates"));
+  }catch(_){renderHotels(null,0,"Recherche indisponible pour le moment.");}
+}
+async function searchHotelsLive(){
+  const t=hotelTarget();
+  if(!t){renderHotels(null,0,"Tape une ville, ou choisis une destination plus haut.");return;}
+  const d=hotelDates(),nights=nightsBetween(d.ci,d.co),btn=document.getElementById("hLive");
+  btn.disabled=true;
+  document.getElementById("hotels").innerHTML='<div class="empty">interrogation de Google Hotels…</div>';
+  const p=hotelParams(t,d);
+  p.set("kind","hotel");p.set("q",t.q);p.set("adults",String(HF.ad));
+  if(HF.note)p.set("rating",String(HF.note));
+  try{
+    const j=await (await fetch(`${API_BASE}/api/live?${p}`)).json();
+    setQuota(j.quota);
+    if(j.exhausted){renderHotels(null,0,"Quota live épuisé — utilise « Chercher (cache) », gratuit.");}
+    else renderHotels(j.hotels,nights,j.hotels&&j.hotels.length
+      ? `${t.label} · ${d.ci} → ${d.co} · ${j.cached?"en cache":provName(j.provider)}`
+      : "Aucun hébergement ne correspond à ces filtres.");
+  }catch(_){renderHotels(null,0,"Prix live indisponible.");}
+  btn.disabled=!!(LIVE_Q&&LIVE_Q.exhausted);
+}
+document.getElementById("hSearch").onclick=searchHotelsCache;
+document.getElementById("hLive").onclick=searchHotelsLive;
+
+/* ================= COMPARATEUR & CROISÉ (multi-départs) ================= */
+const LS_CMP="ESCALE_CMP_V1", LS_X="ESCALE_CROSS_V1";
+let cmpOrigins=loadArr(LS_CMP);       // [{code,city}]
+let xOrigins=loadArr(LS_X);
+let cmpWeight=0.35, xSort="total";
+
+/* cache client des résultats "n'importe où" par départ (gratuit, illimité) */
+const _anyCache={};
+function anyKey(code){return code+"|"+(dep?dep.slice(0,7):"any")+"|"+(oneWay?"ow":"rt");}
+async function anywhereFor(code){
+  const k=anyKey(code);
+  if(_anyCache[k])return _anyCache[k];
+  let u=`${API_BASE}/api/anywhere?origin=${code}&oneway=${oneWay?1:0}`;
+  if(dep)u+=`&month=${dep.slice(0,7)}`;
+  try{
+    const j=await (await fetch(u)).json();
+    const map={};
+    (j.results||[]).forEach(r=>{
+      if(typeof r.price!=="number")return;
+      if(!map[r.destination]||r.price<map[r.destination].price)
+        map[r.destination]={price:r.price,dur:r.duration_to||null,link:r.link||null,
+          transfers:(r.transfers==null?null:r.transfers),dep:r.departure_at||null,ret:r.return_at||null};
+    });
+    _anyCache[k]=map;return map;
+  }catch(_){return {};}
+}
+
+/* --- sélecteur générique de départs (local + monde) --- */
+function makeOriginPicker(inputId,dropId,getList,setList,max,onChange){
+  const inp=document.getElementById(inputId),drop=document.getElementById(dropId);
+  let deb=null,tok=0;
+  async function refreshDrop(){
+    const q=inp.value.trim();
+    if(q.length<2){drop.classList.remove("show");drop.innerHTML="";return;}
+    const nq=norm(q);
+    const have=new Set(getList().map(o=>o.code));
+    let rows=originPool().filter(a=>!have.has(a.code)&&
+      (norm(a.code).includes(nq)||norm(a.city).includes(nq))).slice(0,6)
+      .map(a=>({code:a.code,city:a.city,sub:RNAME[a.r]||"France"}));
+    drop.innerHTML=rows.map(r=>`<div class="odrow" data-code="${r.code}" data-city="${r.city}">
+      <span class="ocode">${r.code}</span><span class="ocity">${r.city}</span><span class="osub">${r.sub}</span></div>`).join("")
+      ||'<div class="odrow"><span class="osub">recherche dans le monde…</span></div>';
+    drop.classList.add("show");
+    bindDrop();
+    const myTok=++tok;
+    const world=await acSearch(q);
+    if(myTok!==tok)return;
+    const add=world.filter(p=>!have.has(p.code)&&!rows.some(r=>r.code===p.code));
+    if(add.length){
+      acStash(add);
+      drop.innerHTML+=add.slice(0,5).map(p=>`<div class="odrow" data-code="${p.code}" data-city="${p.city}" data-world="1">
+        <span class="ocode">${p.code}</span><span class="ocity">${p.city}</span><span class="osub">${p.country||"monde"}</span></div>`).join("");
+      bindDrop();
+    }
+  }
+  function bindDrop(){
+    drop.querySelectorAll(".odrow[data-code]").forEach(el=>el.onclick=()=>{
+      const list=getList();
+      if(list.length>=max)return;
+      const code=el.dataset.code;
+      if(list.some(o=>o.code===code))return;
+      if(el.dataset.world&&!findAirport(code)){
+        const p=_acStore[code];
+        if(p){CUSTOM_ORIG.push({code:p.code,city:p.city,lat:p.lat,lng:p.lng,r:"mine",world:1});
+              saveArr(LS_ORIGC,CUSTOM_ORIG);paintRegions();}
+      }
+      list.push({code,city:el.dataset.city});setList(list);
+      inp.value="";drop.classList.remove("show");drop.innerHTML="";onChange();
+    });
+  }
+  inp.addEventListener("input",()=>{clearTimeout(deb);deb=setTimeout(refreshDrop,220);});
+  inp.addEventListener("blur",()=>setTimeout(()=>drop.classList.remove("show"),180));
+}
+function chipsHtml(list){return list.map(o=>
+  `<span class="ochip">${o.code} · ${o.city}<span class="ox" data-rm="${o.code}">×</span></span>`).join("");}
+
+makeOriginPicker("cmpInput","cmpDrop",()=>cmpOrigins,v=>{cmpOrigins=v;saveArr(LS_CMP,v);},5,()=>{renderCmpChips();renderCompare();});
+makeOriginPicker("xInput","xDrop",()=>xOrigins,v=>{xOrigins=v;saveArr(LS_X,v);},3,()=>{renderXChips();renderCross();});
+function renderCmpChips(){const el=document.getElementById("cmpChips");el.innerHTML=chipsHtml(cmpOrigins);
+  el.querySelectorAll(".ox").forEach(x=>x.onclick=()=>{cmpOrigins=cmpOrigins.filter(o=>o.code!==x.dataset.rm);saveArr(LS_CMP,cmpOrigins);renderCmpChips();renderCompare();});}
+function renderXChips(){const el=document.getElementById("xChips");el.innerHTML=chipsHtml(xOrigins);
+  el.querySelectorAll(".ox").forEach(x=>x.onclick=()=>{xOrigins=xOrigins.filter(o=>o.code!==x.dataset.rm);saveArr(LS_X,xOrigins);renderXChips();renderCross();});}
+
+document.getElementById("cmpW").addEventListener("input",function(){
+  cmpWeight=(+this.value)/100;
+  document.getElementById("cmpWlab").textContent=
+    cmpWeight<0.34?"priorité prix":(cmpWeight>0.66?"priorité durée":"équilibre");
+  renderCompare();
+});
+document.getElementById("xSort").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#xSort button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+  xSort=b.dataset.sort;renderCross();});
+
+function normVals(arr,get){const v=arr.map(get).filter(x=>x!=null);
+  const mn=Math.min(...v),mx=Math.max(...v);
+  return x=>x==null?1:(mx===mn?0:(x-mn)/(mx-mn));}
+
+async function renderCompare(){
+  const box=document.getElementById("dests");
+  document.getElementById("destCount").textContent=cmpOrigins.length+" départ"+(cmpOrigins.length>1?"s":"");
+  if(!cmpOrigins.length){box.innerHTML='<div class="empty">Ajoute au moins un aéroport de départ à comparer.</div>';return;}
+  box.innerHTML='<div class="empty">calcul des dessertes au meilleur prix…</div>';
+  const maps=await Promise.all(cmpOrigins.map(o=>anywhereFor(o.code)));
+  // meilleure offre par destination, tous départs confondus
+  const best={};
+  maps.forEach((m,i)=>{const code=cmpOrigins[i].code;
+    for(const d in m){const c=m[d];
+      if(!best[d]||c.price<best[d].price)
+        best[d]={dest:d,price:c.price,dur:c.dur,transfers:c.transfers,from:code,fromCity:cmpOrigins[i].city,link:c.link};}});
+  let rows=Object.values(best).filter(r=>passStops(r.transfers));
+  if(!rows.length){box.innerHTML='<div class="empty">Aucune desserte trouvée pour ces départs à ces dates.</div>';return;}
+  const pN=normVals(rows,r=>r.price),dN=normVals(rows,r=>r.dur);
+  rows.forEach(r=>r.score=(1-cmpWeight)*pN(r.price)+cmpWeight*dN(r.dur));
+  rows.sort((a,b)=>stopRank(a.transfers)-stopRank(b.transfers)||a.score-b.score);  // directs d'abord, puis score
+  box.innerHTML=rows.slice(0,40).map(r=>{
+    const nm=NAMES[r.dest]||r.dest;
+    const dur=r.dur!=null?`<span class="cbadge dur">${fmtDur(r.dur)}</span>`:"";
+    const dirB=r.transfers===0?`<span class="cbadge dir">direct</span>`:(r.transfers!=null?`<span class="cbadge">${r.transfers} esc</span>`:"");
+    return `<div class="cmpcard${r.transfers===0?" direct":""}">
+      <div class="ctop"><div class="cdest">${nm}<span class="iata" style="margin-left:7px">${r.dest}</span></div>
+        <div class="cprice">${r.price} €</div></div>
+      <div class="cvia">meilleur départ : ${r.from} · ${r.fromCity}</div>
+      <div class="cmeta">${dirB}${dur}<span class="cbadge best">score ${(100-Math.round(r.score*100))}/100</span></div>
+      ${r.link?`<a class="cgo" href="${r.link}" target="_blank" rel="noopener">Voir l'offre →</a>`:""}
+    </div>`;}).join("");
+}
+
+async function renderCross(){
+  const box=document.getElementById("dests");
+  document.getElementById("destCount").textContent=xOrigins.length+" voyageur"+(xOrigins.length>1?"s":"");
+  if(xOrigins.length<2){box.innerHTML='<div class="empty">Ajoute 2 à 3 voyageurs (chacun son aéroport) pour trouver un point de rendez-vous.</div>';return;}
+  box.innerHTML='<div class="empty">recherche des destinations communes…</div>';
+  const maps=await Promise.all(xOrigins.map(o=>anywhereFor(o.code)));
+  // intersection des destinations desservies par tous
+  let common=Object.keys(maps[0]||{});
+  for(let i=1;i<maps.length;i++)common=common.filter(d=>maps[i][d]);
+  common=common.filter(d=>!xOrigins.some(o=>o.code===d)); // pas la ville d'un voyageur
+  if(!common.length){box.innerHTML='<div class="empty">Aucune destination commune trouvée. Élargis les dates ou change un départ.</div>';return;}
+  const rows=common.map(d=>{
+    const legs=xOrigins.map((o,i)=>({code:o.code,city:o.city,price:maps[i][d].price,dur:maps[i][d].dur}));
+    const prices=legs.map(l=>l.price), durs=legs.map(l=>l.dur).filter(x=>x!=null);
+    return {dest:d,legs,total:prices.reduce((a,b)=>a+b,0),
+      spread:Math.max(...prices)-Math.min(...prices),
+      avgDur:durs.length?durs.reduce((a,b)=>a+b,0)/durs.length:null};
+  });
+  rows.sort((a,b)=>{
+    if(xSort==="total")return a.total-b.total;
+    if(xSort==="equity")return a.spread-b.spread||a.total-b.total;
+    return (a.avgDur??1e9)-(b.avgDur??1e9);
+  });
+  box.innerHTML=rows.slice(0,30).map(r=>{
+    const nm=NAMES[r.dest]||r.dest;
+    const legs=r.legs.map(l=>`<div class="xleg"><span class="xo">${l.code} · ${l.city}</span>
+      <span class="xp">${l.price} €</span><span class="xd">${l.dur!=null?fmtDur(l.dur):"—"}</span></div>`).join("");
+    return `<div class="xcard">
+      <div class="xhd"><div class="xdest">${nm}<span class="iata" style="margin-left:7px">${r.dest}</span></div>
+        <div class="xtot">${r.total} €</div></div>
+      ${legs}
+      <div class="xmetrics">écart entre voyageurs : ${r.spread} €${r.avgDur!=null?" · durée moyenne "+fmtDur(Math.round(r.avgDur)):""}</div>
+    </div>`;}).join("");
+}
+
+/* ================= LOCATION DE VOITURE (Discover Cars) ================= */
+// Marker optionnel : dès que tu as ton n° Travelpayouts, colle-le ici pour affilier les liens.
+const DISCOVERCARS_MARKER = "";           // ex. "123456"
+const DISCOVERCARS_PROGRAM = "";          // ex. id programme tp.media, si connu
+function carURL(city,ci,co){
+  const base="https://www.discovercars.com/?"+new URLSearchParams(
+    {location:city||"",pickupDate:ci||"",returnDate:co||""}).toString();
+  if(DISCOVERCARS_MARKER){
+    const u=new URLSearchParams({marker:DISCOVERCARS_MARKER,u:base});
+    if(DISCOVERCARS_PROGRAM)u.set("p",DISCOVERCARS_PROGRAM);
+    return "https://tp.media/r?"+u.toString();
+  }
+  return base;
+}
+function refreshCarLink(){
+  const el=document.getElementById("carLink"); if(!el)return;
+  const t=hotelTarget(),d=hotelDates();
+  el.href=carURL(t?t.q:"",d.ci,d.co);
+}
+
+/* ================= MODE SÉJOUR (vol + hôtel) ================= */
+async function renderStay(){
+  const box=document.getElementById("dests"),list=currentList().slice(0,8);
+  document.getElementById("destCount").textContent=origin?`${list.length} · vol + hôtel`:"choisis un départ";
+  if(!origin||!dep){box.innerHTML=`<div class="empty">Choisis un aéroport de départ et au moins une date d'aller.</div>`;return;}
+  const d=hotelDates(),nights=nightsBetween(d.ci,d.co);
+  box.innerHTML=list.map((x,i)=>`
+    <div class="dest">
+      <div class="info">
+        <div class="name">${x.n}<span class="iata">${x.i}</span></div>
+        <div class="meta"><span class="dur">${x.min!=null?fmtDur(x.min):""}</span>
+          <span class="price show loading" data-stayf="${x.i}">vol …</span></div>
+        <span class="stayline" data-stayh="${x.i}">hôtel …</span>
+        <span class="stayline" data-stayt="${x.i}"></span>
+      </div>
+      <button class="go" data-i="${i}">Chercher</button>
+    </div>`).join("");
+  box.querySelectorAll(".go").forEach(b=>b.onclick=()=>window.open(skyURL(list[+b.dataset.i].i),"_blank"));
+  syncButtons();
+
+  for(const x of list){
+    let vol=null,nuit=null;
+    try{
+      let u=`${API_BASE}/api/prices?origin=${origin.code}&destination=${x.i}&depart=${dep}`;
+      if(!oneWay&&ret)u+=`&return=${ret}`;
+      const j=await (await fetch(u)).json(); vol=j&&j.price?j.price:null;
+    }catch(_){}
+    const fe=document.querySelector(`[data-stayf="${x.i}"]`);
+    if(fe){fe.className="price show";fe.textContent=vol?`vol ≈ ${vol} €`:"vol —";}
+    try{
+      const p=hotelParams({lat:x.lat,lng:x.lng},d);p.set("location",x.n);p.set("limit","5");
+      const j=await (await fetch(`${API_BASE}/api/hotels?${p}`)).json();
+      const best=j.hotels&&j.hotels[0]; nuit=best?best.pricePerNight:null;
+    }catch(_){}
+    const he=document.querySelector(`[data-stayh="${x.i}"]`);
+    if(he)he.innerHTML=nuit?`hôtel dès ${nuit} €/nuit × ${nights} = ${nuit*nights} €`:"hôtel —";
+    const te=document.querySelector(`[data-stayt="${x.i}"]`);
+    if(te&&vol&&nuit)te.innerHTML=`<b>séjour ≈ ${vol+nuit*nights} €</b> pour ${nights} nuit${nights>1?"s":""}`;
+  }
+}
+
 /* ================= MODE « N'IMPORTE OÙ » ================= */
 let anywhereData=[], anywhereKey="", anywhereLoading=false, anyReqId=0;
 function monthForAnywhere(){ return dep ? dep.slice(0,7) : iso(view).slice(0,7); }
@@ -1187,11 +1749,13 @@ function renderAnywhere(){
   if(!origin){box.innerHTML=`<div class="empty">Choisis d'abord un aéroport de départ.</div>`;return;}
   if(anywhereLoading){box.innerHTML=`<div class="empty">Recherche des meilleurs prix vers toutes les destinations…</div>`;return;}
   let list=anywhereData.filter(o=>o.duration_to==null?true:inBand(o.duration_to));
-  if(!list.length){box.innerHTML=`<div class="empty">Aucun tarif en cache depuis ${origin.city} pour ${monthForAnywhere()} (essaie un autre mois, ou déploie /api).</div>`;return;}
+  list=list.filter(o=>passStops(o.transfers));
+  list.sort((a,b)=>stopRank(a.transfers)-stopRank(b.transfers));   // directs en tête, prix conservé sinon
+  if(!list.length){box.innerHTML=`<div class="empty">Aucun vol ${stops==="direct"?"direct ":""}en cache depuis ${origin.city} pour ${monthForAnywhere()} (essaie un autre mois/filtre).</div>`;return;}
   list=list.slice(0,60);
   box.innerHTML=list.map((o,idx)=>{
     const name=NAMES[o.destination]||o.destination;
-    const tr=o.transfers===0?"direct":(o.transfers!=null?o.transfers+" esc":"");
+    const tr=o.transfers===0?'<span class="drc">direct</span>':(o.transfers!=null?o.transfers+" esc":"");
     const durTxt=o.duration_to!=null?fmtDur(o.duration_to):"";
     const price="≈ "+o.price+" €"+(tr?" · "+tr:"");
     const priceHtml=o.link?`<a href="${o.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${price}</a>`:price;
