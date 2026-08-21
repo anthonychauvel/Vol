@@ -53,6 +53,52 @@
   .chip{background:#16303c;border:1px solid var(--line);border-radius:999px;
     padding:3px 9px;font-size:11.5px;color:var(--ink)}
 
+  /* --- sélecteur d'aéroports --- */
+  .aptsearch{position:relative;margin-bottom:9px}
+  .aptsearch input{width:100%;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:11px;color:var(--ink);font-family:var(--sans);font-size:14px;
+    padding:10px 34px 10px 12px;outline:none}
+  .aptsearch input:focus{border-color:var(--amber)}
+  .aptsearch input::placeholder{color:#5c7c88}
+  .aptsearch .clr{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+    background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;display:none}
+  .aptsearch .clr.show{display:block}
+  .regions{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:9px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .regions::-webkit-scrollbar{display:none}
+  .rg{flex:0 0 auto;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;
+    padding:6px 12px;font-size:12px;color:var(--muted);cursor:pointer;white-space:nowrap;transition:.12s}
+  .rg.on{border-color:var(--amber);color:var(--amber);background:var(--amber-dim)}
+  .aptscroll{max-height:302px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    border:1px solid var(--line);border-radius:12px;padding:9px;background:var(--panel-2)}
+  .grp{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:9px 0 6px;padding-left:2px}
+  .grp:first-child{margin-top:0}
+  .airports{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .apt{position:relative}
+  .apt .star{position:absolute;top:2px;right:3px;font-size:11px;line-height:1;color:#3d5763;
+    padding:3px;cursor:pointer;z-index:2}
+  .apt .star.on{color:var(--amber)}
+  .apt.small .code{font-size:16px}
+  .apt .tag{font-size:8.5px;color:#4d6f7c;font-family:var(--mono);letter-spacing:.06em}
+  .aptnone{color:var(--muted);font-size:12.5px;font-style:italic;padding:14px;text-align:center}
+  .aptcount{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:7px;text-align:right}
+
+  /* --- prix live --- */
+  .live{flex-shrink:0;background:var(--panel-2);border:1px solid var(--line);color:var(--amber);
+    border-radius:10px;padding:10px 11px;font-size:14px;cursor:pointer;line-height:1}
+  .live:disabled{opacity:.35;cursor:not-allowed}
+  .live.busy{color:var(--muted)}
+  .pricelive{font-family:var(--mono);font-size:12px;font-weight:700;color:#ffd27a;display:block;margin-top:3px}
+  .pricelive .lvl{font-weight:400;color:var(--muted)}
+  .livebar{display:flex;align-items:center;gap:9px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:11px;padding:9px 11px;margin-bottom:11px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+  .livebar button{background:var(--amber);color:#1a1305;border:none;border-radius:9px;
+    padding:7px 12px;font-weight:700;font-size:12.5px;cursor:pointer;font-family:var(--sans)}
+  .livebar button:disabled{background:#2a3b44;color:var(--muted);cursor:not-allowed}
+  .livebar .res{color:#ffd27a;font-family:var(--mono);font-weight:700}
+  .quota{font-family:var(--mono);font-size:10px;color:#4d6f7c;margin-left:auto}
+
   /* segmented toggle */
   .seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--line);
     border-radius:999px;padding:3px;gap:3px;margin-bottom:12px}
@@ -165,8 +211,15 @@
   </header>
 
   <section>
-    <div class="step"><b>01</b><h2>Aéroport de départ</h2></div>
-    <div class="airports" id="airports"></div>
+    <div class="step"><b>01</b><h2>Aéroport de départ</h2><small id="aptSel">—</small></div>
+    <div class="aptsearch">
+      <input id="aptSearch" type="search" inputmode="search" autocomplete="off"
+             placeholder="Chercher : ville, code IATA, département…">
+      <button class="clr" id="aptClear" aria-label="Effacer">×</button>
+    </div>
+    <div class="regions" id="regions"></div>
+    <div class="aptscroll"><div id="aptGroups"></div></div>
+    <div class="aptcount" id="aptCount"></div>
     <div class="airlines" id="airlines"><div class="a-hd" id="alHd">Compagnies</div><div class="chips" id="chips"></div></div>
   </section>
 
@@ -219,7 +272,7 @@
     </div>
     <div class="dests" id="dests"></div>
     <div class="note">
-      <b>Touche une destination</b> pour ouvrir son <b>calendrier de prix</b> : chaque jour est coloré du moins cher (vert) au plus cher (rouge), et les jours <b>en vert entouré = vol direct</b> (le plus court). <b>Durées</b> estimées à vol d'oiseau ; <b>prix</b> indicatifs (cache Aviasales ≤ 7 j). Le bouton <b>Chercher</b> ouvre Skyscanner pour le prix ferme. Prix et calendrier n'apparaissent qu'une fois /api déployé avec ton token.
+      <b>Touche une destination</b> pour ouvrir son <b>calendrier de prix</b> : chaque jour est coloré du moins cher (vert) au plus cher (rouge), et les jours <b>en vert entouré = vol direct</b> (le plus court). <b>Durées</b> estimées à vol d'oiseau ; <b>prix</b> indicatifs (cache Aviasales ≤ 7 j). Le bouton <b>Chercher</b> ouvre Skyscanner pour le prix ferme. Le bouton <b>⚡</b> (si la clé SerpApi est branchée) va chercher le <b>tarif réel du moment</b> sur Google Flights — quota limité, donc uniquement sur appui.
     </div>
   </section>
 
@@ -234,6 +287,11 @@
       <button class="ov-close" id="ovClose" aria-label="Fermer">×</button>
     </div>
     <div class="ov-sub" id="ovSub"></div>
+    <div class="livebar" id="ovLiveBar" style="display:none">
+      <button id="ovLiveBtn">⚡ Prix live</button>
+      <span id="ovLiveRes">tarif réel Google Flights pour les dates choisies</span>
+      <span class="quota" id="ovQuota"></span>
+    </div>
     <div class="pcal-top">
       <button id="pPrev" aria-label="Mois précédent">‹</button>
       <div class="ml" id="pLabel"></div>
@@ -250,16 +308,116 @@
 <script>
 /* ================= DONNÉES ================= */
 const AIRPORTS = [
-  {code:"NTE",city:"Nantes",lat:47.157,lng:-1.611,al:["easyJet","Ryanair","Volotea","Transavia","Vueling","Air France","Aer Lingus","TUI fly"]},
-  {code:"RNS",city:"Rennes",lat:48.069,lng:-1.734,al:["Volotea","Air France","Transavia","Ryanair","Aer Lingus","Chalair"]},
-  {code:"BES",city:"Brest",lat:48.448,lng:-4.418,al:["Volotea","Air France","Ryanair","easyJet","Chalair","TUI fly"]},
-  {code:"CDG",city:"Paris CDG",lat:49.010,lng:2.548,al:["Air France","easyJet","Vueling","Transavia","+ majors"]},
-  {code:"ORY",city:"Paris Orly",lat:48.726,lng:2.365,al:["Transavia","Vueling","easyJet","Air France","ITA"]},
-  {code:"BVA",city:"Beauvais",lat:49.454,lng:2.113,al:["Ryanair","Wizz Air"]},
-  {code:"BRU",city:"Brux.-Zaventem",lat:50.901,lng:4.484,al:["Brussels Airlines","Ryanair","easyJet","TUI fly","Vueling"]},
-  {code:"CRL",city:"Brux.-Charleroi",lat:50.459,lng:4.454,al:["Ryanair","Wizz Air","TUI fly"]},
-  {code:"AMS",city:"Amsterdam",lat:52.310,lng:4.768,al:["KLM","Transavia","easyJet","Vueling","TUI fly"]}
+  /* ---- Île-de-France ---- */
+  {code:"CDG",city:"Paris CDG",r:"idf",lat:49.0097,lng:2.5479,al:["Air France","easyJet","Vueling","Transavia","Wizz Air","+ majors long-courrier"]},
+  {code:"ORY",city:"Paris Orly",r:"idf",lat:48.7233,lng:2.3794,al:["Transavia","Air France","Vueling","easyJet","ITA Airways","Air Corsica"]},
+  {code:"BVA",city:"Beauvais",r:"idf",lat:49.4544,lng:2.1128,al:["Ryanair","Wizz Air"]},
+
+  /* ---- Grand Ouest ---- */
+  {code:"NTE",city:"Nantes",r:"ouest",lat:47.1532,lng:-1.6107,al:["easyJet","Ryanair","Volotea","Transavia","Vueling","Air France","Aer Lingus","TUI fly"]},
+  {code:"RNS",city:"Rennes",r:"ouest",lat:48.0695,lng:-1.7348,al:["Volotea","Air France","Transavia","Ryanair","Chalair"]},
+  {code:"BES",city:"Brest",r:"ouest",lat:48.4479,lng:-4.4185,al:["Volotea","Air France","Ryanair","easyJet","Chalair"]},
+  {code:"LRT",city:"Lorient",r:"ouest",lat:47.7606,lng:-3.4400,al:["Chalair","Volotea"]},
+  {code:"UIP",city:"Quimper",r:"ouest",lat:47.9750,lng:-4.1678,al:["Chalair"]},
+  {code:"DNR",city:"Dinard",r:"ouest",lat:48.5877,lng:-2.0800,al:["Ryanair"]},
+  {code:"LRH",city:"La Rochelle",r:"ouest",lat:46.1792,lng:-1.1953,al:["Ryanair","easyJet","Transavia","Jet2"]},
+  {code:"ANE",city:"Angers",r:"ouest",lat:47.5603,lng:-0.3122,sm:1},
+  {code:"PIS",city:"Poitiers",r:"ouest",lat:46.5877,lng:0.3067,al:["Ryanair"]},
+
+  /* ---- Nord & Normandie ---- */
+  {code:"LIL",city:"Lille",r:"nord",lat:50.5633,lng:3.0894,al:["Transavia","easyJet","Volotea","Ryanair","Air France","TUI fly"]},
+  {code:"CFR",city:"Caen",r:"nord",lat:49.1733,lng:-0.4500,al:["Volotea","Chalair"]},
+  {code:"DOL",city:"Deauville",r:"nord",lat:49.3653,lng:0.1546,al:["Transavia","Ryanair"],sm:1},
+  {code:"CER",city:"Cherbourg",r:"nord",lat:49.6500,lng:-1.4703,sm:1},
+  {code:"LTQ",city:"Le Touquet",r:"nord",lat:50.5174,lng:1.6206,sm:1},
+  {code:"XCR",city:"Vatry",r:"nord",lat:48.7761,lng:4.1842,sm:1},
+
+  /* ---- Grand Est & Bourgogne ---- */
+  {code:"SXB",city:"Strasbourg",r:"est",lat:48.5383,lng:7.6282,al:["Air France","Volotea","Transavia","Ryanair","TUI fly"]},
+  {code:"BSL",city:"Bâle-Mulhouse",r:"est",lat:47.5896,lng:7.5299,al:["easyJet","Wizz Air","Ryanair","Air France","Transavia"]},
+  {code:"ETZ",city:"Metz-Nancy",r:"est",lat:48.9821,lng:6.2513,al:["Volotea","Transavia","Air Algérie"]},
+  {code:"DLE",city:"Dole-Jura",r:"est",lat:47.0390,lng:5.4272,al:["Ryanair"],sm:1},
+  {code:"DIJ",city:"Dijon",r:"est",lat:47.2689,lng:5.0900,sm:1},
+
+  /* ---- Alpes & Rhône ---- */
+  {code:"LYS",city:"Lyon",r:"alpes",lat:45.7256,lng:5.0811,al:["Air France","easyJet","Transavia","Volotea","Vueling","Ryanair","TUI fly"]},
+  {code:"GNB",city:"Grenoble",r:"alpes",lat:45.3629,lng:5.3294,al:["Ryanair","easyJet","Transavia","Jet2"],sm:1},
+  {code:"CMF",city:"Chambéry",r:"alpes",lat:45.6381,lng:5.8800,al:["easyJet","Jet2","British Airways"],sm:1},
+  {code:"NCY",city:"Annecy",r:"alpes",lat:45.9308,lng:6.1064,sm:1},
+  {code:"EBU",city:"Saint-Étienne",r:"alpes",lat:45.5405,lng:4.2963,sm:1},
+
+  /* ---- Centre & Auvergne ---- */
+  {code:"CFE",city:"Clermont-Fd",r:"centre",lat:45.7867,lng:3.1692,al:["Air France","Volotea","Transavia","Ryanair"]},
+  {code:"TUF",city:"Tours",r:"centre",lat:47.4322,lng:0.7276,al:["Ryanair"],sm:1},
+  {code:"LIG",city:"Limoges",r:"centre",lat:45.8628,lng:1.1794,al:["Ryanair","easyJet"]},
+  {code:"BVE",city:"Brive",r:"centre",lat:45.0397,lng:1.4856,al:["Air France","Ryanair"],sm:1},
+  {code:"AUR",city:"Aurillac",r:"centre",lat:44.8914,lng:2.4219,sm:1},
+  {code:"LPY",city:"Le Puy",r:"centre",lat:45.0807,lng:3.7629,sm:1},
+
+  /* ---- Sud-Ouest ---- */
+  {code:"BOD",city:"Bordeaux",r:"so",lat:44.8283,lng:-0.7156,al:["easyJet","Ryanair","Volotea","Transavia","Air France","Vueling","TUI fly"]},
+  {code:"TLS",city:"Toulouse",r:"so",lat:43.6293,lng:1.3638,al:["Air France","easyJet","Ryanair","Volotea","Transavia","Vueling","TUI fly"]},
+  {code:"BIQ",city:"Biarritz",r:"so",lat:43.4684,lng:-1.5233,al:["Air France","Ryanair","Volotea","easyJet","Transavia"]},
+  {code:"PUF",city:"Pau",r:"so",lat:43.3800,lng:-0.4186,al:["Air France","Ryanair","Volotea"]},
+  {code:"LDE",city:"Tarbes-Lourdes",r:"so",lat:43.1787,lng:-0.0064,al:["Air France","Ryanair"],sm:1},
+  {code:"EGC",city:"Bergerac",r:"so",lat:44.8253,lng:0.5186,al:["Ryanair","Jet2","Transavia"],sm:1},
+  {code:"AGF",city:"Agen",r:"so",lat:44.1747,lng:0.5906,sm:1},
+  {code:"RDZ",city:"Rodez",r:"so",lat:44.4079,lng:2.4826,al:["Air France","Ryanair"],sm:1},
+  {code:"DCM",city:"Castres",r:"so",lat:43.5563,lng:2.2892,sm:1},
+
+  /* ---- Méditerranée ---- */
+  {code:"MRS",city:"Marseille",r:"med",lat:43.4393,lng:5.2214,al:["Ryanair","Air France","Volotea","Transavia","easyJet","Vueling","Air Corsica"]},
+  {code:"NCE",city:"Nice",r:"med",lat:43.6584,lng:7.2159,al:["easyJet","Air France","Transavia","Vueling","Ryanair","British Airways"]},
+  {code:"MPL",city:"Montpellier",r:"med",lat:43.5762,lng:3.9630,al:["Air France","Transavia","Volotea","Ryanair","easyJet"]},
+  {code:"TLN",city:"Toulon-Hyères",r:"med",lat:43.0973,lng:6.1460,al:["Air France","Transavia","Volotea"],sm:1},
+  {code:"PGF",city:"Perpignan",r:"med",lat:42.7404,lng:2.8707,al:["Air France","Volotea","Ryanair"],sm:1},
+  {code:"NIM",city:"Nîmes",r:"med",lat:43.7574,lng:4.4163,al:["Ryanair","Volotea"],sm:1},
+  {code:"BZR",city:"Béziers",r:"med",lat:43.3235,lng:3.3540,al:["Ryanair","Volotea"],sm:1},
+  {code:"CCF",city:"Carcassonne",r:"med",lat:43.2160,lng:2.3063,al:["Ryanair"],sm:1},
+  {code:"AVN",city:"Avignon",r:"med",lat:43.9073,lng:4.9018,sm:1},
+
+  /* ---- Corse ---- */
+  {code:"AJA",city:"Ajaccio",r:"corse",lat:41.9236,lng:8.8029,al:["Air Corsica","Air France","Volotea","easyJet","Transavia"]},
+  {code:"BIA",city:"Bastia",r:"corse",lat:42.5527,lng:9.4837,al:["Air Corsica","Air France","Volotea","easyJet","Transavia"]},
+  {code:"CLY",city:"Calvi",r:"corse",lat:42.5306,lng:8.7931,al:["Air Corsica","Volotea","Transavia"],sm:1},
+  {code:"FSC",city:"Figari",r:"corse",lat:41.5006,lng:9.0978,al:["Air Corsica","Volotea","Transavia","easyJet"],sm:1},
+
+  /* ---- Outre-mer ---- */
+  {code:"PTP",city:"Pointe-à-Pitre",r:"dom",lat:16.2653,lng:-61.5316,al:["Air France","Air Caraïbes","Corsair","French bee","Air Antilles"]},
+  {code:"FDF",city:"Fort-de-France",r:"dom",lat:14.5910,lng:-61.0032,al:["Air France","Air Caraïbes","Corsair","French bee"]},
+  {code:"CAY",city:"Cayenne",r:"dom",lat:4.8198,lng:-52.3604,al:["Air France","Air Caraïbes","Corsair"]},
+  {code:"RUN",city:"La Réunion",r:"dom",lat:-20.8871,lng:55.5103,al:["Air France","Air Austral","Corsair","French bee"]},
+  {code:"ZSE",city:"St-Pierre (RUN)",r:"dom",lat:-21.3209,lng:55.4250,al:["Air Austral","Ewa Air"],sm:1},
+  {code:"DZA",city:"Mayotte",r:"dom",lat:-12.8047,lng:45.2811,al:["Air Austral","Ewa Air","Corsair"]},
+  {code:"NOU",city:"Nouméa",r:"dom",lat:-22.0146,lng:166.2130,al:["Aircalin","Air France","Qantas"]},
+  {code:"PPT",city:"Papeete",r:"dom",lat:-17.5537,lng:-149.6070,al:["Air Tahiti Nui","Air France","French bee","Air New Zealand"]},
+  {code:"SFG",city:"Saint-Martin",r:"dom",lat:18.0999,lng:-63.0472,al:["Air Antilles","Winair"],sm:1},
+  {code:"SBH",city:"Saint-Barth",r:"dom",lat:17.9044,lng:-62.8436,al:["St Barth Commuter","Winair"],sm:1},
+  {code:"FSP",city:"St-Pierre-et-Miq.",r:"dom",lat:46.7629,lng:-56.1730,al:["Air Saint-Pierre"],sm:1},
+
+  /* ---- Frontaliers (hors France) ---- */
+  {code:"BRU",city:"Brux.-Zaventem",r:"front",lat:50.9010,lng:4.4840,al:["Brussels Airlines","Ryanair","easyJet","TUI fly","Vueling"]},
+  {code:"CRL",city:"Brux.-Charleroi",r:"front",lat:50.4590,lng:4.4540,al:["Ryanair","Wizz Air","TUI fly"]},
+  {code:"AMS",city:"Amsterdam",r:"front",lat:52.3100,lng:4.7680,al:["KLM","Transavia","easyJet","Vueling","TUI fly"]},
+  {code:"LUX",city:"Luxembourg",r:"front",lat:49.6266,lng:6.2115,al:["Luxair","Ryanair","easyJet"]},
+  {code:"GVA",city:"Genève",r:"front",lat:46.2380,lng:6.1090,al:["easyJet","SWISS","Air France","Wizz Air","Vueling"]}
 ];
+const REGIONS = [
+  {k:"fav",   n:"★ Favoris"},
+  {k:"all",   n:"Tous"},
+  {k:"idf",   n:"Île-de-France"},
+  {k:"ouest", n:"Grand Ouest"},
+  {k:"nord",  n:"Nord & Normandie"},
+  {k:"est",   n:"Grand Est"},
+  {k:"alpes", n:"Alpes & Rhône"},
+  {k:"centre",n:"Centre & Auvergne"},
+  {k:"so",    n:"Sud-Ouest"},
+  {k:"med",   n:"Méditerranée"},
+  {k:"corse", n:"Corse"},
+  {k:"dom",   n:"Outre-mer"},
+  {k:"front", n:"Frontaliers"}
+];
+const RNAME={}; REGIONS.forEach(r=>RNAME[r.k]=r.n);
 const DESTS = [
   {n:"Dublin",i:"DUB",lat:53.421,lng:-6.270},{n:"Porto",i:"OPO",lat:41.248,lng:-8.681},
   {n:"Lisbonne",i:"LIS",lat:38.774,lng:-9.134},{n:"Faro",i:"FAO",lat:37.014,lng:-7.966},
@@ -317,15 +475,101 @@ function isoWeek(d){const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.get
   return 1+Math.round(((t-first)/86400000-3+((first.getUTCDay()+6)%7))/7);}
 
 /* ================= AÉROPORTS ================= */
-const aptBox=document.getElementById("airports");
-aptBox.innerHTML=AIRPORTS.map(a=>`<div class="apt" data-apt="${a.code}"><div class="code">${a.code}</div><div class="city">${a.city}</div></div>`).join("");
+const LS_FAV="ESCALE_FAV_V1", LS_ORIG="ESCALE_ORIGIN_V1";
+const DEF_FAV=["NTE","RNS","BES","CDG","ORY","BVA"];
+let favs=[]; try{favs=JSON.parse(localStorage.getItem(LS_FAV))||DEF_FAV.slice();}catch(_){favs=DEF_FAV.slice();}
+if(!Array.isArray(favs)||!favs.length)favs=DEF_FAV.slice();
+function saveFavs(){try{localStorage.setItem(LS_FAV,JSON.stringify(favs));}catch(_){}}
+
+let aptRegion = "fav", aptQuery = "";
+const aptGroups=document.getElementById("aptGroups"), regionsBox=document.getElementById("regions");
+const searchEl=document.getElementById("aptSearch"), clearEl=document.getElementById("aptClear");
 const chips=document.getElementById("chips"),alBox=document.getElementById("airlines"),alHd=document.getElementById("alHd");
-aptBox.querySelectorAll(".apt").forEach(el=>{el.onclick=()=>{
-  aptBox.querySelectorAll(".apt").forEach(x=>x.classList.remove("on"));el.classList.add("on");
-  origin=AIRPORTS.find(a=>a.code===el.dataset.apt);
-  alHd.textContent="Compagnies au départ de "+origin.city;
-  chips.innerHTML=origin.al.map(a=>`<span class="chip">${a}</span>`).join("");
-  alBox.classList.add("show");renderDispatch();refresh();};});
+
+function norm(x){return (x||"").toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();}
+
+regionsBox.innerHTML=REGIONS.map(r=>`<div class="rg${r.k===aptRegion?" on":""}" data-rg="${r.k}">${r.n}</div>`).join("");
+regionsBox.querySelectorAll(".rg").forEach(el=>el.onclick=()=>{
+  aptRegion=el.dataset.rg;
+  regionsBox.querySelectorAll(".rg").forEach(x=>x.classList.toggle("on",x===el));
+  renderAirports();
+});
+
+searchEl.addEventListener("input",()=>{
+  aptQuery=searchEl.value.trim();
+  clearEl.classList.toggle("show",!!aptQuery);
+  renderAirports();
+});
+clearEl.onclick=()=>{searchEl.value="";aptQuery="";clearEl.classList.remove("show");renderAirports();searchEl.focus();};
+
+function aptTile(a){
+  const on=origin&&origin.code===a.code;
+  const star=favs.includes(a.code)?"★":"☆";
+  return `<div class="apt${on?" on":""}${a.sm?" small":""}" data-apt="${a.code}">
+    <span class="star${favs.includes(a.code)?" on":""}" data-fav="${a.code}">${star}</span>
+    <div class="code">${a.code}</div><div class="city">${a.city}</div>
+    ${a.sm?'<div class="tag">saisonnier</div>':''}</div>`;
+}
+
+function renderAirports(){
+  let list;
+  if(aptQuery){
+    const q=norm(aptQuery);
+    list=AIRPORTS.filter(a=>norm(a.code).includes(q)||norm(a.city).includes(q)||norm(RNAME[a.r]).includes(q));
+  }else if(aptRegion==="fav"){
+    list=AIRPORTS.filter(a=>favs.includes(a.code));
+  }else if(aptRegion==="all"){
+    list=AIRPORTS.slice();
+  }else{
+    list=AIRPORTS.filter(a=>a.r===aptRegion);
+  }
+
+  if(!list.length){
+    aptGroups.innerHTML=`<div class="aptnone">Aucun aéroport ne correspond${aptQuery?' à « '+aptQuery+' »':''}.</div>`;
+  }else if(aptQuery||aptRegion==="all"){
+    // groupé par région
+    let html="";
+    REGIONS.filter(r=>r.k!=="fav"&&r.k!=="all").forEach(r=>{
+      const sub=list.filter(a=>a.r===r.k);
+      if(!sub.length)return;
+      html+=`<div class="grp">${r.n}</div><div class="airports">${sub.map(aptTile).join("")}</div>`;
+    });
+    aptGroups.innerHTML=html;
+  }else{
+    aptGroups.innerHTML=`<div class="airports">${list.map(aptTile).join("")}</div>`;
+  }
+
+  document.getElementById("aptCount").textContent=
+    list.length+" aéroport"+(list.length>1?"s":"")+" · "+AIRPORTS.length+" au total";
+
+  aptGroups.querySelectorAll(".star").forEach(el=>el.onclick=(ev)=>{
+    ev.stopPropagation();
+    const c=el.dataset.fav, i=favs.indexOf(c);
+    if(i>=0)favs.splice(i,1); else favs.push(c);
+    saveFavs();renderAirports();
+  });
+  aptGroups.querySelectorAll(".apt").forEach(el=>el.onclick=()=>selectApt(el.dataset.apt));
+}
+
+function selectApt(code){
+  const a=AIRPORTS.find(x=>x.code===code); if(!a)return;
+  origin=a;
+  try{localStorage.setItem(LS_ORIG,code);}catch(_){}
+  document.getElementById("aptSel").textContent=a.code+" · "+a.city;
+  alHd.textContent="Compagnies au départ de "+a.city;
+  if(a.al&&a.al.length){
+    chips.innerHTML=a.al.map(x=>`<span class="chip">${x}</span>`).join("")
+      +`<span class="chip" style="color:var(--muted);background:none;border-style:dashed">indicatif</span>`;
+  }else{
+    chips.innerHTML=`<span class="chip" style="color:var(--muted)">Desserte limitée / saisonnière — vérifie les liaisons du moment sur le site de l'aéroport.</span>`;
+  }
+  alBox.classList.add("show");
+  renderAirports();renderDispatch();refresh();
+}
+
+renderAirports();
+// restaure le dernier aéroport utilisé
+try{const last=localStorage.getItem(LS_ORIG); if(last&&AIRPORTS.some(x=>x.code===last)) selectApt(last);}catch(_){}
 
 /* ================= TOGGLE TRAJET ================= */
 document.getElementById("tripSeg").querySelectorAll("button").forEach(b=>{b.onclick=()=>{
@@ -401,16 +645,21 @@ function renderDests(){
           ${d.min!=null?`<span class="dur">${fmtDur(d.min)}</span>`:`<span class="dur" style="color:var(--muted)">choisis un départ</span>`}
           <span class="price" data-price="${d.i}"></span>
         </div>
+        <span class="pricelive" data-livep="${d.i}"></span>
       </div>
+      ${LIVE_OK?`<button class="live" data-live="${idx}" title="Prix réel Google Flights" ${(!origin||!dep)?'disabled':''}>⚡</button>`:''}
       <button class="go" data-i="${idx}" ${(!origin||!dep)?'disabled':''}>Chercher</button>
     </div>`).join("");
   box.querySelectorAll(".go").forEach(b=>b.onclick=()=>window.open(skyURL(list[+b.dataset.i].i),"_blank"));
+  box.querySelectorAll(".live").forEach(b=>b.onclick=()=>runLiveRow(list[+b.dataset.live],b));
   box.querySelectorAll(".info").forEach(el=>el.onclick=()=>{
     if(!origin){document.getElementById("dateHint").classList.add("show");return;}
     openPriceCal(list[+el.dataset.open]);});
   syncButtons();
 }
-function syncButtons(){const ready=origin&&dep;document.querySelectorAll(".go").forEach(b=>b.disabled=!ready);}
+function syncButtons(){const ready=origin&&dep;
+  document.querySelectorAll(".go").forEach(b=>b.disabled=!ready);
+  document.querySelectorAll(".live").forEach(b=>b.disabled=!ready);}
 
 /* ================= PRIX LISTE ================= */
 let priceReqId=0;
@@ -447,6 +696,13 @@ function openPriceCal(d){
   document.getElementById("ovRoute").innerHTML=`${origin.code} <span class="arr">→</span> ${d.i} <span style="color:var(--muted);font-weight:500;font-size:14px">${d.n}</span>`;
   document.getElementById("ovSub").textContent=(oneWay?"Aller simple":"Aller-retour")+" · prix indicatif le moins cher par jour de départ (cache Aviasales ≤ 7 j)";
   overlay.classList.add("show");document.body.style.overflow="hidden";
+  const bar=document.getElementById("ovLiveBar");
+  bar.style.display=LIVE_OK?"flex":"none";
+  document.getElementById("ovLiveRes").textContent=dep
+    ? "tarif réel Google Flights pour les dates choisies"
+    : "choisis d'abord une date de départ";
+  document.getElementById("ovLiveBtn").disabled=!dep;
+  paintQuota();
   loadPriceCal();
 }
 function closeCal(){overlay.classList.remove("show");document.body.style.overflow="";}
@@ -503,6 +759,78 @@ function pickFromCal(ds){
   document.getElementById("dests").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
+/* ================= PRIX LIVE (Google Flights via SerpApi) ================= */
+/* Chaque appel consomme 1 crédit du quota SerpApi (250/mois en gratuit).
+   → jamais automatique : uniquement sur appui du bouton ⚡.
+   Le serveur met en cache 6 h : re-cliquer la même route/dates ne coûte rien. */
+let LIVE_OK=false;
+const LS_LIVE="ESCALE_LIVE_USAGE_V1";
+function quota(){
+  const m=new Date().toISOString().slice(0,7);
+  let o={month:m,n:0};
+  try{const raw=JSON.parse(localStorage.getItem(LS_LIVE)); if(raw&&raw.month===m)o=raw;}catch(_){}
+  return o;
+}
+function bumpQuota(){
+  const o=quota();o.n++;
+  try{localStorage.setItem(LS_LIVE,JSON.stringify(o));}catch(_){}
+  paintQuota();
+}
+function paintQuota(){
+  const o=quota(),el=document.getElementById("ovQuota");
+  if(el)el.textContent=o.n+" appel"+(o.n>1?"s":"")+" live ce mois-ci";
+}
+async function askLive(destCode){
+  let u=`${API_BASE}/api/live?origin=${origin.code}&destination=${destCode}&depart=${dep}`;
+  if(!oneWay&&ret)u+=`&return=${ret}`;
+  const r=await fetch(u);
+  const j=await r.json();
+  if(!j.cached)bumpQuota();
+  return j;
+}
+function liveLabel(j){
+  if(!j||j.price==null)return null;
+  const st=j.stops===0?"direct":(j.stops!=null?j.stops+" esc":"");
+  const dur=j.duration!=null?fmtDur(j.duration):"";
+  const al=(j.airlines||[]).slice(0,2).join(" + ");
+  const lvl={low:"prix bas",typical:"prix normal",high:"prix élevé"}[j.insights&&j.insights.level]||"";
+  return `⚡ ${j.price} € ${[al,st,dur].filter(Boolean).join(" · ")}`
+       + (lvl?` <span class="lvl">(${lvl})</span>`:"")
+       + (j.cached?` <span class="lvl">· en cache</span>`:"");
+}
+async function runLiveRow(d,btn){
+  if(!(origin&&dep))return;
+  const el=document.querySelector(`.pricelive[data-livep="${d.i}"]`);
+  btn.classList.add("busy");btn.disabled=true;
+  if(el)el.innerHTML='<span class="lvl">recherche du tarif réel…</span>';
+  try{
+    const j=await askLive(d.i);
+    const lab=liveLabel(j);
+    if(el)el.innerHTML=lab
+      ? (j.url?`<a href="${j.url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${lab}</a>`:lab)
+      : `<span class="lvl">${j&&j.error?"prix live indisponible":"aucun vol trouvé pour ces dates"}</span>`;
+  }catch(_){ if(el)el.innerHTML='<span class="lvl">prix live indisponible</span>'; }
+  btn.classList.remove("busy");btn.disabled=false;
+}
+document.getElementById("ovLiveBtn").onclick=async function(){
+  if(!(origin&&dep&&calDest))return;
+  const btn=this,res=document.getElementById("ovLiveRes");
+  btn.disabled=true;res.textContent="recherche du tarif réel…";
+  try{
+    const j=await askLive(calDest.i),lab=liveLabel(j);
+    if(lab){
+      res.innerHTML=`<span class="res">${lab}</span>`
+        +(j.url?` — <a href="${j.url}" target="_blank" rel="noopener" style="color:var(--amber)">ouvrir</a>`:"");
+    }else res.textContent=j&&j.error?"prix live indisponible":"aucun vol trouvé pour ces dates";
+  }catch(_){res.textContent="prix live indisponible";}
+  btn.disabled=false;
+};
+// détection : la clé SerpApi est-elle branchée ?
+fetch(`${API_BASE}/api/live`).then(r=>r.json()).then(j=>{
+  LIVE_OK=!!(j&&j.configured);
+  if(LIVE_OK){paintQuota();renderDispatch();}
+}).catch(()=>{});
+
 /* ================= MODE « N'IMPORTE OÙ » ================= */
 let anywhereData=[], anywhereKey="", anywhereLoading=false, anyReqId=0;
 function monthForAnywhere(){ return dep ? dep.slice(0,7) : iso(view).slice(0,7); }
@@ -538,13 +866,18 @@ function renderAnywhere(){
           ${durTxt?`<span class="dur">${durTxt}</span>`:""}
           <span class="price show">${priceHtml}</span>
         </div>
+        <span class="pricelive" data-livep="${o.destination}"></span>
       </div>
+      ${(LIVE_OK&&dep)?`<button class="live" data-anylive="${idx}" title="Prix réel Google Flights">⚡</button>`:''}
       <button class="go" data-anygo="${idx}">Chercher</button>
     </div>`;}).join("");
   box.querySelectorAll(".go").forEach(b=>b.onclick=()=>{
     const o=list[+b.dataset.anygo];window.open(skyURL(o.destination),"_blank");});
   box.querySelectorAll(".info").forEach(el=>el.onclick=()=>{
     const o=list[+el.dataset.any];openPriceCal({i:o.destination,n:NAMES[o.destination]||o.destination});});
+  box.querySelectorAll(".live").forEach(b=>b.onclick=()=>{
+    const o=list[+b.dataset.anylive];
+    runLiveRow({i:o.destination,n:NAMES[o.destination]||o.destination},b);});
 }
 
 /* ================= RAFRAÎCHISSEMENT ================= */
