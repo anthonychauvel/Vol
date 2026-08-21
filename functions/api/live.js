@@ -131,6 +131,104 @@ function normalize(j, provider) {
   };
 }
 
+/* -------------------------------------------------- normalisation HÔTELS
+   Exclut les auberges de jeunesse / dortoirs : on veut une chambre avec
+   salle de bain privative. Trois leviers cumulés :
+     · hotel_class=2,3,4,5  → les auberges, sans classement, sortent d'office
+     · type "vacation rental" écarté
+     · filet de sécurité sur le nom (hostel, auberge de jeunesse, dortoir…) */
+const DORM_RE = /\b(hostel|hostels|auberge de jeunesse|backpacker|backpackers|dormitor|dorm\b|youth hostel|jugendherberge|ostello|albergue)\b/i;
+
+function hav(a, b) {
+  const R = 6371, rad = x => x * Math.PI / 180;
+  const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  const s = Math.sin(dLat / 2) ** 2
+          + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+function normalizeHotels(j, provider, opts) {
+  const centre = opts.centre, maxKm = opts.maxKm, privateOnly = opts.privateOnly;
+  const props = [].concat(j?.properties || []);
+  let dropped = { dortoirs: 0, tropLoin: 0, locations: 0 };
+
+  const out = props.map(x => {
+    const g = x.gps_coordinates || {};
+    const lat = typeof g.latitude === "number" ? g.latitude : null;
+    const lng = typeof g.longitude === "number" ? g.longitude : null;
+    const perNight = x.rate_per_night?.extracted_lowest ?? null;
+    const total = x.total_rate?.extracted_lowest ?? null;
+    return {
+      name: x.name || "Hébergement",
+      type: x.type || "hotel",
+      stars: x.extracted_hotel_class ?? null,
+      rating: typeof x.overall_rating === "number" ? Math.round(x.overall_rating * 10) / 10 : null,
+      reviews: x.reviews ?? null,
+      locationRating: x.location_rating ?? null,
+      pricePerNight: perNight != null ? Math.round(perNight) : null,
+      priceTotal: total != null ? Math.round(total) : null,
+      lat, lng,
+      distanceKm: (centre && lat != null && lng != null)
+        ? Math.round(hav(centre, { lat, lng }) * 10) / 10 : null,
+      amenities: (x.amenities || []).slice(0, 6),
+      freeCancellation: !!x.free_cancellation,
+      thumb: x.images?.[0]?.thumbnail || null,
+      url: x.link || null,
+      essential: (x.essential_info || []).slice(0, 4)
+    };
+  })
+  .filter(h => {
+    if (privateOnly && (DORM_RE.test(h.name) || h.type === "vacation rental")) {
+      if (h.type === "vacation rental") dropped.locations++; else dropped.dortoirs++;
+      return false;
+    }
+    if (maxKm && h.distanceKm != null && h.distanceKm > maxKm) { dropped.tropLoin++; return false; }
+    return true;
+  })
+  .filter(h => h.pricePerNight != null)
+  .sort((a, b) => a.pricePerNight - b.pricePerNight);
+
+  return { hotels: out.slice(0, 25), total: out.length, dropped, provider };
+}
+
+async function callSerpHotels(env, o) {
+  const u = new URL("https://serpapi.com/search.json");
+  u.searchParams.set("engine", "google_hotels");
+  u.searchParams.set("q", o.q);
+  u.searchParams.set("check_in_date", o.checkIn);
+  u.searchParams.set("check_out_date", o.checkOut);
+  u.searchParams.set("adults", String(o.adults || 2));
+  if (o.children) { u.searchParams.set("children", String(o.children));
+                    if (o.childrenAges) u.searchParams.set("children_ages", o.childrenAges); }
+  u.searchParams.set("currency", "EUR");
+  u.searchParams.set("hl", "fr");
+  u.searchParams.set("gl", "fr");
+  u.searchParams.set("sort_by", "3");                       // 3 = prix le plus bas
+  if (o.privateOnly) u.searchParams.set("hotel_class", "2,3,4,5");
+  if (o.minStars) u.searchParams.set("hotel_class",
+        [2,3,4,5].filter(n => n >= o.minStars).join(","));
+  if (o.rating) u.searchParams.set("rating", String(o.rating));   // 7=3.5+ 8=4.0+ 9=4.5+
+  if (o.maxPrice) u.searchParams.set("max_price", String(o.maxPrice));
+  u.searchParams.set("api_key", env.SERP_TOKEN);
+  const r = await fetch(u.toString(), { headers: { Accept: "application/json" } });
+  return await r.json();
+}
+
+async function callSearchApiHotels(env, o) {
+  const u = new URL("https://www.searchapi.io/api/v1/search");
+  u.searchParams.set("engine", "google_hotels");
+  u.searchParams.set("q", o.q);
+  u.searchParams.set("check_in_date", o.checkIn);
+  u.searchParams.set("check_out_date", o.checkOut);
+  u.searchParams.set("adults", String(o.adults || 2));
+  u.searchParams.set("currency", "EUR");
+  u.searchParams.set("hl", "fr");
+  u.searchParams.set("gl", "fr");
+  u.searchParams.set("api_key", env.SEARCHAPI_TOKEN);
+  const r = await fetch(u.toString(), { headers: { Accept: "application/json" } });
+  return await r.json();
+}
+
 const quotaError = (t) => /quota|run out|exceed|limit|insufficient|credit|402|429/i.test(String(t || ""));
 
 /* ---------------------------------------------------------------- requêtes */
@@ -212,12 +310,72 @@ export async function onRequest(context) {
   const p = new URL(request.url).searchParams;
   if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
 
+  const kind = (p.get("kind") || "flight").toLowerCase();
   const origin      = (p.get("origin")      || "").toUpperCase();
   const destination = (p.get("destination") || "").toUpperCase();
   const depart = p.get("depart") || "";
   const ret    = p.get("return") || "";
 
   const st = await status(env, context);
+
+  /* ---------- HÔTELS EN DIRECT (même quota que les vols) ---------- */
+  if (kind === "hotel") {
+    const q = (p.get("q") || "").trim();
+    const checkIn = p.get("checkIn") || "", checkOut = p.get("checkOut") || "";
+    if (!q || !checkIn || !checkOut)
+      return json({ ...st, error: "q, checkIn et checkOut requis" }, 400);
+    if (!st.configured) return json({ configured: false });
+
+    const lat = parseFloat(p.get("lat")), lng = parseFloat(p.get("lng"));
+    const opts = {
+      q, checkIn, checkOut,
+      adults: parseInt(p.get("adults") || "2", 10) || 2,
+      children: parseInt(p.get("children") || "0", 10) || 0,
+      childrenAges: p.get("childrenAges") || "",
+      privateOnly: p.get("privateOnly") !== "0",
+      minStars: parseInt(p.get("minStars") || "0", 10) || 0,
+      rating: parseInt(p.get("rating") || "0", 10) || 0,
+      maxPrice: parseInt(p.get("maxPrice") || "0", 10) || 0,
+      maxKm: parseFloat(p.get("maxKm") || "0") || 0,
+      centre: (isFinite(lat) && isFinite(lng)) ? { lat, lng } : null
+    };
+
+    const hk = new Request("https://escale.cache/hotellive/"
+      + [q, checkIn, checkOut, opts.adults, opts.privateOnly ? 1 : 0,
+         opts.minStars, opts.rating, opts.maxKm].join("-").replace(/\s+/g, "_"));
+    try { const hit = await caches.default.match(hk);
+          if (hit) return json({ ...(await hit.json()), cached: true, quota: st }); } catch (_) {}
+
+    if (st.exhausted)
+      return json({ configured: true, hotels: [], exhausted: true, quota: st,
+        note: "quota live épuisé — utilise la recherche en cache, gratuite et illimitée" });
+
+    const ledH = ledger(env), triedH = [];
+    for (const prov of st.providers) {
+      if (!prov.available) continue;
+      try {
+        const raw = prov.id === "serpapi" ? await callSerpHotels(env, opts)
+                                          : await callSearchApiHotels(env, opts);
+        const err = raw?.error || raw?.message;
+        if (err) { triedH.push({ provider: prov.id, error: String(err) });
+                   if (quotaError(err)) { await ledH.trip(prov.id); } continue; }
+        await ledH.bump(prov.id);
+        const out = { configured: true, kind: "hotel", q, checkIn, checkOut,
+                      ...normalizeHotels(raw, prov.id, opts),
+                      fetched_at: new Date().toISOString() };
+        if (out.hotels.length) {
+          const ttlH = parseInt(env.LIVE_TTL || "21600", 10);
+          context.waitUntil(caches.default.put(hk, new Response(JSON.stringify(out), {
+            headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${ttlH}` }
+          })));
+        }
+        return json({ ...out, tried: triedH, quota: await status(env, context) });
+      } catch (e) { triedH.push({ provider: prov.id, error: String(e) }); }
+    }
+    return json({ configured: true, hotels: [], tried: triedH,
+                  quota: await status(env, context),
+                  error: "aucun fournisseur n'a pu répondre" }, 502);
+  }
 
   // Aucun paramètre → simple état des quotas, aucun crédit consommé.
   if (!origin && !destination && !depart) return json(st);
