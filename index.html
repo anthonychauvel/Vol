@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1b24">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Escale · recherche de vols perso</title>
+<style>
+  :root{
+    --bg:#0e1b24;--panel:#132631;--panel-2:#0b161d;--line:#20404e;
+    --ink:#e8f1f2;--muted:#7fa0ab;--amber:#f5b64a;--amber-dim:#3a2f18;
+    --green:#5fcf8e;--pair:#1d3a4a;--impair:#132631;--radius:14px;
+    --mono:"SF Mono",ui-monospace,"Roboto Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;
+    padding:env(safe-area-inset-top) 0 4rem;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:640px;margin:0 auto;padding:0 16px}
+
+  header{padding:26px 0 14px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--amber);margin:0 0 6px}
+  h1{margin:0;font-size:25px;line-height:1.15;letter-spacing:-.01em;font-weight:800}
+  h1 span{color:var(--muted);font-weight:500}
+  .sub{color:var(--muted);font-size:13.5px;margin-top:8px}
+
+  section{margin-top:22px}
+  .step{display:flex;align-items:baseline;gap:9px;margin:0 0 12px}
+  .step b{font-family:var(--mono);color:var(--amber);font-size:13px}
+  .step h2{font-size:15px;margin:0;font-weight:700;letter-spacing:.01em}
+  .step small{color:var(--muted);font-size:12px;margin-left:auto;text-align:right}
+
+  .airports{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .apt{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:11px 6px;text-align:center;cursor:pointer;transition:.15s;user-select:none}
+  .apt .code{font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:.04em}
+  .apt .city{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.2}
+  .apt.on{border-color:var(--amber);background:linear-gradient(180deg,#1a3140,#132631);
+    box-shadow:0 0 0 1px var(--amber) inset}
+  .apt.on .code{color:var(--amber)}
+  .airlines{margin-top:11px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:12px;padding:11px 13px;display:none}
+  .airlines.show{display:block}
+  .a-hd{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--amber);margin-bottom:6px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{background:#16303c;border:1px solid var(--line);border-radius:999px;
+    padding:3px 9px;font-size:11.5px;color:var(--ink)}
+
+  /* segmented toggle */
+  .seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:999px;padding:3px;gap:3px;margin-bottom:12px}
+  .seg button{background:none;border:none;color:var(--muted);font-family:var(--sans);
+    font-size:13px;font-weight:600;padding:7px 16px;border-radius:999px;cursor:pointer}
+  .seg button.on{background:var(--amber);color:#1a1305}
+
+  /* calendrier */
+  .cal{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
+  .cal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .cal-top button{background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
+    width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer}
+  .cal-top .mlabel{font-weight:700;font-size:15px;text-transform:capitalize}
+  table.grid{width:100%;border-collapse:collapse;table-layout:fixed}
+  table.grid th{font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:500;padding:4px 0;text-transform:uppercase}
+  table.grid th.wk{color:var(--amber);width:34px}
+  table.grid td{text-align:center;padding:2px 0}
+  .day{display:flex;align-items:center;justify-content:center;height:38px;border-radius:9px;
+    font-size:14px;cursor:pointer;font-variant-numeric:tabular-nums;margin:1px auto;max-width:40px}
+  .day.out{color:#3d5763;cursor:default}
+  .day:not(.out):hover{background:#1c3644}
+  .day.dep,.day.ret{background:var(--amber);color:#1a1305;font-weight:800}
+  .day.inrange{background:var(--amber-dim);color:var(--amber);border-radius:0}
+  .wknum{font-family:var(--mono);font-size:11px;font-weight:700;height:38px;display:flex;
+    align-items:center;justify-content:center;border-radius:8px;margin:1px auto;max-width:30px}
+  .wknum.pair{background:var(--pair);color:#bfe3f0}
+  .wknum.impair{background:var(--impair);color:#6f8f9b;border:1px dashed var(--line)}
+  .cal-legend{display:flex;gap:14px;margin-top:10px;font-size:11px;color:var(--muted);
+    font-family:var(--mono);align-items:center;flex-wrap:wrap}
+  .lg{display:inline-flex;align-items:center;gap:5px}
+  .lg i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .lg i.p{background:var(--pair)} .lg i.im{background:var(--impair);border:1px dashed var(--line)}
+  .lg i.d{background:var(--amber)}
+  .selbar{margin-top:11px;display:flex;gap:8px}
+  .selpill{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:12.5px}
+  .selpill.hide{display:none}
+  .selpill .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:2px}
+  .selpill .v{font-weight:700}
+  .selpill .wp{font-family:var(--mono);font-size:10.5px;color:var(--amber);margin-left:4px}
+  .clearbtn{background:none;border:none;color:var(--muted);font-size:11.5px;cursor:pointer;text-decoration:underline;margin-top:8px;padding:0}
+
+  .bands{display:flex;gap:7px;flex-wrap:wrap}
+  .band{background:var(--panel);border:1px solid var(--line);border-radius:999px;
+    padding:8px 14px;font-size:13px;cursor:pointer;font-family:var(--mono);transition:.12s}
+  .band.on{border-color:var(--amber);color:var(--amber);background:var(--amber-dim)}
+
+  .dests{display:flex;flex-direction:column;gap:8px}
+  .dest{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px 13px;display:flex;align-items:center;gap:10px}
+  .dest .info{flex:1;min-width:0;cursor:pointer}
+  .dest .name{font-weight:700;font-size:15px}
+  .dest .name .iata{font-family:var(--mono);color:var(--muted);font-size:12px;font-weight:500;margin-left:6px}
+  .dest .name .cal-ic{float:right;color:var(--muted);font-size:13px}
+  .dest .meta{font-size:11.5px;color:var(--muted);margin-top:2px;display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .dur{font-family:var(--mono);color:var(--amber)}
+  .price{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green);display:none}
+  .price.show{display:inline}
+  .price.loading{color:var(--muted);font-weight:400}
+  .price a:hover{text-decoration:underline!important}
+  .go{flex-shrink:0;background:var(--amber);color:#1a1305;border:none;border-radius:10px;
+    padding:10px 13px;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--sans)}
+  .go:disabled{background:#2a3b44;color:var(--muted);cursor:not-allowed}
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:20px;font-style:italic}
+
+  .note{font-size:11.5px;color:var(--muted);margin-top:10px;padding:11px 13px;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:12px}
+  .note b{color:var(--ink)}
+  .hint{color:var(--amber);font-size:12.5px;text-align:center;margin-top:14px;display:none}
+  .hint.show{display:block}
+  footer{text-align:center;color:var(--muted);font-size:11px;margin-top:30px;font-family:var(--mono);letter-spacing:.08em}
+
+  /* overlay calendrier de prix */
+  .overlay{position:fixed;inset:0;background:rgba(6,14,19,.96);z-index:50;display:none;
+    overflow-y:auto;padding:env(safe-area-inset-top) 0 40px}
+  .overlay.show{display:block}
+  .ov-wrap{max-width:640px;margin:0 auto;padding:16px}
+  .ov-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+  .ov-head .route{font-weight:800;font-size:18px}
+  .ov-head .route .arr{color:var(--amber)}
+  .ov-close{margin-left:auto;background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    width:38px;height:38px;border-radius:10px;font-size:20px;cursor:pointer}
+  .ov-sub{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+  .pcal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .pcal-top button{background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    width:38px;height:38px;border-radius:10px;font-size:18px;cursor:pointer}
+  .pcal-top .ml{font-weight:700;font-size:16px;text-transform:capitalize}
+  .pgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+  .pgrid .dow{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;padding:2px 0;text-transform:uppercase}
+  .pday{aspect-ratio:1/1;border-radius:9px;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;cursor:pointer;border:1px solid transparent;min-height:46px}
+  .pday.out{background:transparent;cursor:default}
+  .pday.nodata{background:var(--panel-2);color:#3d5763}
+  .pday .dd{font-size:12px;font-weight:600;line-height:1}
+  .pday .pp{font-family:var(--mono);font-size:11px;font-weight:700;margin-top:2px;line-height:1}
+  .pday.direct{box-shadow:0 0 0 2px var(--green) inset}
+  .pday.sel{outline:3px solid var(--amber);outline-offset:1px}
+  .pday.loading{background:var(--panel-2)}
+  .pleg{display:flex;align-items:center;gap:12px;margin-top:14px;font-size:11.5px;color:var(--muted);font-family:var(--mono);flex-wrap:wrap}
+  .grad{height:12px;width:120px;border-radius:6px;background:linear-gradient(90deg,hsl(120 55% 32%),hsl(60 55% 34%),hsl(0 55% 34%))}
+  .pleg .dot{width:12px;height:12px;border-radius:4px;box-shadow:0 0 0 2px var(--green) inset;display:inline-block}
+  .ov-status{color:var(--muted);font-size:13px;text-align:center;padding:26px;font-style:italic}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Départ ✈ recherche perso</p>
+    <h1>Trouver un vol <span>— tes aéroports, tes dates, le prix par jour</span></h1>
+    <p class="sub">Aéroport, type de trajet, dates (n° de semaine + paire/impaire), filtre durée. Touche une destination pour le calendrier de prix couleur.</p>
+  </header>
+
+  <section>
+    <div class="step"><b>01</b><h2>Aéroport de départ</h2></div>
+    <div class="airports" id="airports"></div>
+    <div class="airlines" id="airlines"><div class="a-hd" id="alHd">Compagnies</div><div class="chips" id="chips"></div></div>
+  </section>
+
+  <section>
+    <div class="step"><b>02</b><h2>Trajet &amp; dates</h2><small id="rangeLabel"></small></div>
+    <div class="seg" id="tripSeg">
+      <button data-ow="0" class="on">Aller-retour</button>
+      <button data-ow="1">Aller simple</button>
+    </div>
+    <div class="cal">
+      <div class="cal-top">
+        <button id="prevM" aria-label="Mois précédent">‹</button>
+        <div class="mlabel" id="mLabel"></div>
+        <button id="nextM" aria-label="Mois suivant">›</button>
+      </div>
+      <table class="grid">
+        <thead><tr><th class="wk">Sem</th><th>L</th><th>M</th><th>M</th><th>J</th><th>V</th><th>S</th><th>D</th></tr></thead>
+        <tbody id="calBody"></tbody>
+      </table>
+      <div class="cal-legend">
+        <span class="lg"><i class="p"></i>sem. paire</span>
+        <span class="lg"><i class="im"></i>sem. impaire</span>
+        <span class="lg"><i class="d"></i>aller / retour</span>
+      </div>
+      <div class="selbar">
+        <div class="selpill"><span class="k">Aller</span><span class="v" id="depV">—</span><span class="wp" id="depW"></span></div>
+        <div class="selpill" id="retPill"><span class="k">Retour</span><span class="v" id="retV">—</span><span class="wp" id="retW"></span></div>
+      </div>
+      <button class="clearbtn" id="clearDates">effacer les dates</button>
+    </div>
+    <p class="hint" id="dateHint">↑ Sélectionne un aéroport et au moins la date d'aller</p>
+  </section>
+
+  <section>
+    <div class="step"><b>03</b><h2>Durée de vol</h2><small>estimée à vol d'oiseau</small></div>
+    <div class="bands" id="bands">
+      <div class="band on" data-band="all">Toutes</div>
+      <div class="band" data-band="0-2">&lt; 2 h</div>
+      <div class="band" data-band="2-3">2–3 h</div>
+      <div class="band" data-band="3-4">3–4 h</div>
+      <div class="band" data-band="4-99">&gt; 4 h</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="step"><b>04</b><h2>Destinations</h2><small id="destCount"></small></div>
+    <div class="seg" id="modeSeg" style="margin-bottom:12px">
+      <button data-mode="list" class="on">Ma sélection</button>
+      <button data-mode="anywhere">N'importe où</button>
+    </div>
+    <div class="dests" id="dests"></div>
+    <div class="note">
+      <b>Touche une destination</b> pour ouvrir son <b>calendrier de prix</b> : chaque jour est coloré du moins cher (vert) au plus cher (rouge), et les jours <b>en vert entouré = vol direct</b> (le plus court). <b>Durées</b> estimées à vol d'oiseau ; <b>prix</b> indicatifs (cache Aviasales ≤ 7 j). Le bouton <b>Chercher</b> ouvre Skyscanner pour le prix ferme. Prix et calendrier n'apparaissent qu'une fois /api déployé avec ton token.
+    </div>
+  </section>
+
+  <footer>ESCALE</footer>
+</div>
+
+<!-- OVERLAY CALENDRIER DE PRIX -->
+<div class="overlay" id="overlay">
+  <div class="ov-wrap">
+    <div class="ov-head">
+      <div class="route" id="ovRoute"></div>
+      <button class="ov-close" id="ovClose" aria-label="Fermer">×</button>
+    </div>
+    <div class="ov-sub" id="ovSub"></div>
+    <div class="pcal-top">
+      <button id="pPrev" aria-label="Mois précédent">‹</button>
+      <div class="ml" id="pLabel"></div>
+      <button id="pNext" aria-label="Mois suivant">›</button>
+    </div>
+    <div id="pgridWrap"></div>
+    <div class="pleg">
+      <span>moins cher</span><span class="grad"></span><span>plus cher</span>
+      <span class="lg"><span class="dot"></span> vol direct</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= DONNÉES ================= */
+const AIRPORTS = [
+  {code:"NTE",city:"Nantes",lat:47.157,lng:-1.611,al:["easyJet","Ryanair","Volotea","Transavia","Vueling","Air France","Aer Lingus","TUI fly"]},
+  {code:"RNS",city:"Rennes",lat:48.069,lng:-1.734,al:["Volotea","Air France","Transavia","Ryanair","Aer Lingus","Chalair"]},
+  {code:"BES",city:"Brest",lat:48.448,lng:-4.418,al:["Volotea","Air France","Ryanair","easyJet","Chalair","TUI fly"]},
+  {code:"CDG",city:"Paris CDG",lat:49.010,lng:2.548,al:["Air France","easyJet","Vueling","Transavia","+ majors"]},
+  {code:"ORY",city:"Paris Orly",lat:48.726,lng:2.365,al:["Transavia","Vueling","easyJet","Air France","ITA"]},
+  {code:"BVA",city:"Beauvais",lat:49.454,lng:2.113,al:["Ryanair","Wizz Air"]},
+  {code:"BRU",city:"Brux.-Zaventem",lat:50.901,lng:4.484,al:["Brussels Airlines","Ryanair","easyJet","TUI fly","Vueling"]},
+  {code:"CRL",city:"Brux.-Charleroi",lat:50.459,lng:4.454,al:["Ryanair","Wizz Air","TUI fly"]},
+  {code:"AMS",city:"Amsterdam",lat:52.310,lng:4.768,al:["KLM","Transavia","easyJet","Vueling","TUI fly"]}
+];
+const DESTS = [
+  {n:"Dublin",i:"DUB",lat:53.421,lng:-6.270},{n:"Porto",i:"OPO",lat:41.248,lng:-8.681},
+  {n:"Lisbonne",i:"LIS",lat:38.774,lng:-9.134},{n:"Faro",i:"FAO",lat:37.014,lng:-7.966},
+  {n:"Barcelone",i:"BCN",lat:41.297,lng:2.078},{n:"Madrid",i:"MAD",lat:40.472,lng:-3.561},
+  {n:"Séville",i:"SVQ",lat:37.418,lng:-5.893},{n:"Málaga",i:"AGP",lat:36.675,lng:-4.499},
+  {n:"Valence",i:"VLC",lat:39.489,lng:-0.481},{n:"Palma",i:"PMI",lat:39.552,lng:2.739},
+  {n:"Ibiza",i:"IBZ",lat:38.873,lng:1.373},{n:"Rome",i:"FCO",lat:41.800,lng:12.239},
+  {n:"Milan",i:"MXP",lat:45.630,lng:8.723},{n:"Naples",i:"NAP",lat:40.884,lng:14.291},
+  {n:"Venise",i:"VCE",lat:45.505,lng:12.352},{n:"Bologne",i:"BLQ",lat:44.535,lng:11.288},
+  {n:"Athènes",i:"ATH",lat:37.936,lng:23.945},{n:"Amsterdam",i:"AMS",lat:52.310,lng:4.768},
+  {n:"Bruxelles",i:"CRL",lat:50.459,lng:4.454},{n:"Londres",i:"LON",lat:51.148,lng:-0.190},
+  {n:"Berlin",i:"BER",lat:52.362,lng:13.501},{n:"Munich",i:"MUC",lat:48.354,lng:11.786},
+  {n:"Vienne",i:"VIE",lat:48.110,lng:16.570},{n:"Prague",i:"PRG",lat:50.101,lng:14.260},
+  {n:"Budapest",i:"BUD",lat:47.439,lng:19.256},{n:"Cracovie",i:"KRK",lat:50.078,lng:19.785},
+  {n:"Copenhague",i:"CPH",lat:55.618,lng:12.656},{n:"Genève",i:"GVA",lat:46.238,lng:6.109},
+  {n:"Zurich",i:"ZRH",lat:47.464,lng:8.549},{n:"Nice",i:"NCE",lat:43.658,lng:7.216},
+  {n:"Marseille",i:"MRS",lat:43.436,lng:5.215},{n:"Ajaccio",i:"AJA",lat:41.924,lng:8.803},
+  {n:"Bastia",i:"BIA",lat:42.552,lng:9.484},{n:"Toulouse",i:"TLS",lat:43.629,lng:1.364},
+  {n:"Lyon",i:"LYS",lat:45.726,lng:5.091},{n:"Bordeaux",i:"BOD",lat:44.828,lng:-0.715},
+  {n:"Split",i:"SPU",lat:43.539,lng:16.298},{n:"Dubrovnik",i:"DBV",lat:42.561,lng:18.268},
+  {n:"Malte",i:"MLA",lat:35.857,lng:14.478},{n:"Istanbul",i:"IST",lat:41.262,lng:28.742},
+  {n:"Marrakech",i:"RAK",lat:31.607,lng:-8.036},{n:"Agadir",i:"AGA",lat:30.325,lng:-9.413},
+  {n:"Djerba",i:"DJE",lat:33.875,lng:10.775},{n:"Tenerife",i:"TFS",lat:28.044,lng:-16.572}
+];
+
+/* ================= ÉTAT ================= */
+let origin=null, dep=null, ret=null, band="all", oneWay=false;
+let view=new Date(); view.setDate(1);
+let mode="list";
+const API_BASE="";
+// noms lisibles pour les codes IATA renvoyés par « n'importe où » (le reste s'affiche en code)
+const NAMES={};
+DESTS.forEach(d=>NAMES[d.i]=d.n);
+Object.assign(NAMES,{PAR:"Paris",LON:"Londres",BCN:"Barcelone",MAD:"Madrid",OPO:"Porto",LIS:"Lisbonne",
+  DUB:"Dublin",AMS:"Amsterdam",BRU:"Bruxelles",CPH:"Copenhague",OSL:"Oslo",STO:"Stockholm",HEL:"Helsinki",
+  FCO:"Rome",MXP:"Milan",NAP:"Naples",VCE:"Venise",ATH:"Athènes",IST:"Istanbul",LIS:"Lisbonne",
+  RAK:"Marrakech",AGA:"Agadir",TUN:"Tunis",DJE:"Djerba",CMN:"Casablanca",FEZ:"Fès",
+  BUD:"Budapest",PRG:"Prague",WAW:"Varsovie",KRK:"Cracovie",VIE:"Vienne",BER:"Berlin",MUC:"Munich",
+  TFS:"Tenerife",LPA:"Grande Canarie",ACE:"Lanzarote",FUE:"Fuerteventura",PMI:"Palma",IBZ:"Ibiza",
+  MLA:"Malte",SPU:"Split",DBV:"Dubrovnik",ZAG:"Zagreb",BEG:"Belgrade",SOF:"Sofia",OTP:"Bucarest"});
+
+/* ================= OUTILS ================= */
+function haversine(a,b){const R=6371,rad=x=>x*Math.PI/180;
+  const dLat=rad(b.lat-a.lat),dLng=rad(b.lng-a.lng);
+  const s=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(s));}
+function estMinutes(km){return Math.round((km/805)*60+30);}
+function fmtDur(min){return Math.floor(min/60)+" h "+String(min%60).padStart(2,"0");}
+function pad(n){return String(n).padStart(2,"0");}
+function iso(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function frShort(s){const[Y,M,D]=s.split("-");return D+"/"+M;}
+function isoWeek(d){const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=(t.getUTCDay()+6)%7;t.setUTCDate(t.getUTCDate()-day+3);
+  const first=new Date(Date.UTC(t.getUTCFullYear(),0,4));
+  return 1+Math.round(((t-first)/86400000-3+((first.getUTCDay()+6)%7))/7);}
+
+/* ================= AÉROPORTS ================= */
+const aptBox=document.getElementById("airports");
+aptBox.innerHTML=AIRPORTS.map(a=>`<div class="apt" data-apt="${a.code}"><div class="code">${a.code}</div><div class="city">${a.city}</div></div>`).join("");
+const chips=document.getElementById("chips"),alBox=document.getElementById("airlines"),alHd=document.getElementById("alHd");
+aptBox.querySelectorAll(".apt").forEach(el=>{el.onclick=()=>{
+  aptBox.querySelectorAll(".apt").forEach(x=>x.classList.remove("on"));el.classList.add("on");
+  origin=AIRPORTS.find(a=>a.code===el.dataset.apt);
+  alHd.textContent="Compagnies au départ de "+origin.city;
+  chips.innerHTML=origin.al.map(a=>`<span class="chip">${a}</span>`).join("");
+  alBox.classList.add("show");renderDispatch();refresh();};});
+
+/* ================= TOGGLE TRAJET ================= */
+document.getElementById("tripSeg").querySelectorAll("button").forEach(b=>{b.onclick=()=>{
+  document.querySelectorAll("#tripSeg button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+  oneWay=b.dataset.ow==="1";
+  if(oneWay) ret=null;
+  document.getElementById("retPill").classList.toggle("hide",oneWay);
+  drawCal();renderDispatch();refresh();};});
+
+/* ================= TOGGLE MODE (sélection / n'importe où) ================= */
+document.getElementById("modeSeg").querySelectorAll("button").forEach(b=>{b.onclick=()=>{
+  document.querySelectorAll("#modeSeg button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+  mode=b.dataset.mode;renderDispatch();refresh();};});
+function renderDispatch(){ if(mode==="list") renderDests(); else renderAnywhere(); }
+
+/* ================= CALENDRIER PRINCIPAL ================= */
+const MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const calBody=document.getElementById("calBody"),mLabel=document.getElementById("mLabel");
+document.getElementById("prevM").onclick=()=>{view.setMonth(view.getMonth()-1);drawCal();};
+document.getElementById("nextM").onclick=()=>{view.setMonth(view.getMonth()+1);drawCal();};
+function drawCal(){
+  mLabel.textContent=MOIS[view.getMonth()]+" "+view.getFullYear();
+  const y=view.getFullYear(),m=view.getMonth();
+  let start=(new Date(y,m,1).getDay()+6)%7;
+  const dim=new Date(y,m+1,0).getDate();
+  let rows="",dn=1-start;
+  for(let r=0;r<6;r++){
+    if(dn>dim) break;
+    const wk=isoWeek(new Date(y,m,dn));
+    rows+=`<tr><td><div class="wknum ${wk%2===0?"pair":"impair"}">${wk}</div></td>`;
+    for(let c=0;c<7;c++,dn++){
+      if(dn<1||dn>dim){rows+=`<td><div class="day out"></div></td>`;continue;}
+      const ds=iso(new Date(y,m,dn));let cls="day";
+      if(ds===dep||ds===ret)cls+=" dep";
+      else if(dep&&ret&&ds>dep&&ds<ret)cls+=" inrange";
+      rows+=`<td><div class="${cls}" data-d="${ds}">${dn}</div></td>`;
+    }
+    rows+="</tr>";
+  }
+  calBody.innerHTML=rows;
+  calBody.querySelectorAll(".day:not(.out)").forEach(el=>el.onclick=()=>pickDate(el.dataset.d));
+}
+function pickDate(ds){
+  if(oneWay){dep=ds;ret=null;}
+  else if(!dep||(dep&&ret)){dep=ds;ret=null;}
+  else if(ds<dep){dep=ds;}
+  else{ret=ds;}
+  drawCal();refresh();
+}
+document.getElementById("clearDates").onclick=()=>{dep=ret=null;drawCal();refresh();};
+
+/* ================= FILTRE DURÉE ================= */
+document.querySelectorAll(".band").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".band").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+  band=b.dataset.band;renderDispatch();refresh();});
+
+/* ================= DESTINATIONS ================= */
+function withDur(){return DESTS.map(d=>({...d,min:origin?estMinutes(haversine(origin,{lat:d.lat,lng:d.lng})):null}));}
+function inBand(min){if(band==="all"||min==null)return true;const[a,b]=band.split("-").map(Number);const h=min/60;return h>=a&&h<b;}
+function currentList(){let l=withDur().filter(d=>inBand(d.min));if(origin)l.sort((a,b)=>a.min-b.min);return l;}
+function skyURL(to){const yy=s=>s.slice(2,4)+s.slice(5,7)+s.slice(8,10);
+  let u=`https://www.skyscanner.fr/transport/vols/${origin.code.toLowerCase()}/${to.toLowerCase()}/`;
+  if(dep)u+=yy(dep)+"/";if(!oneWay&&dep&&ret)u+=yy(ret)+"/";return u;}
+function renderDests(){
+  const box=document.getElementById("dests"),list=currentList();
+  document.getElementById("destCount").textContent=origin?list.length+" · depuis "+origin.city:list.length+" destinations";
+  if(!list.length){box.innerHTML=`<div class="empty">Aucune destination dans cette tranche depuis ${origin?origin.city:"cet aéroport"}.</div>`;return;}
+  box.innerHTML=list.map((d,idx)=>`
+    <div class="dest">
+      <div class="info" data-open="${idx}">
+        <div class="name">${d.n}<span class="iata">${d.i}</span><span class="cal-ic">📅 prix/jour</span></div>
+        <div class="meta">
+          ${d.min!=null?`<span class="dur">${fmtDur(d.min)}</span>`:`<span class="dur" style="color:var(--muted)">choisis un départ</span>`}
+          <span class="price" data-price="${d.i}"></span>
+        </div>
+      </div>
+      <button class="go" data-i="${idx}" ${(!origin||!dep)?'disabled':''}>Chercher</button>
+    </div>`).join("");
+  box.querySelectorAll(".go").forEach(b=>b.onclick=()=>window.open(skyURL(list[+b.dataset.i].i),"_blank"));
+  box.querySelectorAll(".info").forEach(el=>el.onclick=()=>{
+    if(!origin){document.getElementById("dateHint").classList.add("show");return;}
+    openPriceCal(list[+el.dataset.open]);});
+  syncButtons();
+}
+function syncButtons(){const ready=origin&&dep;document.querySelectorAll(".go").forEach(b=>b.disabled=!ready);}
+
+/* ================= PRIX LISTE ================= */
+let priceReqId=0;
+async function fetchPrices(){
+  if(!(origin&&dep)) return;
+  const list=currentList(),myId=++priceReqId;
+  document.querySelectorAll(".price").forEach(el=>{el.textContent="…";el.className="price show loading";});
+  for(const d of list){
+    if(myId!==priceReqId)return;
+    const el=document.querySelector(`.price[data-price="${d.i}"]`);if(!el)continue;
+    try{
+      let u=`${API_BASE}/api/prices?origin=${origin.code}&destination=${d.i}&depart=${dep}`;
+      if(!oneWay&&ret)u+=`&return=${ret}`;
+      const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();
+      if(myId!==priceReqId)return;
+      if(j.price){
+        const tr=j.transfers===0?"direct":(j.transfers!=null?j.transfers+" esc":"");
+        const label="≈ "+j.price+" €"+(tr?" · "+tr:"");
+        el.innerHTML=j.link?`<a href="${j.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${label}</a>`:label;
+        el.className="price show";
+      }else{el.textContent="";el.className="price";}
+    }catch(_){el.textContent="";el.className="price";}
+  }
+}
+
+/* ================= OVERLAY CALENDRIER DE PRIX ================= */
+const overlay=document.getElementById("overlay");
+let calDest=null, pView=new Date(), pData=null, pReqId=0;
+document.getElementById("ovClose").onclick=closeCal;
+document.getElementById("pPrev").onclick=()=>{pView.setMonth(pView.getMonth()-1);loadPriceCal();};
+document.getElementById("pNext").onclick=()=>{pView.setMonth(pView.getMonth()+1);loadPriceCal();};
+function openPriceCal(d){
+  calDest=d; pView=new Date(view.getFullYear(),view.getMonth(),1);
+  document.getElementById("ovRoute").innerHTML=`${origin.code} <span class="arr">→</span> ${d.i} <span style="color:var(--muted);font-weight:500;font-size:14px">${d.n}</span>`;
+  document.getElementById("ovSub").textContent=(oneWay?"Aller simple":"Aller-retour")+" · prix indicatif le moins cher par jour de départ (cache Aviasales ≤ 7 j)";
+  overlay.classList.add("show");document.body.style.overflow="hidden";
+  loadPriceCal();
+}
+function closeCal(){overlay.classList.remove("show");document.body.style.overflow="";}
+async function loadPriceCal(){
+  const y=pView.getFullYear(),m=pView.getMonth();
+  document.getElementById("pLabel").textContent=MOIS[m]+" "+y;
+  const wrap=document.getElementById("pgridWrap");
+  wrap.innerHTML=`<div class="ov-status">Chargement des prix…</div>`;
+  const myId=++pReqId,month=y+"-"+pad(m+1);
+  try{
+    const r=await fetch(`${API_BASE}/api/calendar?origin=${origin.code}&destination=${calDest.i}&month=${month}&oneway=${oneWay?1:0}`);
+    if(!r.ok)throw 0;const j=await r.json();if(myId!==pReqId)return;
+    pData=j.days||{};renderPriceCal();
+  }catch(_){
+    if(myId!==pReqId)return;
+    wrap.innerHTML=`<div class="ov-status">Aucun prix disponible (API non déployée, ou pas de cache pour cette route ce mois-ci).<br>Tu peux quand même choisir tes dates dans le calendrier principal.</div>`;
+  }
+}
+function priceColor(p,min,max){
+  if(min===max)return "hsl(120 55% 30%)";
+  const t=(p-min)/(max-min),hue=120*(1-t);
+  return `hsl(${hue} 55% 30%)`;
+}
+function renderPriceCal(){
+  const y=pView.getFullYear(),m=pView.getMonth();
+  const dim=new Date(y,m+1,0).getDate();
+  let start=(new Date(y,m,1).getDay()+6)%7;
+  const prices=Object.values(pData).map(o=>o.price);
+  const min=prices.length?Math.min(...prices):0,max=prices.length?Math.max(...prices):0;
+  let html='<div class="pgrid">'+["L","M","M","J","V","S","D"].map(x=>`<div class="dow">${x}</div>`).join("");
+  for(let i=0;i<start;i++)html+='<div class="pday out"></div>';
+  for(let dn=1;dn<=dim;dn++){
+    const ds=iso(new Date(y,m,dn)),o=pData[ds];
+    if(!o){html+=`<div class="pday nodata"><span class="dd">${dn}</span></div>`;continue;}
+    const bg=priceColor(o.price,min,max);
+    const direct=o.transfers===0?" direct":"";
+    const selCls=(ds===dep)?" sel":"";
+    html+=`<div class="pday${direct}${selCls}" style="background:${bg}" data-pick="${ds}">
+      <span class="dd">${dn}</span><span class="pp">${o.price}€</span></div>`;
+  }
+  html+="</div>";
+  if(!prices.length)html='<div class="ov-status">Pas de tarif en cache pour cette route ce mois-ci. Essaie un autre mois ou une autre destination.</div>';
+  document.getElementById("pgridWrap").innerHTML=html;
+  document.getElementById("pgridWrap").querySelectorAll(".pday[data-pick]").forEach(el=>el.onclick=()=>pickFromCal(el.dataset.pick));
+}
+function pickFromCal(ds){
+  const o=pData[ds];
+  dep=ds;
+  if(!oneWay){ ret=(o&&o.return_at)?o.return_at.slice(0,10):ret; if(ret&&ret<dep)ret=null; }
+  else ret=null;
+  // aligner le calendrier principal sur le mois choisi
+  view=new Date(pView.getFullYear(),pView.getMonth(),1);
+  drawCal();refresh();closeCal();
+  document.getElementById("dests").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* ================= MODE « N'IMPORTE OÙ » ================= */
+let anywhereData=[], anywhereKey="", anywhereLoading=false, anyReqId=0;
+function monthForAnywhere(){ return dep ? dep.slice(0,7) : iso(view).slice(0,7); }
+function maybeFetchAnywhere(){
+  if(!origin) return;
+  const key=origin.code+"|"+monthForAnywhere()+"|"+(oneWay?1:0);
+  if(key===anywhereKey && anywhereData.length){ renderAnywhere(); return; }
+  anywhereKey=key; anywhereLoading=true; renderAnywhere();
+  const myId=++anyReqId, month=monthForAnywhere();
+  fetch(`${API_BASE}/api/anywhere?origin=${origin.code}&month=${month}&oneway=${oneWay?1:0}`)
+    .then(r=>{if(!r.ok)throw 0;return r.json();})
+    .then(j=>{if(myId!==anyReqId)return;anywhereData=j.results||[];anywhereLoading=false;renderAnywhere();})
+    .catch(_=>{if(myId!==anyReqId)return;anywhereData=[];anywhereLoading=false;renderAnywhere();});
+}
+function renderAnywhere(){
+  const box=document.getElementById("dests");
+  document.getElementById("destCount").textContent=origin?("depuis "+origin.city+" · "+monthForAnywhere()):"";
+  if(!origin){box.innerHTML=`<div class="empty">Choisis d'abord un aéroport de départ.</div>`;return;}
+  if(anywhereLoading){box.innerHTML=`<div class="empty">Recherche des meilleurs prix vers toutes les destinations…</div>`;return;}
+  let list=anywhereData.filter(o=>o.duration_to==null?true:inBand(o.duration_to));
+  if(!list.length){box.innerHTML=`<div class="empty">Aucun tarif en cache depuis ${origin.city} pour ${monthForAnywhere()} (essaie un autre mois, ou déploie /api).</div>`;return;}
+  list=list.slice(0,60);
+  box.innerHTML=list.map((o,idx)=>{
+    const name=NAMES[o.destination]||o.destination;
+    const tr=o.transfers===0?"direct":(o.transfers!=null?o.transfers+" esc":"");
+    const durTxt=o.duration_to!=null?fmtDur(o.duration_to):"";
+    const price="≈ "+o.price+" €"+(tr?" · "+tr:"");
+    const priceHtml=o.link?`<a href="${o.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${price}</a>`:price;
+    return `<div class="dest">
+      <div class="info" data-any="${idx}">
+        <div class="name">${name}<span class="iata">${o.destination}</span><span class="cal-ic">📅 prix/jour</span></div>
+        <div class="meta">
+          ${durTxt?`<span class="dur">${durTxt}</span>`:""}
+          <span class="price show">${priceHtml}</span>
+        </div>
+      </div>
+      <button class="go" data-anygo="${idx}">Chercher</button>
+    </div>`;}).join("");
+  box.querySelectorAll(".go").forEach(b=>b.onclick=()=>{
+    const o=list[+b.dataset.anygo];window.open(skyURL(o.destination),"_blank");});
+  box.querySelectorAll(".info").forEach(el=>el.onclick=()=>{
+    const o=list[+el.dataset.any];openPriceCal({i:o.destination,n:NAMES[o.destination]||o.destination});});
+}
+
+/* ================= RAFRAÎCHISSEMENT ================= */
+function refresh(){
+  syncButtons();
+  document.getElementById("dateHint").classList.toggle("show",!(origin&&dep));
+  const dv=document.getElementById("depV"),rv=document.getElementById("retV"),dw=document.getElementById("depW"),rw=document.getElementById("retW");
+  if(dep){const[Y,M,D]=dep.split("-");const w=isoWeek(new Date(+Y,+M-1,+D));dv.textContent=frShort(dep);dw.textContent="S"+w+"·"+(w%2?"imp":"pr");}
+  else{dv.textContent="—";dw.textContent="";}
+  if(ret){const[Y,M,D]=ret.split("-");const w=isoWeek(new Date(+Y,+M-1,+D));rv.textContent=frShort(ret);rw.textContent="S"+w+"·"+(w%2?"imp":"pr");}
+  else{rv.textContent="—";rw.textContent="";}
+  document.getElementById("rangeLabel").textContent=dep?(frShort(dep)+(!oneWay?(ret?" → "+frShort(ret):" → ?"):" (simple)")):"";
+  if(mode==="anywhere"){ if(origin) maybeFetchAnywhere(); }
+  else if(origin&&dep&&(oneWay||ret)) fetchPrices();
+}
+
+/* ================= PWA ================= */
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
+
+/* ================= BASE DES NOMS IATA (toutes les destinations) ================= */
+async function loadCityNames(){
+  try{
+    const r=await fetch(`${API_BASE}/api/cities`);
+    if(!r.ok)return;const j=await r.json();
+    if(j&&j.names){Object.assign(NAMES,j.names); if(mode==="anywhere") renderAnywhere();}
+  }catch(_){}
+}
+loadCityNames();
+
+/* ================= INIT ================= */
+drawCal();renderDests();refresh();
+</script>
+</body>
+</html>
