@@ -657,9 +657,9 @@ function renderDests(){
     openPriceCal(list[+el.dataset.open]);});
   syncButtons();
 }
-function syncButtons(){const ready=origin&&dep;
+function syncButtons(){const ready=origin&&dep, live=ready&&!(LIVE_Q&&LIVE_Q.exhausted);
   document.querySelectorAll(".go").forEach(b=>b.disabled=!ready);
-  document.querySelectorAll(".live").forEach(b=>b.disabled=!ready);}
+  document.querySelectorAll(".live").forEach(b=>b.disabled=!live);}
 
 /* ================= PRIX LISTE ================= */
 let priceReqId=0;
@@ -701,8 +701,10 @@ function openPriceCal(d){
   document.getElementById("ovLiveRes").textContent=dep
     ? "tarif réel Google Flights pour les dates choisies"
     : "choisis d'abord une date de départ";
-  document.getElementById("ovLiveBtn").disabled=!dep;
-  paintQuota();
+  document.getElementById("ovLiveBtn").disabled=!dep||!!(LIVE_Q&&LIVE_Q.exhausted);
+  if(LIVE_Q&&LIVE_Q.exhausted)
+    document.getElementById("ovLiveRes").textContent="quota live épuisé ce mois — prix en cache uniquement";
+  setQuota();
   loadPriceCal();
 }
 function closeCal(){overlay.classList.remove("show");document.body.style.overflow="";}
@@ -759,33 +761,36 @@ function pickFromCal(ds){
   document.getElementById("dests").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
-/* ================= PRIX LIVE (Google Flights via SerpApi) ================= */
-/* Chaque appel consomme 1 crédit du quota SerpApi (250/mois en gratuit).
-   → jamais automatique : uniquement sur appui du bouton ⚡.
-   Le serveur met en cache 6 h : re-cliquer la même route/dates ne coûte rien. */
-let LIVE_OK=false;
-const LS_LIVE="ESCALE_LIVE_USAGE_V1";
-function quota(){
-  const m=new Date().toISOString().slice(0,7);
-  let o={month:m,n:0};
-  try{const raw=JSON.parse(localStorage.getItem(LS_LIVE)); if(raw&&raw.month===m)o=raw;}catch(_){}
-  return o;
+/* ================= PRIX LIVE (chaîne de fournisseurs) ================= */
+/* 1. SerpApi (250/mois) → 2. SearchApi.io (100/mois) → 3. cache Aviasales seul.
+   La bascule est décidée côté serveur ; le compteur SerpApi est le vrai chiffre
+   du compte (account.json), pas une estimation locale.
+   Aucun appel automatique : uniquement sur le bouton ⚡. Cache serveur 6 h. */
+let LIVE_OK=false, LIVE_Q=null;
+
+function fmtQuota(){
+  if(!LIVE_Q)return "";
+  if(LIVE_Q.exhausted)return "quota live épuisé ce mois";
+  if(!LIVE_Q.providers||!LIVE_Q.providers.length)return "";
+  return LIVE_Q.providers.map(p=>{
+    const nm=p.id==="serpapi"?"SerpApi":"relais";
+    return nm+" "+p.left+"/"+p.budget+(p.available?"":" ✕");
+  }).join(" · ");
 }
-function bumpQuota(){
-  const o=quota();o.n++;
-  try{localStorage.setItem(LS_LIVE,JSON.stringify(o));}catch(_){}
-  paintQuota();
+function setQuota(q){
+  if(q&&q.providers)LIVE_Q=q;
+  const el=document.getElementById("ovQuota");
+  if(el)el.textContent=fmtQuota();
+  const btn=document.getElementById("ovLiveBtn");
+  if(btn&&LIVE_Q&&LIVE_Q.exhausted)btn.disabled=true;
 }
-function paintQuota(){
-  const o=quota(),el=document.getElementById("ovQuota");
-  if(el)el.textContent=o.n+" appel"+(o.n>1?"s":"")+" live ce mois-ci";
-}
+function provName(id){return id==="serpapi"?"SerpApi":(id==="searchapi"?"relais SearchApi":id);}
+
 async function askLive(destCode){
   let u=`${API_BASE}/api/live?origin=${origin.code}&destination=${destCode}&depart=${dep}`;
   if(!oneWay&&ret)u+=`&return=${ret}`;
-  const r=await fetch(u);
-  const j=await r.json();
-  if(!j.cached)bumpQuota();
+  const j=await (await fetch(u)).json();
+  setQuota(j.quota);
   return j;
 }
 function liveLabel(j){
@@ -794,9 +799,15 @@ function liveLabel(j){
   const dur=j.duration!=null?fmtDur(j.duration):"";
   const al=(j.airlines||[]).slice(0,2).join(" + ");
   const lvl={low:"prix bas",typical:"prix normal",high:"prix élevé"}[j.insights&&j.insights.level]||"";
+  const src=j.cached?"en cache":(j.provider?provName(j.provider):"");
   return `⚡ ${j.price} € ${[al,st,dur].filter(Boolean).join(" · ")}`
        + (lvl?` <span class="lvl">(${lvl})</span>`:"")
-       + (j.cached?` <span class="lvl">· en cache</span>`:"");
+       + (src?` <span class="lvl">· ${src}</span>`:"");
+}
+function liveFail(j){
+  if(j&&j.exhausted)return "quota live épuisé ce mois — prix en cache uniquement";
+  if(j&&j.error)return "prix live indisponible";
+  return "aucun vol trouvé pour ces dates";
 }
 async function runLiveRow(d,btn){
   if(!(origin&&dep))return;
@@ -804,13 +815,13 @@ async function runLiveRow(d,btn){
   btn.classList.add("busy");btn.disabled=true;
   if(el)el.innerHTML='<span class="lvl">recherche du tarif réel…</span>';
   try{
-    const j=await askLive(d.i);
-    const lab=liveLabel(j);
+    const j=await askLive(d.i),lab=liveLabel(j);
     if(el)el.innerHTML=lab
       ? (j.url?`<a href="${j.url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${lab}</a>`:lab)
-      : `<span class="lvl">${j&&j.error?"prix live indisponible":"aucun vol trouvé pour ces dates"}</span>`;
+      : `<span class="lvl">${liveFail(j)}</span>`;
   }catch(_){ if(el)el.innerHTML='<span class="lvl">prix live indisponible</span>'; }
-  btn.classList.remove("busy");btn.disabled=false;
+  btn.classList.remove("busy");
+  btn.disabled=!(origin&&dep)||!!(LIVE_Q&&LIVE_Q.exhausted);
 }
 document.getElementById("ovLiveBtn").onclick=async function(){
   if(!(origin&&dep&&calDest))return;
@@ -821,14 +832,14 @@ document.getElementById("ovLiveBtn").onclick=async function(){
     if(lab){
       res.innerHTML=`<span class="res">${lab}</span>`
         +(j.url?` — <a href="${j.url}" target="_blank" rel="noopener" style="color:var(--amber)">ouvrir</a>`:"");
-    }else res.textContent=j&&j.error?"prix live indisponible":"aucun vol trouvé pour ces dates";
+    }else res.textContent=liveFail(j);
   }catch(_){res.textContent="prix live indisponible";}
-  btn.disabled=false;
+  btn.disabled=!!(LIVE_Q&&LIVE_Q.exhausted);
 };
-// détection : la clé SerpApi est-elle branchée ?
+// sonde d'état : quelles clés sont branchées, combien de crédits restent ?
 fetch(`${API_BASE}/api/live`).then(r=>r.json()).then(j=>{
   LIVE_OK=!!(j&&j.configured);
-  if(LIVE_OK){paintQuota();renderDispatch();}
+  if(LIVE_OK){setQuota(j);renderDispatch();}
 }).catch(()=>{});
 
 /* ================= MODE « N'IMPORTE OÙ » ================= */

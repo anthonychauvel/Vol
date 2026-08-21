@@ -7,10 +7,12 @@ Deux sources de prix cohabitent :
 | | Source | Coût | Fraîcheur | Déclenchement |
 |---|---|---|---|---|
 | **Prix de base** | Travelpayouts (cache Aviasales) | gratuit, illimité | 2 à 7 jours | automatique |
-| **Prix live ⚡** | Google Flights via SerpApi | 250 rech./mois gratuites | temps réel | sur appui du bouton seulement |
+| **Prix live ⚡** | Google Flights (SerpApi, puis SearchApi en relais) | 250 + 100 rech./mois gratuites | temps réel | sur appui du bouton seulement |
 
 Le premier est **obligatoire**, le second est **facultatif** : sans clé SerpApi,
 l'app masque simplement les boutons ⚡ et tout le reste fonctionne comme avant.
+Quand le quota SerpApi arrive à 249/250, l'app **bascule seule** sur le relais
+SearchApi.io ; les deux épuisés, elle revient au cache Aviasales sans rien casser.
 
 ---
 
@@ -54,47 +56,97 @@ Ouvre `https://ton-site.pages.dev/api/prices?origin=NTE&destination=DUB&depart=2
 
 ---
 
-# Partie 2 — Prix live ⚡ (SerpApi) — facultatif
+# Partie 2 — Prix live ⚡ — facultatif
 
-Le comparatif complet des API de tarifs (et pourquoi celle-ci) est dans **PRIX-LIVE-API.md**.
-Version courte : Amadeus Self-Service a fermé le 17/07/2026, Kiwi et Skyscanner sont
-passés sur invitation — SerpApi est ce qui reste avec le meilleur palier gratuit
-(**250 recherches/mois**) sans dossier commercial.
+Le comparatif complet des API de tarifs est dans **PRIX-LIVE-API.md**.
+L'app enchaîne **deux fournisseurs gratuits**, puis retombe sur le cache :
 
-## 1. Récupérer la clé
+```
+1. SerpApi       Google Flights   250 recherches/mois   ← par défaut
+2. SearchApi.io  Google Flights   100 requêtes/mois     ← relais automatique
+3. épuisé        → prix du cache Aviasales uniquement (rien ne casse)
+```
 
-1. Compte gratuit sur **serpapi.com** (le plan Free est sélectionné par défaut).
-2. La clé apparaît directement sur le tableau de bord.
+## 1. Récupérer les clés
 
-## 2. Brancher la clé
+- **serpapi.com** — compte gratuit, plan Free par défaut, clé visible sur le dashboard.
+- **searchapi.io** — compte gratuit (facultatif, c'est le relais).
 
-Même endroit que le token Travelpayouts :
+## 2. Brancher les clés
 
-- Name : `SERP_TOKEN` — Value : ta clé — **Encrypt ✔**
-- *(facultatif)* Name : `LIVE_TTL` — Value : durée du cache serveur en secondes.
-  Défaut `21600` (6 h). Mets `43200` (12 h) pour économiser encore plus de crédits.
+Cloudflare Pages ▸ Settings ▸ **Variables and Secrets** :
 
-Redéploie.
+| Name | Value | Obligatoire |
+|---|---|---|
+| `SERP_TOKEN` | clé SerpApi — **Encrypt ✔** | pour le live |
+| `SEARCHAPI_TOKEN` | clé SearchApi.io — **Encrypt ✔** | non (relais) |
+| `SERP_BUDGET` | seuil de bascule, défaut `249` | non |
+| `SEARCHAPI_BUDGET` | seuil de bascule, défaut `99` | non |
+| `LIVE_TTL` | cache résultat en secondes, défaut `21600` (6 h) | non |
 
-## 3. Vérifier
+Redéploie après chaque ajout.
 
-`https://ton-site.pages.dev/api/live` doit répondre `{"configured":true,…}`.
-S'il répond `{"configured":false}`, le secret n'est pas posé ou le déploiement n'a pas été relancé.
+## 3. Le compteur — c'est le vrai, pas une estimation
+
+SerpApi expose `account.json`, **gratuit et qui ne consomme aucune recherche**.
+L'app le consulte avant chaque appel live et lit `this_month_usage` : le chiffre
+qui fait foi, celui de ton compte. Il reste juste même si tu utilises ta clé
+depuis un autre projet, et il se remet à zéro tout seul au renouvellement.
+
+À **249 sur 250**, la bascule vers SearchApi est automatique et silencieuse —
+tu ne peux structurellement pas dépasser le quota gratuit. Deux garde-fous en plus :
+
+- **Coupure sur erreur** : si un fournisseur répond « quota dépassé » (par exemple
+  parce qu'il a été consommé ailleurs), il est marqué hors service pour le mois et
+  la requête part immédiatement sur le suivant — l'utilisateur ne voit rien.
+- **Marge de 1** : le seuil 249 laisse un crédit de sécurité contre les
+  courses entre deux appels simultanés.
+
+SearchApi n'a pas d'équivalent public, donc son compteur est interne.
+
+## 4. Compteur durable : brancher un KV (recommandé)
+
+Sans KV, le compteur du relais vit dans le Cache API : ça marche, mais c'est
+par centre de données et ça peut être purgé — donc légèrement optimiste.
+
+1. Cloudflare ▸ **Storage & Databases ▸ KV** ▸ *Create namespace* (ex. `escale`).
+2. Ton projet Pages ▸ Settings ▸ **Bindings** ▸ *Add* ▸ **KV namespace**
+   Variable name : `ESCALE_KV` — Namespace : celui créé.
+3. Redéploie.
+
+Gratuit dans le plan Cloudflare de base, et `/api/live` t'indique quel mode est
+actif (`"backend":"kv"` ou `"cache"`).
+
+## 5. Vérifier
+
+`https://ton-site.pages.dev/api/live` (sans paramètre) renvoie l'état complet
+sans consommer un seul crédit :
+
+```json
+{
+  "configured": true, "backend": "kv", "active": "serpapi", "total_left": 336,
+  "providers": [
+    {"id":"serpapi","used":13,"budget":249,"left":236,"counter":"compte SerpApi (officiel)","available":true},
+    {"id":"searchapi","used":0,"budget":99,"left":99,"counter":"local (kv)","available":true}
+  ]
+}
+```
 
 Puis une vraie requête :
-`https://ton-site.pages.dev/api/live?origin=NTE&destination=DUB&depart=2026-03-06&return=2026-03-08`
+`…/api/live?origin=NTE&destination=DUB&depart=2026-03-06&return=2026-03-08`
+→ la réponse contient `"provider":"serpapi"` (ou `"searchapi"` après bascule).
 
-## 4. Ne pas griller le quota
+## 6. Ce que tu vois dans l'app
 
-L'app est faite pour ça, mais autant savoir comment :
-
-- Le live **ne part jamais tout seul** : uniquement sur le bouton ⚡ (ligne de destination,
-  ou barre en haut du calendrier de prix).
-- `/api/live` **met en cache 6 h** côté Cloudflare : recliquer la même route aux mêmes
-  dates ne consomme aucun crédit (la réponse est marquée « en cache »).
-- Un compteur local s'affiche en haut du calendrier de prix (« N appels live ce mois-ci »).
-  C'est indicatif, calculé côté navigateur — le chiffre qui fait foi est sur le dashboard SerpApi.
-- Plafond du palier gratuit : **50 recherches/heure**, 250/mois, sans report au mois suivant.
+- Le reste des deux quotas s'affiche en haut du calendrier de prix :
+  `SerpApi 236/249 · relais 99/99`.
+- Chaque résultat live indique sa provenance : `· SerpApi`, `· relais SearchApi`
+  ou `· en cache`.
+- Quota épuisé → les boutons ⚡ se verrouillent avec le message
+  « quota live épuisé ce mois — prix en cache uniquement ». Le reste de l'app
+  continue normalement.
+- Le live **ne part jamais tout seul** : uniquement sur appui du bouton ⚡.
+- `/api/live` met en cache 6 h : recliquer la même route aux mêmes dates coûte 0 crédit.
 
 ---
 
@@ -127,7 +179,7 @@ L'app couvre désormais **72 aéroports** : 67 en France (métropole + outre-mer
 /functions/api/calendar.js    → /api/calendar   (calendrier de prix par jour, cache)
 /functions/api/anywhere.js    → /api/anywhere   (le moins cher vers partout, cache)
 /functions/api/cities.js      → /api/cities     (noms de villes IATA, sans token)
-/functions/api/live.js        → /api/live       (prix temps réel, SerpApi, facultatif)
+/functions/api/live.js        → /api/live       (prix temps réel, bascule SerpApi → SearchApi)
 /SETUP.md
 /PRIX-LIVE-API.md             (comparatif des API de tarifs, août 2026)
 ```

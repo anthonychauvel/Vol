@@ -58,6 +58,37 @@ Réserves à connaître :
 - Ce n'est pas une API de réservation : tu obtiens le prix et le lien, l'achat se
   fait toujours chez le vendeur.
 
+## La bascule automatique à 249
+
+Le point faible d'un quota gratuit, c'est de le découvrir épuisé. L'app le gère seule :
+
+| Palier | Fournisseur | Ce qui se passe |
+|---|---|---|
+| 0 → 248 | SerpApi | fonctionnement normal |
+| **249** | **SearchApi.io** | bascule silencieuse, +100 requêtes |
+| au-delà | aucun | boutons ⚡ verrouillés, retour au cache Aviasales |
+
+Le compteur SerpApi n'est **pas** une estimation locale : `account.json` est gratuit,
+ne consomme aucune recherche, et renvoie `this_month_usage` — le chiffre du compte.
+Conséquences pratiques : il reste juste si tu utilises la même clé ailleurs, il
+survit à un vidage du cache navigateur, et il se réinitialise tout seul au
+renouvellement du plan.
+
+Deux sécurités en plus du seuil :
+
+- **Coupure sur erreur** — si un fournisseur répond « quota dépassé », il est marqué
+  hors service jusqu'à la fin du mois et la requête repart immédiatement sur le
+  suivant. L'utilisateur voit un prix, pas une erreur.
+- **Marge de 1** — le seuil à 249 (et non 250) absorbe les courses entre deux
+  appels simultanés.
+
+SearchApi.io est un bon relais parce qu'il renvoie **exactement la même structure**
+que SerpApi (`best_flights` / `other_flights` / `price_insights`) : un seul parseur
+pour les deux, donc aucune divergence d'affichage entre le fournisseur principal
+et le relais.
+
+Total gratuit : **349 recherches temps réel par mois**, sans carte bancaire.
+
 ## Comment l'app dépense le quota
 
 L'architecture est volontairement à deux vitesses, pour ne jamais griller 250 appels
@@ -73,7 +104,8 @@ en une session :
   `LIVE_TTL`.
 - **Compteur local** affiché dans le calendrier de prix, pour que tu voies où tu en es.
 
-En pratique : ~8 vérifications live par jour tiennent dans le palier gratuit.
+En pratique : ~11 vérifications live par jour tiennent dans les deux paliers gratuits
+cumulés (349/mois), sans jamais rien payer ni rien casser une fois le quota atteint.
 
 ## Si tu veux passer au live partout un jour
 
