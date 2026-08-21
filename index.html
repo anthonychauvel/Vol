@@ -230,6 +230,31 @@
     text-decoration:none;box-sizing:border-box}
   .carbtn:hover{border-color:var(--amber)}
   .carbtn span{color:var(--amber)}
+
+  /* --- location de voiture --- */
+  .carbar{display:flex;gap:8px;margin-top:9px}
+  .carbar button{flex:1;border-radius:11px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans)}
+  .carlive{background:var(--brass-face);border:1px solid var(--brass-rim);color:#2c1d06;
+    box-shadow:0 1px 0 rgba(255,244,214,.55) inset,0 -6px 9px rgba(90,58,16,.3) inset}
+  .carlive:disabled{background:#22323a;color:var(--muted);border-color:var(--line);box-shadow:none}
+  .cardc{background:var(--panel-2);border:1px solid #3f6675;color:var(--ink)}
+  .cardc:hover{border-color:var(--amber)}
+  .car{background:linear-gradient(180deg,#12242e,#0d1a22);border:1px solid var(--line);border-radius:12px;
+    padding:11px 12px;margin-bottom:8px;box-shadow:0 1px 0 rgba(255,240,200,.04) inset,0 2px 8px rgba(0,0,0,.28)}
+  .car .ctop{display:flex;align-items:flex-start;gap:10px}
+  .car .cimg{width:74px;height:48px;object-fit:contain;flex-shrink:0;background:#0a141b;border-radius:8px}
+  .car .cbody{flex:1;min-width:0}
+  .car .cmodel{font-size:14px;font-weight:700;line-height:1.2}
+  .car .csup{font-size:11.5px;color:#c79a4e;margin-top:2px}
+  .car .cprice{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green);text-align:right;flex-shrink:0;line-height:1.2}
+  .car .cprice small{display:block;font-size:10px;color:var(--muted);font-weight:400}
+  .car .cmeta{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .cb{font-family:var(--mono);font-size:10px;padding:3px 7px;border-radius:6px;border:1px solid var(--line);color:var(--muted)}
+  .cb.note{color:#2c1d06;background:var(--brass-face);border-color:var(--brass-rim);font-weight:700}
+  .cb.note.bad{background:#3a2226;color:#e0a0a0;border-color:#5a3238}
+  .cb.free{color:#8fd9c0;border-color:#2f5f52}
+  .cb.term{color:#8fd9c0;border-color:#2f5f52}
+  .car .cgo{display:inline-block;margin-top:9px;font-size:12.5px;color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c}
   .rmdest:hover{color:var(--oxblood);background:#2a1518}
 
   /* --- prix live --- */
@@ -635,7 +660,11 @@
       <button class="hlivebtn" id="hLive">⚡ Live + notes</button>
     </div>
     <div id="hotels"></div>
-    <a class="carbtn" id="carLink" href="#" target="_blank" rel="noopener">🚗 <span>Louer une voiture</span> sur place (Discover Cars)</a>
+    <div class="carbar">
+      <button class="carlive" id="carSearch">🚗 Louer une voiture (prix réels)</button>
+    </div>
+    <div id="cars"></div>
+    <a class="carbtn" id="carLink" href="#" target="_blank" rel="noopener">Ou comparer sur <span>Discover Cars</span> →</a>
     <div class="note">
       « <b>Privative uniquement</b> » écarte les auberges de jeunesse et dortoirs : on ne garde
       que les établissements classés (2★ et plus), donc chambre et salle de bain à toi. Le bouton
@@ -1690,6 +1719,63 @@ function carURL(city,ci,co){
   }
   return base;
 }
+let CARS_OK=false;
+// sonde : la clé RapidAPI est-elle branchée ?
+fetch(`${API_BASE}/api/cars`).then(r=>r.json()).then(j=>{
+  CARS_OK=!!(j&&j.configured);
+  const b=document.getElementById("carSearch");
+  if(b)b.style.display=CARS_OK?"block":"none";      // sans clé : on ne montre que le lien Discover Cars
+}).catch(()=>{});
+
+function carRating(c){
+  if(c.rating==null)return `<span class="cb">note via loueur</span>`;
+  const bad=c.rating<6;                              // note Booking sur /10
+  return `<span class="cb note${bad?" bad":""}">${c.rating}/10${c.reviews?` · ${c.reviews} avis`:""}</span>`;
+}
+function carTerm(c){return c.locationType==="IN_TERMINAL"?"en aérogare":(/SHUTTLE/.test(c.locationType||"")?"navette":null);}
+function carCard(c,nights,cur){
+  const sym=cur==="EUR"?"€":(cur==="USD"?"$":cur);
+  const note=carRating(c);
+  const trans=c.transmission?`<span class="cb">${c.transmission==="Automatic"?"auto":c.transmission}</span>`:"";
+  const seats=c.seats?`<span class="cb">${c.seats} places</span>`:"";
+  const mil=c.unlimitedMileage?`<span class="cb">km illimités</span>`:"";
+  const term=carTerm(c)?`<span class="cb term">${carTerm(c)}</span>`:"";
+  const free=c.freeCancellation?`<span class="cb free">annulation gratuite</span>`:"";
+  const perDay=c.pricePerDay!=null?`<small>${c.pricePerDay} ${sym}/jour</small>`:"";
+  const img=c.image?`<img class="cimg" src="${c.image}" alt="" loading="lazy">`:"";
+  return `<div class="car">
+    <div class="ctop">${img}
+      <div class="cbody"><div class="cmodel">${c.car}${c.similar?` <span style="color:var(--muted);font-weight:400;font-size:11px">${c.similar}</span>`:""}</div>
+        <div class="csup">${c.supplier}${c.payWhen?` · ${c.payWhen}`:""}</div></div>
+      <div class="cprice">${c.priceTotal} ${sym}${perDay}</div>
+    </div>
+    <div class="cmeta">${note}${trans}${seats}${mil}${term}${free}</div>
+    ${c.url?`<a class="cgo" href="${c.url}" target="_blank" rel="noopener">Réserver →</a>`:""}
+  </div>`;
+}
+function renderCars(list,nights,cur,meta){
+  const box=document.getElementById("cars");
+  if(!list||!list.length){box.innerHTML=`<div class="empty">${meta||"Aucune voiture pour ce lieu / ces dates."}</div>`;return;}
+  box.innerHTML=list.map(c=>carCard(c,nights,cur)).join("");
+}
+async function searchCars(){
+  const t=hotelTarget();
+  if(!t){renderCars(null,0,"","Tape une ville, ou choisis une destination plus haut.");return;}
+  const d=hotelDates(),nights=nightsBetween(d.ci,d.co),btn=document.getElementById("carSearch");
+  btn.disabled=true;
+  document.getElementById("cars").innerHTML='<div class="empty">recherche des voitures…</div>';
+  const p=new URLSearchParams({q:t.q,pickUpDate:d.ci,dropOffDate:d.co});
+  if(t.lat!=null&&t.lng!=null){p.set("lat",t.lat);p.set("lng",t.lng);}
+  try{
+    const j=await (await fetch(`${API_BASE}/api/cars?${p}`)).json();
+    if(j.configured===false){renderCars(null,0,"","Prix voiture non configurés — utilise le lien Discover Cars ci-dessous.");}
+    else renderCars(j.cars,j.nights||nights,j.currency||"EUR",
+      j.cars&&j.cars.length?null:(j.note||"Aucune voiture pour ce lieu / ces dates."));
+  }catch(_){renderCars(null,0,"","Recherche voiture indisponible.");}
+  btn.disabled=false;
+}
+const _carBtn=document.getElementById("carSearch"); if(_carBtn)_carBtn.onclick=searchCars;
+
 function refreshCarLink(){
   const el=document.getElementById("carLink"); if(!el)return;
   const t=hotelTarget(),d=hotelDates();

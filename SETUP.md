@@ -178,8 +178,16 @@ quota. Le ⚡ live reste réservé à la vérification d'une route précise, une
 - **Escale à terre** : hôtels via le cache Hotellook (`/api/hotels`, ton `TP_TOKEN`, gratuit) ou
   ⚡ Google Hotels (mêmes crédits que les vols). Filtres : distance au centre, note mini, catégorie,
   **chambre privative uniquement** (exclut auberges de jeunesse et dortoirs), voyageurs.
-- **Louer une voiture** : lien Discover Cars pré-rempli (ville + dates). Pour l'affilier à ton compte,
-  renseigne `DISCOVERCARS_MARKER` en haut du script quand tu auras ton marker Travelpayouts.
+- **Louer une voiture** : bouton « prix réels » (Booking via RapidAPI, `/api/cars`) qui affiche
+  modèle, loueur, note /10, transmission, places, km illimités, annulation gratuite et prix total +
+  par jour, triés par prix, avec bouton « Réserver ». Réutilise la ville + les dates déjà connues.
+  Fonctionne en 2 temps côté serveur (auto-complete → recherche). À défaut de clé, le lien
+  **Discover Cars** pré-rempli reste affiché (pour l'affilier, renseigne `DISCOVERCARS_MARKER`).
+
+  Config voiture : ajoute dans Cloudflare la variable `RAPIDAPI_KEY` (clé RapidAPI, **Encrypt ✔**) et,
+  au besoin, `RAPIDAPI_HOST` (défaut `booking-com18.p.rapidapi.com`) et `CARS_TTL` (cache, défaut 6 h).
+  Quota RapidAPI Basic : **530 requêtes/mois** partagées — donc la recherche voiture ne part que **sur
+  bouton**, jamais en fond, et le résultat est mis en cache 6 h (recliquer la même ville/dates = 0 crédit).
 
 # Aéroports de départ
 
@@ -228,6 +236,7 @@ départ comme en destination.
 /functions/api/live.js        → /api/live       (prix temps réel, bascule SerpApi → SearchApi)
 /functions/api/place.js       → /api/place      (recherche ville/aéroport monde, sans token)
 /functions/api/hotels.js      → /api/hotels     (hôtels en cache Hotellook, ton TP_TOKEN)
+/functions/api/cars.js        → /api/cars       (location voiture, Booking via RapidAPI)
 /SETUP.md
 /PRIX-LIVE-API.md             (comparatif des API de tarifs, août 2026)
 ```
