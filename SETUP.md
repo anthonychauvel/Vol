@@ -150,6 +150,53 @@ Puis une vraie requête :
 
 ---
 
+# Prix vol au plus juste (croisement 2 sources)
+
+Quand tu demandes le tarif réel (⚡), le prix affiché est celui de **Google Flights (live, réservable
+maintenant)**. En parallèle, l'app interroge **Aviasales/Travelpayouts** (gratuit) et l'affiche **à titre
+indicatif** à côté (« Aviasales : ~150 € vu récemment, à confirmer ») — car Aviasales est un **cache**
+(prix constaté ≤ 7 j), pas un tarif live : il n'est donc **jamais substitué** au prix Google. Si Aviasales
+est plus bas, l'écart est signalé (« −64 €, à confirmer ») pour t'inviter à vérifier, sans te promettre un
+tarif qui pourrait ne plus exister. Si le quota Google est épuisé, Aviasales s'affiche mais **clairement
+marqué indicatif**.
+
+# Prix réel (⚡) partout & retour-en-haut
+
+Le bouton **⚡** (prix réel Google Flights) est désormais disponible non seulement dans « Ma sélection »,
+mais aussi dans **Séjour** (met à jour le vol et recalcule le total du séjour), **Comparateur** (tarif réel
+depuis le meilleur départ de chaque ligne) et **Croisé** (recalcule le total pour tous les voyageurs).
+Rappel : appel à la demande, quota partagé — donc uniquement sur clic.
+
+Une **flèche ↑** flottante (en bas à droite) apparaît dès qu'on descend et ramène en haut de page d'un tap.
+
+Séjour corrigé : la recherche d'hôtel « à partir de » se fait désormais en **mode large** (sans filtre de
+distance/catégorie) pour toujours proposer un prix indicatif ; si le cache est vide, le ⚡ ou l'onglet Hôtels
+prennent le relais.
+
+# Barre d'outils (navigation principale)
+
+En haut de l'app, une barre d'outils sépare le **mode simplifié** (assistant pas à pas, recherche rapide
+vol + destination + sur place) des **outils spécialisés**, chacun avec son propre écran focalisé :
+**Comparateur**, **Croisé**, **Séjour**, **Hôtels**, **Voiture**, **Taxi**, **Activités**. Choisir un outil masque
+le reste et n'affiche que ce dont il a besoin (ex. « Voiture » = dates + recherche voiture). Le simplifié
+reste l'assistant 4 étapes ; les onglets avancés (Comparateur/Croisé/Séjour) sont désormais **en haut**,
+plus enfouis dans l'étape Destination. Aucune fonction n'est perdue — tout est réorganisé.
+
+# Assistant pas à pas
+
+Au lancement, l'app s'ouvre en mode **assistant** : une étape à la fois (Départ · Dates ·
+Destination · Sur place), avec une barre d'étapes en haut et des boutons Précédent/Suivant.
+La navigation est **libre** (on peut sauter à n'importe quelle étape en la touchant). Le bouton
+**« Tout voir »** repasse à la page longue classique (toutes les sections d'un coup). **Aucune
+option n'est perdue** — elles sont juste réparties sur 4 écrans.
+
+# Retirer / ajouter des villes
+
+Chaque destination a une **croix ✕** pour la retirer (y compris les villes par défaut ; le retrait
+est mémorisé). Un lien **« rétablir les villes masquées »** apparaît en bas de liste pour tout
+remettre. Les villes **ajoutées** (recherche monde) remontent **en tête de liste** ; idem pour un
+aéroport de départ ajouté (il passe en tête des favoris).
+
 # Onglets Vols
 
 Cinq modes, tous alimentés par le cache Travelpayouts (gratuit, illimité) sauf le ⚡ live :
@@ -169,6 +216,12 @@ Un **filtre Direct / Avec escale / Tous** (sous le filtre durée) s'applique à 
 mention « direct »), pratique pour repérer d'un coup d'œil ce qui est joignable sans escale depuis
 un aéroport. L'info escale vient du cache (le tarif le moins cher trouvé) : indicative, comme les prix.
 
+Le **Comparateur** a deux vues : « Meilleur par ville » (la moins chère tous départs confondus) et
+« **Directs par aéroport** » (un groupe par aéroport listant toutes ses lignes directes, d'un coup d'œil).
+Tu peux aussi **verrouiller une destination** précise → l'app compare alors tes aéroports entre eux
+(« quel départ est le moins cher vers Lisbonne ? »). Le **Croisé** accepte des **villes d'arrivée forcées** :
+même si un voyageur n'a pas la ville en cache, elle s'affiche avec « — » sur son tronçon (à compléter en ⚡).
+
 Les départs du Comparateur et les voyageurs du Croisé sont mémorisés (`ESCALE_CMP_V1`,
 `ESCALE_CROSS_V1`). Chaque vue interroge une fois `/api/anywhere` par départ — gratuit et sans
 quota. Le ⚡ live reste réservé à la vérification d'une route précise, une fois repérée.
@@ -178,6 +231,20 @@ quota. Le ⚡ live reste réservé à la vérification d'une route précise, une
 - **Escale à terre** : hôtels via le cache Hotellook (`/api/hotels`, ton `TP_TOKEN`, gratuit) ou
   ⚡ Google Hotels (mêmes crédits que les vols). Filtres : distance au centre, note mini, catégorie,
   **chambre privative uniquement** (exclut auberges de jeunesse et dortoirs), voyageurs.
+- **Hôtels — 3 sources** : « Cache gratuit » (Hotellook, illimité, sans photo/note), **« 📸 Booking (photos) »**
+  (`/api/stays`, RapidAPI) qui affiche **grande photo + note /10 + mot (Excellent…) + nb d'avis + prix barré**,
+  et « ⚡ Google Hotels » (temps réel multi-vendeurs). Les filtres (distance, catégorie, privative, voyageurs)
+  s'appliquent aux trois. Booking et voiture partagent la clé `RAPIDAPI_KEY` et le quota 530/mois → sur bouton,
+  cache 6 h. Sans clé, le bouton Booking se masque et le cache Hotellook / ⚡ restent.
+- **Quoi voir** (🗺️, outil « À voir ») : `/api/seewhat` — musées, monuments, châteaux, plages, parcs, points
+  de vue autour de la destination, via **OpenStreetMap / Overpass** : **gratuit, sans clé, sans quota**,
+  couvre même les petites villes. Complète les activités Booking (« quoi réserver ») par un « quoi voir »
+  avec catégorie, distance et lien (Wikipédia / site / carte OSM).
+- **Transfert aéroport** (🚕) : `/api/taxi` — saisis l'adresse/hôtel d'arrivée, l'app cherche les transferts
+  depuis l'aéroport de destination (catégorie, prix, capacité, bagages, durée, accueil pancarte, annulation),
+  triés par prix.
+- **Activités & visites** (🎟️) : `/api/attractions` — les activités de la destination avec photo, note /5,
+  badge « top vente », prix « dès X € » et lien de réservation ; triées par note.
 - **Louer une voiture** : bouton « prix réels » (Booking via RapidAPI, `/api/cars`) qui affiche
   modèle, loueur, note /10, transmission, places, km illimités, annulation gratuite et prix total +
   par jour, triés par prix, avec bouton « Réserver ». Réutilise la ville + les dates déjà connues.
@@ -237,6 +304,10 @@ départ comme en destination.
 /functions/api/place.js       → /api/place      (recherche ville/aéroport monde, sans token)
 /functions/api/hotels.js      → /api/hotels     (hôtels en cache Hotellook, ton TP_TOKEN)
 /functions/api/cars.js        → /api/cars       (location voiture, Booking via RapidAPI)
+/functions/api/stays.js       → /api/stays      (hôtels Booking : photos + notes, RapidAPI)
+/functions/api/taxi.js        → /api/taxi       (transfert aéroport, RapidAPI)
+/functions/api/attractions.js → /api/attractions (activités & visites, RapidAPI)
+/functions/api/seewhat.js     → /api/seewhat    (quoi voir : POI OpenStreetMap, gratuit sans clé)
 /SETUP.md
 /PRIX-LIVE-API.md             (comparatif des API de tarifs, août 2026)
 ```

@@ -164,10 +164,55 @@
   .hotel .hgo{display:inline-block;margin-top:9px;font-size:12.5px;color:var(--amber);
     text-decoration:none;border-bottom:1px solid #4d3d1c}
   .hnote{color:var(--muted);font-size:11.5px;margin-top:9px;font-style:italic}
+
+  .hotel.photo{padding:0;overflow:hidden}
+  .hotel.photo .hpic{width:100%;height:150px;object-fit:cover;display:block;background:#0a141b}
+  .hotel.photo .hin{padding:11px 12px}
+  .hotel .hstrike{font-size:11px;color:var(--muted);text-decoration:line-through;margin-right:5px}
+  .hbadge.word{color:#2c1d06;background:var(--brass-face);border-color:var(--brass-rim);font-weight:700}
+
+  .subhead{font-family:var(--sans);font-weight:700;font-size:14px;color:var(--amber);margin:18px 0 9px;
+    padding-top:14px;border-top:1px solid var(--line)}
+  .tx{background:linear-gradient(180deg,#12242e,#0d1a22);border:1px solid var(--line);border-radius:12px;
+    padding:11px 12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
+  .tx .txi{width:64px;height:42px;object-fit:contain;background:#0a141b;border-radius:8px;flex-shrink:0}
+  .tx .txb{flex:1;min-width:0}
+  .tx .txn{font-size:14px;font-weight:700}
+  .tx .txs{font-size:11.5px;color:#c79a4e;margin-top:2px}
+  .tx .txp{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green);text-align:right;flex-shrink:0}
+  .tx .txmeta{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .attr{background:linear-gradient(180deg,#12242e,#0d1a22);border:1px solid var(--line);border-radius:12px;
+    overflow:hidden;margin-bottom:8px}
+  .attr .api{width:100%;height:130px;object-fit:cover;display:block;background:#0a141b}
+  .attr .ain{padding:10px 12px}
+  .attr .an{font-size:14px;font-weight:700;line-height:1.25}
+  .attr .ad{font-size:12px;color:var(--muted);margin-top:3px}
+  .attr .am{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;align-items:center}
+  .attr .ap{font-family:var(--mono);font-weight:700;color:var(--green);font-size:14px;margin-left:auto}
+  .abadge{font-family:var(--mono);font-size:10px;padding:3px 7px;border-radius:6px;border:1px solid var(--line);color:var(--muted)}
+  .abadge.best{color:#2c1d06;background:var(--brass-face);border-color:var(--brass-rim);font-weight:700}
+  .abadge.note{color:var(--amber);border-color:#4d3d1c}
+  .abadge.free{color:#8fd9c0;border-color:#2f5f52}
+  .attr .ago{display:inline-block;margin-top:9px;font-size:12.5px;color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c}
+  .see{display:flex;align-items:center;gap:11px;background:linear-gradient(180deg,#12242e,#0d1a22);
+    border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:7px}
+  .see .semo{font-size:22px;flex-shrink:0;width:30px;text-align:center}
+  .see .sbody{flex:1;min-width:0}
+  .see .sn{font-size:13.5px;font-weight:700;line-height:1.2}
+  .see .sc{font-size:11px;color:#c79a4e;margin-top:2px}
+  .see .sd{font-family:var(--mono);font-size:11px;color:#8fd9c0;flex-shrink:0}
+  .see a.slink{color:var(--amber);text-decoration:none;font-size:12px;border-bottom:1px solid #4d3d1c;flex-shrink:0}
   .stayline{font-family:var(--mono);font-size:11.5px;color:#ffd98a;margin-top:4px;display:block}
   .stayline b{color:var(--green)}
   .dest.direct{border-left:3px solid var(--green)}
   .cmpcard.direct{border-left:3px solid var(--green)}
+  .cmphead{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--amber);margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--line)}
+  .cmphead:first-child{border-top:none;padding-top:0}
+  #cmpView,.xsort{display:flex;gap:6px;margin-bottom:11px}
+  #cmpView button{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:8px;
+    font-size:12px;color:var(--muted);cursor:pointer;font-family:var(--sans)}
+  #cmpView button.on{background:var(--brass-face);color:#2c1d06;border-color:var(--brass-rim);font-weight:700}
   .cbadge.dir,.hbadge.dir{color:#8fd9c0;border-color:#2f5f52}
   .price .drc{color:var(--green)}
 
@@ -256,6 +301,8 @@
   .cb.term{color:#8fd9c0;border-color:#2f5f52}
   .car .cgo{display:inline-block;margin-top:9px;font-size:12.5px;color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c}
   .rmdest:hover{color:var(--oxblood);background:#2a1518}
+  .restore{text-align:center;color:var(--muted);font-size:12px;padding:10px;cursor:pointer;font-style:italic}
+  .restore:hover{color:var(--amber)}
 
   /* --- prix live --- */
   .live{flex-shrink:0;background:var(--panel-2);border:1px solid var(--line);color:var(--amber);
@@ -495,6 +542,86 @@
   /* — chips compagnies : petites cocardes — */
   .chip{background:#16303c;border-color:#2f5060}
 
+  /* ===== assistant pas à pas ===== */
+  /* ===== barre d'outils (niveau 1) ===== */
+  .tools{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:2px 0 10px;margin-bottom:2px;
+    -webkit-overflow-scrolling:touch}
+  .tools::-webkit-scrollbar{display:none}
+  .toolpill{flex:0 0 auto;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;
+    color:var(--muted);font-size:13px;font-weight:600;padding:8px 14px;cursor:pointer;white-space:nowrap;
+    font-family:var(--sans);transition:.12s}
+  .toolpill.on{background:var(--brass-face);color:#2c1d06;border-color:var(--brass-rim);font-weight:700;
+    box-shadow:0 1px 0 rgba(255,244,214,.55) inset,0 -5px 8px rgba(90,58,16,.28) inset;
+    text-shadow:0 1px 0 rgba(255,240,200,.35)}
+
+  /* ===== mode focalisé (outil ≠ simplifié) ===== */
+  body.focused .wiz, body.focused .wizbtns{display:none}
+  body.focused .wizsec{display:none !important}
+  body.focused #modeSeg{display:none}
+  /* simplifié : on masque les onglets avancés dans la section IV (ils sont en haut) */
+  body.tool-simple #modeSeg [data-mode="compare"],
+  body.tool-simple #modeSeg [data-mode="cross"],
+  body.tool-simple #modeSeg [data-mode="stay"]{display:none}
+
+  /* quelles sections chaque outil montre */
+  body.tool-compare [data-blk="dates"], body.tool-compare [data-blk="dates2"], body.tool-compare [data-blk="butin"]{display:block !important}
+  body.tool-cross   [data-blk="dates"], body.tool-cross   [data-blk="dates2"], body.tool-cross   [data-blk="butin"]{display:block !important}
+  body.tool-stay    [data-blk="depart"], body.tool-stay [data-blk="dates"], body.tool-stay [data-blk="dates2"], body.tool-stay [data-blk="butin"]{display:block !important}
+  body.tool-hotels  [data-blk="dates"], body.tool-hotels [data-blk="surplace"]{display:block !important}
+  body.tool-car     [data-blk="dates"], body.tool-car    [data-blk="surplace"]{display:block !important}
+  body.tool-taxi    [data-blk="dates"], body.tool-taxi   [data-blk="surplace"]{display:block !important}
+  body.tool-attr    [data-blk="surplace"]{display:block !important}
+  body.tool-see     [data-blk="surplace"]{display:block !important}
+  body.tool-see     [data-sub]:not([data-sub="see"]){display:none}
+
+  /* dans les outils « au sol », ne montrer que le sous-bloc concerné */
+  body.tool-hotels [data-sub]:not([data-sub="hotels"]){display:none}
+  body.tool-car    [data-sub]:not([data-sub="car"]){display:none}
+  body.tool-taxi   [data-sub]:not([data-sub="taxi"]){display:none}
+  body.tool-attr   [data-sub]:not([data-sub="attr"]){display:none}
+  body.tool-see    [data-sub]:not([data-sub="see"]){display:none}
+  /* petit rappel du contexte en haut d'un outil focalisé */
+  .toolhint{font-family:var(--mono);font-size:11px;color:var(--muted);margin:2px 0 12px;
+    padding:8px 11px;border:1px dashed var(--line);border-radius:10px;display:none}
+  body.focused #toolHint{display:block}
+
+  .wiz{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;
+    background:rgba(8,18,24,.92);backdrop-filter:blur(8px);border:1px solid var(--line);
+    border-radius:14px;padding:8px;margin:6px 0 14px}
+  .wsteps{display:flex;gap:5px;flex:1;min-width:0}
+  .wstep{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;
+    color:var(--muted);cursor:pointer;padding:5px 2px;border-radius:9px;font-family:var(--sans)}
+  .wstep b{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:var(--panel-2);border:1px solid var(--line);font-size:12px;font-weight:700}
+  .wstep span{font-size:10.5px;letter-spacing:.02em}
+  .wstep.on{color:#2c1d06}
+  .wstep.on b{background:var(--brass-face);border-color:var(--brass-rim);color:#2c1d06;
+    box-shadow:0 1px 0 rgba(255,244,214,.5) inset}
+  .wstep.on span{color:var(--amber)}
+  .wstep.done b{border-color:#3f6675;color:var(--ink)}
+  .wall{flex:0 0 auto;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;
+    color:var(--muted);font-size:11px;padding:6px 11px;cursor:pointer;font-family:var(--sans)}
+  .wall.on{background:var(--brass-face);color:#2c1d06;border-color:var(--brass-rim);font-weight:700}
+  .wizbtns{display:flex;gap:9px;margin:4px 0 16px}
+  .wizbtns button{flex:1;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans)}
+  .wprev{background:var(--panel-2);border:1px solid var(--line);color:var(--ink)}
+  .wprev:disabled{opacity:.4;cursor:not-allowed}
+  .wnext{background:var(--brass-face);border:1px solid var(--brass-rim);color:#2c1d06;
+    box-shadow:0 1px 0 rgba(255,244,214,.5) inset,0 -6px 9px rgba(90,58,16,.3) inset}
+  /* mode assistant : une étape à la fois ; mode "tout voir" : tout affiché */
+  body:not(.showall) .wizsec{display:none}
+  body:not(.showall) .wizsec.active{display:block;animation:wfade .25s ease}
+  body.showall .wizbtns{display:none}
+  body.showall .wstep{opacity:.5}
+  @keyframes wfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.wizsec.active{animation:none}}
+  /* flèche retour en haut */
+  #toTop{position:fixed;right:16px;bottom:18px;z-index:60;width:46px;height:46px;border-radius:50%;
+    background:var(--brass-face);border:1px solid var(--brass-rim);color:#2c1d06;font-size:20px;font-weight:700;
+    cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.4),0 1px 0 rgba(255,244,214,.5) inset;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;transform:translateY(8px)}
+  #toTop.show{opacity:1;pointer-events:auto;transform:none}
+  @media (prefers-reduced-motion:reduce){#toTop{transition:none}}
   footer{color:#8a7a4e;letter-spacing:.04em;font-style:italic}
 
   /* — repli mouvement réduit : plus de reflets ni d'éveil — */
@@ -515,7 +642,30 @@
     </div>
   </header>
 
-  <section>
+  <nav class="tools" id="toolBar">
+    <button class="toolpill on" data-tool="simple">✦ Simplifié</button>
+    <button class="toolpill" data-tool="compare">Comparateur</button>
+    <button class="toolpill" data-tool="cross">Croisé</button>
+    <button class="toolpill" data-tool="stay">Séjour</button>
+    <button class="toolpill" data-tool="hotels">Hôtels</button>
+    <button class="toolpill" data-tool="car">Voiture</button>
+    <button class="toolpill" data-tool="taxi">Taxi</button>
+    <button class="toolpill" data-tool="attr">Activités</button>
+    <button class="toolpill" data-tool="see">À voir</button>
+  </nav>
+
+  <div class="toolhint" id="toolHint"></div>
+  <nav class="wiz" id="wizNav">
+    <div class="wsteps">
+      <button class="wstep on" data-go="1"><b>1</b><span>Départ</span></button>
+      <button class="wstep" data-go="2"><b>2</b><span>Dates</span></button>
+      <button class="wstep" data-go="3"><b>3</b><span>Destination</span></button>
+      <button class="wstep" data-go="4"><b>4</b><span>Sur place</span></button>
+    </div>
+    <button class="wall" id="wizAll">Tout voir</button>
+  </nav>
+
+  <section class="wizsec" data-step="1" data-blk="depart">
     <div class="step"><b>I</b><h2>Port d’attache</h2><small id="aptSel">—</small></div>
     <div class="aptsearch">
       <input id="aptSearch" type="search" inputmode="search" autocomplete="off"
@@ -529,7 +679,7 @@
     <div class="airlines" id="airlines"><div class="a-hd" id="alHd">Compagnies</div><div class="chips" id="chips"></div></div>
   </section>
 
-  <section>
+  <section class="wizsec" data-step="2" data-blk="dates">
     <div class="step"><b>II</b><h2>Cap &amp; dates</h2><small id="rangeLabel"></small></div>
     <div class="seg" id="tripSeg">
       <button data-ow="0" class="on">Aller-retour</button>
@@ -559,7 +709,7 @@
     <p class="hint" id="dateHint">↑ Sélectionne un aéroport et au moins la date d'aller</p>
   </section>
 
-  <section>
+  <section class="wizsec" data-step="2" data-blk="dates2">
     <div class="step"><b>III</b><h2>Traversée</h2><small>estimée à vol d'oiseau</small></div>
     <div class="bands" id="bands">
       <div class="band on" data-band="all">Toutes</div>
@@ -575,7 +725,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="wizsec" data-step="3" data-blk="butin">
     <div class="step"><b>IV</b><h2>Butin en vue</h2><small id="destCount"></small></div>
     <div class="seg" id="modeSeg" style="margin-bottom:12px">
       <button data-mode="list" class="on">Ma sélection</button>
@@ -592,6 +742,15 @@
         <div class="odrop" id="cmpDrop"></div>
       </div>
       <div class="ochips" id="cmpChips"></div>
+      <div class="opicker">
+        <input id="cmpDest" type="search" autocomplete="off" placeholder="(option) une destination précise : quel aéroport est le moins cher ?">
+        <div class="odrop" id="cmpDestDrop"></div>
+      </div>
+      <div class="ochips" id="cmpDestChip"></div>
+      <div class="seg cmpview" id="cmpView">
+        <button data-cv="best" class="on">Meilleur par ville</button>
+        <button data-cv="airport">Directs par aéroport</button>
+      </div>
       <div class="weigh">
         <div class="wtop"><span>← <b>meilleur prix</b></span><span id="cmpWlab">équilibre</span><span><b>plus court</b> →</span></div>
         <input type="range" id="cmpW" min="0" max="100" value="35">
@@ -605,6 +764,11 @@
         <div class="odrop" id="xDrop"></div>
       </div>
       <div class="ochips" id="xChips"></div>
+      <div class="opicker">
+        <input id="xDest" type="search" autocomplete="off" placeholder="(option) forcer des villes d'arrivée à comparer">
+        <div class="odrop" id="xDestDrop"></div>
+      </div>
+      <div class="ochips" id="xDestChips"></div>
       <div class="xsort" id="xSort">
         <button data-sort="total" class="on">Coût total</button>
         <button data-sort="equity">Équitable</button>
@@ -624,13 +788,14 @@
     </div>
   </section>
 
-  <section>
+  <section class="wizsec" data-step="4" data-blk="surplace">
     <div class="step"><b>V</b><h2>Escale à terre</h2><small id="hCount">hôtels</small></div>
     <div class="destsearch">
       <input id="hCity" type="search" inputmode="search" autocomplete="off"
              placeholder="Ville (vide = destination choisie)">
       <button class="clr" id="hCityClear" aria-label="Effacer">×</button>
     </div>
+    <div data-sub="hotels">
     <div class="hfilters">
       <div class="frow"><span class="flab">Du centre</span>
         <span class="fo" data-f="km" data-v="1">≤ 1 km</span>
@@ -656,15 +821,38 @@
         <span class="fo" data-f="ad" data-v="4">4</span></div>
     </div>
     <div class="hbtns">
-      <button class="hsearchbtn" id="hSearch">Chercher (cache, gratuit)</button>
-      <button class="hlivebtn" id="hLive">⚡ Live + notes</button>
+      <button class="hsearchbtn" id="hSearch">Cache gratuit</button>
+      <button class="hlivebtn" id="hBooking">📸 Booking (photos)</button>
+      <button class="hlivebtn" id="hLive">⚡ Google Hotels</button>
     </div>
     <div id="hotels"></div>
+    </div><!--/hotels-->
+    <div data-sub="car">
     <div class="carbar">
       <button class="carlive" id="carSearch">🚗 Louer une voiture (prix réels)</button>
     </div>
     <div id="cars"></div>
     <a class="carbtn" id="carLink" href="#" target="_blank" rel="noopener">Ou comparer sur <span>Discover Cars</span> →</a>
+    </div><!--/car-->
+
+    <div data-sub="taxi">
+    <div class="subhead" id="taxiHead">🚕 Transfert aéroport</div>
+    <div class="destsearch"><input id="taxiTo" type="search" autocomplete="off" placeholder="Adresse / hôtel d'arrivée (départ = aéroport de destination)"></div>
+    <div class="carbar"><button class="carlive" id="taxiSearch">Chercher un transfert</button></div>
+    <div id="taxis"></div>
+    </div><!--/taxi-->
+
+    <div data-sub="attr">
+    <div class="subhead" id="attrHead">🎟️ Activités & visites</div>
+    <div class="carbar"><button class="carlive" id="attrSearch">Voir les activités</button></div>
+    <div id="attractions"></div>
+    </div><!--/attr-->
+
+    <div data-sub="see">
+    <div class="subhead" id="seeHead">🗺️ Quoi voir sur place</div>
+    <div class="carbar"><button class="hsearchbtn" id="seeSearch">À voir autour (OpenStreetMap, gratuit)</button></div>
+    <div id="seewhat"></div>
+    </div><!--/see-->
     <div class="note">
       « <b>Privative uniquement</b> » écarte les auberges de jeunesse et dortoirs : on ne garde
       que les établissements classés (2★ et plus), donc chambre et salle de bain à toi. Le bouton
@@ -674,6 +862,12 @@
     </div>
   </section>
 
+  <nav class="wizbtns" id="wizBtns">
+    <button class="wprev" id="wizPrev">← Précédent</button>
+    <button class="wnext" id="wizNext">Suivant →</button>
+  </nav>
+
+  <button id="toTop" aria-label="Remonter en haut">↑</button>
   <footer>⚓ ESCALE · « le meilleur cap, au meilleur prix »</footer>
 </div>
 
@@ -898,12 +1092,16 @@ const LS_FAV="ESCALE_FAV_V1", LS_ORIG="ESCALE_ORIGIN_V1";
 const LS_ORIGC="ESCALE_ORIG_CUSTOM_V1", LS_DESTC="ESCALE_DEST_CUSTOM_V1";
 function loadArr(k){try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:[];}catch(_){return [];}}
 function saveArr(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(_){}}
+const LS_DESTHIDE="ESCALE_DEST_HIDE_V1";
 let CUSTOM_ORIG=loadArr(LS_ORIGC);   // aéroports/villes de départ ajoutés (monde)
 let CUSTOM_DEST=loadArr(LS_DESTC);   // destinations ajoutées (monde)
+let DEST_HIDE=loadArr(LS_DESTHIDE);  // destinations par défaut masquées
 function originPool(){return AIRPORTS.concat(CUSTOM_ORIG);}
 function findAirport(code){return originPool().find(a=>a.code===code)||null;}
-function allDests(){const seen=new Set(DESTS.map(d=>d.i));
-  return DESTS.concat(CUSTOM_DEST.filter(d=>!seen.has(d.i)));}
+function allDests(){const custom=new Set(CUSTOM_DEST.map(d=>d.i));
+  // villes ajoutées en tête, puis les destinations par défaut non masquées
+  const base=DESTS.filter(d=>!custom.has(d.i)&&!DEST_HIDE.includes(d.i));
+  return CUSTOM_DEST.concat(base);}
 CUSTOM_DEST.forEach(d=>NAMES[d.i]=d.n);
 const DEF_FAV=["NTE","RNS","BES","CDG","ORY","BVA"];
 let favs=[]; try{favs=JSON.parse(localStorage.getItem(LS_FAV))||DEF_FAV.slice();}catch(_){favs=DEF_FAV.slice();}
@@ -1064,9 +1262,10 @@ async function runOriginAc(localList){
 function addOrigin(code){
   const p=_acStore[code]; if(!p)return;
   if(!CUSTOM_ORIG.some(a=>a.code===code)){
-    CUSTOM_ORIG.push({code:p.code,city:p.city,lat:p.lat,lng:p.lng,r:"mine",world:1});
+    CUSTOM_ORIG.unshift({code:p.code,city:p.city,lat:p.lat,lng:p.lng,r:"mine",world:1});
     saveArr(LS_ORIGC,CUSTOM_ORIG);
   }
+  if(!favs.includes(code)){favs.unshift(code);saveFavs();}   // apparaît en tête des favoris
   searchEl.value="";aptQuery="";clearEl.classList.remove("show");
   document.getElementById("aptAc").innerHTML="";
   paintRegions();selectApt(code);
@@ -1103,9 +1302,10 @@ async function runDestAc(){
 function addDest(code){
   const p=_acStore[code]; if(!p)return;
   if(!CUSTOM_DEST.some(d=>d.i===code)){
-    CUSTOM_DEST.push({n:p.city,i:p.code,lat:p.lat,lng:p.lng,world:1});
+    CUSTOM_DEST.unshift({n:p.city,i:p.code,lat:p.lat,lng:p.lng,world:1});
     saveArr(LS_DESTC,CUSTOM_DEST);NAMES[p.code]=p.city;
   }
+  DEST_HIDE=DEST_HIDE.filter(c=>c!==code);saveArr(LS_DESTHIDE,DEST_HIDE);
   destSearchEl.value="";destQuery="";destClearEl.classList.remove("show");
   document.getElementById("destAc").innerHTML="";
   renderDispatch();refresh();
@@ -1135,8 +1335,8 @@ function renderDispatch(){
   refreshCarLink();
   if(mode==="list") renderDests();
   else if(mode==="stay") renderStay();
-  else if(mode==="compare"){renderCmpChips();renderCompare();}
-  else if(mode==="cross"){renderXChips();renderCross();}
+  else if(mode==="compare"){renderCmpChips();renderCmpDestChip();renderCompare();}
+  else if(mode==="cross"){renderXChips();renderXDestChips();renderCross();}
   else renderAnywhere();
 }
 
@@ -1210,7 +1410,7 @@ function renderDests(){
   box.innerHTML=list.map((d,idx)=>`
     <div class="dest">
       <div class="info" data-open="${idx}">
-        <div class="name">${d.n}<span class="iata">${d.i}</span>${d.world?`<span class="rmdest" data-rm="${d.i}" title="Retirer">✕</span>`:""}<span class="cal-ic">📅 prix/jour</span></div>
+        <div class="name">${d.n}<span class="iata">${d.i}</span><span class="rmdest" data-rm="${d.i}" title="Retirer cette ville">✕</span><span class="cal-ic">📅 prix/jour</span></div>
         <div class="meta">
           ${d.min!=null?`<span class="dur">${fmtDur(d.min)}</span>`:`<span class="dur" style="color:var(--muted)">choisis un départ</span>`}
           <span class="price" data-price="${d.i}"></span>
@@ -1223,11 +1423,19 @@ function renderDests(){
   box.querySelectorAll(".go").forEach(b=>b.onclick=()=>window.open(skyURL(list[+b.dataset.i].i),"_blank"));
   box.querySelectorAll(".live").forEach(b=>b.onclick=()=>runLiveRow(list[+b.dataset.live],b));
   box.querySelectorAll(".rmdest").forEach(el=>el.onclick=(ev)=>{ev.stopPropagation();
-    const code=el.dataset.rm;CUSTOM_DEST=CUSTOM_DEST.filter(d=>d.i!==code);saveArr(LS_DESTC,CUSTOM_DEST);
+    const code=el.dataset.rm;
+    if(CUSTOM_DEST.some(d=>d.i===code)){CUSTOM_DEST=CUSTOM_DEST.filter(d=>d.i!==code);saveArr(LS_DESTC,CUSTOM_DEST);}
+    else{if(!DEST_HIDE.includes(code))DEST_HIDE.push(code);saveArr(LS_DESTHIDE,DEST_HIDE);}
     renderDispatch();refresh();});
   box.querySelectorAll(".info").forEach(el=>el.onclick=()=>{
     if(!origin){document.getElementById("dateHint").classList.add("show");return;}
     openPriceCal(list[+el.dataset.open]);});
+  if(DEST_HIDE.length){
+    const r=document.createElement("div");r.className="restore";
+    r.innerHTML=`↩︎ rétablir ${DEST_HIDE.length} ville${DEST_HIDE.length>1?"s":""} masquée${DEST_HIDE.length>1?"s":""}`;
+    r.onclick=()=>{DEST_HIDE=[];saveArr(LS_DESTHIDE,DEST_HIDE);renderDispatch();refresh();};
+    box.appendChild(r);
+  }
   syncButtons();
 }
 function syncButtons(){const ready=origin&&dep, live=ready&&!(LIVE_Q&&LIVE_Q.exhausted);
@@ -1380,23 +1588,30 @@ function setQuota(q){
 }
 function provName(id){return id==="serpapi"?"SerpApi":(id==="searchapi"?"relais SearchApi":id);}
 
-async function askLive(destCode){
-  let u=`${API_BASE}/api/live?origin=${origin.code}&destination=${destCode}&depart=${dep}`;
+async function askLiveOD(oCode,destCode){
+  let u=`${API_BASE}/api/live?origin=${oCode}&destination=${destCode}&depart=${dep}`;
   if(!oneWay&&ret)u+=`&return=${ret}`;
   const j=await (await fetch(u)).json();
   setQuota(j.quota);
   return j;
 }
+async function askLive(destCode){ return askLiveOD(origin.code,destCode); }
 function liveLabel(j){
   if(!j||j.price==null)return null;
   const st=j.stops===0?"direct":(j.stops!=null?j.stops+" esc":"");
   const dur=j.duration!=null?fmtDur(j.duration):"";
   const al=(j.airlines||[]).slice(0,2).join(" + ");
   const lvl={low:"prix bas",typical:"prix normal",high:"prix élevé"}[j.insights&&j.insights.level]||"";
-  const src=j.cached?"en cache":(j.provider?provName(j.provider):"");
+  // Prix principal = Google Flights LIVE (réservable). Si quota épuisé, prix Aviasales marqué indicatif.
+  const src=j.cached?"en cache":(j.indicative?"Aviasales (indicatif, à confirmer)":"Google Flights (live)");
+  // Aviasales indicatif à côté quand il existe ET qu'on affiche bien le live
+  const aside=(!j.indicative&&j.tp_price!=null)
+    ? ` <span class="lvl">· Aviasales : ~${j.tp_price} € vu récemment${j.tp_cheaper_by?` (−${j.tp_cheaper_by} €, à confirmer)`:""}</span>`
+    : "";
   return `⚡ ${j.price} € ${[al,st,dur].filter(Boolean).join(" · ")}`
        + (lvl?` <span class="lvl">(${lvl})</span>`:"")
-       + (src?` <span class="lvl">· ${src}</span>`:"");
+       + ` <span class="lvl">· ${src}</span>`
+       + aside;
 }
 function liveFail(j){
   if(j&&j.exhausted)return "quota live épuisé ce mois — prix en cache uniquement";
@@ -1491,6 +1706,61 @@ function hotelCard(h,nights){
     ${h.url?`<a class="hgo" href="${h.url}" target="_blank" rel="noopener">Voir l'offre →</a>`:""}
   </div>`;
 }
+function hotelPhotoCard(h,nights,cur){
+  const sym=cur==="EUR"?"€":(cur==="USD"?"$":cur||"€");
+  const note=h.rating!=null
+    ? `<span class="hbadge word">${h.rating}/10${h.ratingWord?" "+h.ratingWord:""}${h.reviews?` · ${h.reviews} avis`:""}</span>`
+    : "";
+  const st=h.stars?`<span class="hbadge stars">${"★".repeat(Math.min(5,Math.round(h.stars)))}</span>`:"";
+  const dist=h.distanceKm!=null?`<span class="hbadge dist">${h.distanceKm} km du centre</span>`:"";
+  const perNight=h.pricePerNight!=null?`<small>${h.pricePerNight} ${sym}/nuit</small>`:"";
+  const strike=h.priceStrike?`<span class="hstrike">${h.priceStrike} ${sym}</span>`:"";
+  const pic=h.photo?`<img class="hpic" src="${h.photo}" alt="" loading="lazy">`:"";
+  return `<div class="hotel photo">
+    ${pic}
+    <div class="hin">
+      <div class="htop">
+        <div class="hname">${h.name}</div>
+        <div class="hprice">${strike}${h.priceTotal} ${sym}<small>${nights} nuit${nights>1?"s":""}</small>${perNight}</div>
+      </div>
+      <div class="hmeta">${note}${st}${dist}</div>
+      ${h.url?`<a class="hgo" href="${h.url}" target="_blank" rel="noopener">Voir sur Booking →</a>`:""}
+    </div>
+  </div>`;
+}
+function renderHotelsPhoto(list,nights,cur,meta){
+  const box=document.getElementById("hotels");
+  if(!list||!list.length){box.innerHTML=`<div class="empty">${meta||"Aucun hôtel Booking pour ces filtres."}</div>`;
+    document.getElementById("hCount").textContent="0 hôtel";return;}
+  box.innerHTML=list.map(h=>hotelPhotoCard(h,nights,cur)).join("");
+  document.getElementById("hCount").textContent=list.length+" hôtel"+(list.length>1?"s":"")+(meta?" · "+meta:"");
+}
+async function searchHotelsBooking(){
+  const t=hotelTarget();
+  if(!t){renderHotelsPhoto(null,0,"","Tape une ville, ou choisis une destination plus haut.");return;}
+  const d=hotelDates(),nights=nightsBetween(d.ci,d.co),btn=document.getElementById("hBooking");
+  btn.disabled=true;
+  document.getElementById("hotels").innerHTML='<div class="empty">recherche Booking (photos + notes)…</div>';
+  const p=new URLSearchParams({q:t.q,checkIn:d.ci,checkOut:d.co,adults:String(HF.ad)});
+  if(HF.km)p.set("maxKm",String(HF.km));
+  if(HF.stars)p.set("minStars",String(HF.stars));
+  p.set("privateOnly",HF.priv?"1":"0");
+  if(t.lat!=null&&t.lng!=null){p.set("lat",t.lat);p.set("lng",t.lng);}
+  try{
+    const j=await (await fetch(`${API_BASE}/api/stays?${p}`)).json();
+    if(j.configured===false){renderHotelsPhoto(null,0,"","Photos Booking non configurées (clé RapidAPI manquante côté serveur).");}
+    else renderHotelsPhoto(j.hotels,j.nights||nights,j.currency||"EUR",
+      j.hotels&&j.hotels.length?`${t.label||t.q} · Booking`:(j.note||"Aucun hôtel Booking pour ces filtres."));
+  }catch(_){renderHotelsPhoto(null,0,"","Recherche Booking indisponible.");}
+  btn.disabled=false;
+}
+let BOOKING_OK=false;
+fetch(`${API_BASE}/api/stays`).then(r=>r.json()).then(j=>{
+  BOOKING_OK=!!(j&&j.configured);
+  const b=document.getElementById("hBooking"); if(b)b.style.display=BOOKING_OK?"block":"none";
+}).catch(()=>{});
+const _hb=document.getElementById("hBooking"); if(_hb)_hb.onclick=searchHotelsBooking;
+
 function renderHotels(list,nights,meta){
   const box=document.getElementById("hotels");
   if(!list||!list.length){
@@ -1516,9 +1786,9 @@ async function searchHotelsCache(){
   const p=hotelParams(t,d);p.set("location",t.q);
   try{
     const j=await (await fetch(`${API_BASE}/api/hotels?${p}`)).json();
-    renderHotels(j.hotels,nights,j.hotels&&j.hotels.length
-      ? `${t.label} · ${d.ci} → ${d.co} · cache`
-      : (j.note||"aucun tarif en cache pour cette ville / ces dates"));
+    if(j.error&&/TP_TOKEN/.test(j.error)){renderHotels(null,0,"","Hôtels non configurés (token Travelpayouts manquant côté serveur).");}
+    else if(j.hotels&&j.hotels.length){renderHotels(j.hotels,nights,`${t.label} · ${d.ci} → ${d.co} · cache`);}
+    else{renderHotels(null,0,"",`Aucun tarif en cache pour ${t.label} à ces dates. Essaie « ⚡ Live + notes » pour une recherche en temps réel.`);}
   }catch(_){renderHotels(null,0,"Recherche indisponible pour le moment.");}
 }
 async function searchHotelsLive(){
@@ -1548,6 +1818,48 @@ const LS_CMP="ESCALE_CMP_V1", LS_X="ESCALE_CROSS_V1";
 let cmpOrigins=loadArr(LS_CMP);       // [{code,city}]
 let xOrigins=loadArr(LS_X);
 let cmpWeight=0.35, xSort="total";
+let cmpDestCode=null, cmpDestName=null, cmpView="best";
+const LS_XDEST="ESCALE_XDEST_V1";
+let xDests=loadArr(LS_XDEST);   // [{i,n}] villes d'arrivée forcées (croisé)
+
+// suggestions destination : liste locale (allDests) + monde (acSearch)
+async function destSuggest(term){
+  const q=norm(term); const res=[];
+  allDests().forEach(d=>{ if((norm(d.n).includes(q)||norm(d.i).includes(q))&&!res.some(r=>r.code===d.i)) res.push({code:d.i,name:d.n}); });
+  let out=res.slice(0,6);
+  if(term.trim().length>=2){ try{const w=await acSearch(term); w.forEach(p=>{ if(!out.some(r=>r.code===p.code)) out.push({code:p.code,name:p.city}); });}catch(_){} }
+  return out.slice(0,8);
+}
+function bindDestPicker(inputId,dropId,onPick){
+  const inp=document.getElementById(inputId),drop=document.getElementById(dropId); if(!inp)return;
+  let deb=null;
+  inp.addEventListener("input",()=>{clearTimeout(deb);deb=setTimeout(async()=>{
+    const q=inp.value.trim(); if(q.length<2){drop.classList.remove("show");drop.innerHTML="";return;}
+    const res=await destSuggest(q);
+    drop.innerHTML=res.map(r=>`<div class="odrow" data-code="${r.code}" data-name="${r.name}">
+      <span class="ocode">${r.code}</span><span class="ocity">${r.name}</span></div>`).join("")||'<div class="odrow"><span class="osub">rien trouvé</span></div>';
+    drop.classList.add("show");
+    drop.querySelectorAll(".odrow[data-code]").forEach(el=>el.onclick=()=>{onPick(el.dataset.code,el.dataset.name);inp.value="";drop.classList.remove("show");drop.innerHTML="";});
+  },220);});
+  inp.addEventListener("blur",()=>setTimeout(()=>drop.classList.remove("show"),180));
+}
+bindDestPicker("cmpDest","cmpDestDrop",(code,name)=>{cmpDestCode=code;cmpDestName=name;NAMES[code]=name;renderCmpDestChip();renderCompare();});
+bindDestPicker("xDest","xDestDrop",(code,name)=>{if(!xDests.some(x=>x.i===code)){xDests.unshift({i:code,n:name});saveArr(LS_XDEST,xDests);NAMES[code]=name;}renderXDestChips();renderCross();});
+function renderCmpDestChip(){
+  const el=document.getElementById("cmpDestChip"),seg=document.getElementById("cmpView"); if(!el)return;
+  if(cmpDestCode){el.innerHTML=`<span class="ochip">→ ${cmpDestName||cmpDestCode} · ${cmpDestCode}<span class="ox" data-x>×</span></span>`;
+    el.querySelector(".ox").onclick=()=>{cmpDestCode=null;cmpDestName=null;renderCmpDestChip();renderCompare();};
+    if(seg)seg.style.display="none";
+  }else{el.innerHTML="";if(seg)seg.style.display="flex";}
+}
+function renderXDestChips(){
+  const el=document.getElementById("xDestChips"); if(!el)return;
+  el.innerHTML=xDests.map(x=>`<span class="ochip">→ ${x.n||x.i}<span class="ox" data-rm="${x.i}">×</span></span>`).join("");
+  el.querySelectorAll(".ox").forEach(b=>b.onclick=()=>{xDests=xDests.filter(x=>x.i!==b.dataset.rm);saveArr(LS_XDEST,xDests);renderXDestChips();renderCross();});
+}
+document.querySelectorAll("#cmpView button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#cmpView button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+  cmpView=b.dataset.cv;renderCompare();});
 
 /* cache client des résultats "n'importe où" par départ (gratuit, illimité) */
 const _anyCache={};
@@ -1640,13 +1952,59 @@ function normVals(arr,get){const v=arr.map(get).filter(x=>x!=null);
   const mn=Math.min(...v),mx=Math.max(...v);
   return x=>x==null?1:(mx===mn?0:(x-mn)/(mx-mn));}
 
+function cmpCard(r,titleCode,titleName,viaText,scoreText){
+  const nm=titleName||NAMES[titleCode]||titleCode;
+  const dur=r.dur!=null?`<span class="cbadge dur">${fmtDur(r.dur)}</span>`:"";
+  const dirB=r.transfers===0?`<span class="cbadge dir">direct</span>`:(r.transfers!=null?`<span class="cbadge">${r.transfers} esc</span>`:"");
+  const sc=scoreText?`<span class="cbadge best">${scoreText}</span>`:"";
+  return `<div class="cmpcard${r.transfers===0?" direct":""}">
+    <div class="ctop"><div class="cdest">${nm}<span class="iata" style="margin-left:7px">${titleCode}</span></div>
+      <div class="cprice">${r.price} €</div></div>
+    <div class="cvia">${viaText}</div>
+    <div class="cmeta">${dirB}${dur}${sc}
+      ${LIVE_OK?`<button class="live clive" data-clive="${r.dest}" data-cfrom="${r.from}" title="Prix réel depuis ${r.from}">⚡</button>`:""}</div>
+    <span class="pricelive" data-clivep="${r.dest}-${r.from}"></span>
+    ${r.link?`<a class="cgo" href="${r.link}" target="_blank" rel="noopener">Voir l'offre →</a>`:""}
+  </div>`;
+}
 async function renderCompare(){
   const box=document.getElementById("dests");
   document.getElementById("destCount").textContent=cmpOrigins.length+" départ"+(cmpOrigins.length>1?"s":"");
   if(!cmpOrigins.length){box.innerHTML='<div class="empty">Ajoute au moins un aéroport de départ à comparer.</div>';return;}
-  box.innerHTML='<div class="empty">calcul des dessertes au meilleur prix…</div>';
+  box.innerHTML='<div class="empty">calcul des dessertes…</div>';
   const maps=await Promise.all(cmpOrigins.map(o=>anywhereFor(o.code)));
-  // meilleure offre par destination, tous départs confondus
+
+  // ---- MODE 1 : destination verrouillée → quel aéroport est le moins cher ? ----
+  if(cmpDestCode){
+    let rows=cmpOrigins.map((o,i)=>{const c=maps[i][cmpDestCode];
+      return c?{dest:cmpDestCode,from:o.code,fromCity:o.city,price:c.price,dur:c.dur,transfers:c.transfers,link:c.link}:null;})
+      .filter(Boolean).filter(r=>passStops(r.transfers))
+      .sort((a,b)=>stopRank(a.transfers)-stopRank(b.transfers)||a.price-b.price);
+    if(!rows.length){box.innerHTML=`<div class="empty">Aucun tarif en cache vers ${cmpDestName||cmpDestCode} depuis tes aéroports. Essaie ⚡ ou d'autres dates.</div>`;return;}
+    box.innerHTML=`<div class="cmphead">→ ${cmpDestName||cmpDestCode} · quel départ ?</div>`
+      +rows.map(r=>cmpCard(r,r.from,r.fromCity,`vers ${cmpDestName||cmpDestCode}`,"")).join("");
+    box.querySelectorAll(".clive").forEach(b=>b.onclick=()=>cmpLive(b.dataset.cfrom,b.dataset.clive,b));
+    return;
+  }
+
+  // ---- MODE 2 : directs par aéroport (toutes les lignes directes de chaque aéroport) ----
+  if(cmpView==="airport"){
+    let html="";
+    cmpOrigins.forEach((o,i)=>{
+      const m=maps[i];
+      const dl=Object.keys(m).filter(d=>m[d].transfers===0)
+        .map(d=>({dest:d,from:o.code,fromCity:o.city,price:m[d].price,dur:m[d].dur,transfers:0,link:m[d].link}))
+        .sort((a,b)=>a.price-b.price).slice(0,15);
+      html+=`<div class="cmphead">${o.code} · ${o.city} — ${dl.length} direct${dl.length>1?"s":""}</div>`;
+      html+= dl.length? dl.map(r=>cmpCard(r,r.dest,null,`direct depuis ${o.code}`,"")).join("")
+                      : `<div class="empty">aucun vol direct en cache</div>`;
+    });
+    box.innerHTML=html;
+    box.querySelectorAll(".clive").forEach(b=>b.onclick=()=>cmpLive(b.dataset.cfrom,b.dataset.clive,b));
+    return;
+  }
+
+  // ---- MODE 3 : meilleur par ville (défaut) ----
   const best={};
   maps.forEach((m,i)=>{const code=cmpOrigins[i].code;
     for(const d in m){const c=m[d];
@@ -1656,36 +2014,45 @@ async function renderCompare(){
   if(!rows.length){box.innerHTML='<div class="empty">Aucune desserte trouvée pour ces départs à ces dates.</div>';return;}
   const pN=normVals(rows,r=>r.price),dN=normVals(rows,r=>r.dur);
   rows.forEach(r=>r.score=(1-cmpWeight)*pN(r.price)+cmpWeight*dN(r.dur));
-  rows.sort((a,b)=>stopRank(a.transfers)-stopRank(b.transfers)||a.score-b.score);  // directs d'abord, puis score
-  box.innerHTML=rows.slice(0,40).map(r=>{
-    const nm=NAMES[r.dest]||r.dest;
-    const dur=r.dur!=null?`<span class="cbadge dur">${fmtDur(r.dur)}</span>`:"";
-    const dirB=r.transfers===0?`<span class="cbadge dir">direct</span>`:(r.transfers!=null?`<span class="cbadge">${r.transfers} esc</span>`:"");
-    return `<div class="cmpcard${r.transfers===0?" direct":""}">
-      <div class="ctop"><div class="cdest">${nm}<span class="iata" style="margin-left:7px">${r.dest}</span></div>
-        <div class="cprice">${r.price} €</div></div>
-      <div class="cvia">meilleur départ : ${r.from} · ${r.fromCity}</div>
-      <div class="cmeta">${dirB}${dur}<span class="cbadge best">score ${(100-Math.round(r.score*100))}/100</span></div>
-      ${r.link?`<a class="cgo" href="${r.link}" target="_blank" rel="noopener">Voir l'offre →</a>`:""}
-    </div>`;}).join("");
+  rows.sort((a,b)=>stopRank(a.transfers)-stopRank(b.transfers)||a.score-b.score);
+  box.innerHTML=rows.slice(0,40).map(r=>cmpCard(r,r.dest,null,`meilleur départ : ${r.from} · ${r.fromCity}`,`score ${(100-Math.round(r.score*100))}/100`)).join("");
+  box.querySelectorAll(".clive").forEach(b=>b.onclick=()=>cmpLive(b.dataset.cfrom,b.dataset.clive,b));
 }
 
+async function cmpLive(from,dest,btn){
+  btn.classList.add("busy");btn.disabled=true;
+  const el=document.querySelector(`.pricelive[data-clivep="${dest}-${from}"]`);
+  if(el)el.innerHTML='<span class="lvl">tarif réel…</span>';
+  try{
+    const j=await askLiveOD(from,dest),lab=liveLabel(j);
+    if(el)el.innerHTML=lab
+      ? (j.url?`<a href="${j.url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">depuis ${from} : ${lab}</a>`:`depuis ${from} : ${lab}`)
+      : `<span class="lvl">${liveFail(j)}</span>`;
+  }catch(_){ if(el)el.innerHTML='<span class="lvl">prix live indisponible</span>'; }
+  btn.classList.remove("busy");btn.disabled=!!(LIVE_Q&&LIVE_Q.exhausted);
+}
 async function renderCross(){
   const box=document.getElementById("dests");
   document.getElementById("destCount").textContent=xOrigins.length+" voyageur"+(xOrigins.length>1?"s":"");
   if(xOrigins.length<2){box.innerHTML='<div class="empty">Ajoute 2 à 3 voyageurs (chacun son aéroport) pour trouver un point de rendez-vous.</div>';return;}
   box.innerHTML='<div class="empty">recherche des destinations communes…</div>';
   const maps=await Promise.all(xOrigins.map(o=>anywhereFor(o.code)));
-  // intersection des destinations desservies par tous
-  let common=Object.keys(maps[0]||{});
-  for(let i=1;i<maps.length;i++)common=common.filter(d=>maps[i][d]);
-  common=common.filter(d=>!xOrigins.some(o=>o.code===d)); // pas la ville d'un voyageur
-  if(!common.length){box.innerHTML='<div class="empty">Aucune destination commune trouvée. Élargis les dates ou change un départ.</div>';return;}
+  let common;
+  if(xDests.length){                       // villes d'arrivée FORCÉES par l'utilisateur
+    common=xDests.map(x=>x.i).filter(d=>!xOrigins.some(o=>o.code===d));
+  }else{                                    // sinon : intersection auto des dessertes
+    common=Object.keys(maps[0]||{});
+    for(let i=1;i<maps.length;i++)common=common.filter(d=>maps[i][d]);
+    common=common.filter(d=>!xOrigins.some(o=>o.code===d));
+  }
+  if(!common.length){box.innerHTML=`<div class="empty">${xDests.length?"Aucune de tes villes d'arrivée n'est en cache depuis ces départs. Essaie ⚡ sur une carte.":"Aucune destination commune trouvée. Élargis les dates ou change un départ."}</div>`;return;}
   const rows=common.map(d=>{
-    const legs=xOrigins.map((o,i)=>({code:o.code,city:o.city,price:maps[i][d].price,dur:maps[i][d].dur}));
-    const prices=legs.map(l=>l.price), durs=legs.map(l=>l.dur).filter(x=>x!=null);
-    return {dest:d,legs,total:prices.reduce((a,b)=>a+b,0),
-      spread:Math.max(...prices)-Math.min(...prices),
+    const legs=xOrigins.map((o,i)=>{const c=maps[i][d];return {code:o.code,city:o.city,price:c?c.price:null,dur:c?c.dur:null};});
+    const known=legs.map(l=>l.price).filter(x=>x!=null);
+    const durs=legs.map(l=>l.dur).filter(x=>x!=null);
+    return {dest:d,legs,partial:known.length<legs.length,
+      total:known.reduce((a,b)=>a+b,0),
+      spread:known.length?Math.max(...known)-Math.min(...known):0,
       avgDur:durs.length?durs.reduce((a,b)=>a+b,0)/durs.length:null};
   });
   rows.sort((a,b)=>{
@@ -1695,14 +2062,35 @@ async function renderCross(){
   });
   box.innerHTML=rows.slice(0,30).map(r=>{
     const nm=NAMES[r.dest]||r.dest;
-    const legs=r.legs.map(l=>`<div class="xleg"><span class="xo">${l.code} · ${l.city}</span>
-      <span class="xp">${l.price} €</span><span class="xd">${l.dur!=null?fmtDur(l.dur):"—"}</span></div>`).join("");
+    const legs=r.legs.map(l=>`<div class="xleg" data-xleg="${r.dest}|${l.code}"><span class="xo">${l.code} · ${l.city}</span>
+      <span class="xp" data-xp="${r.dest}|${l.code}">${l.price!=null?l.price+" €":"— ⚡"}</span><span class="xd">${l.dur!=null?fmtDur(l.dur):"—"}</span></div>`).join("");
     return `<div class="xcard">
       <div class="xhd"><div class="xdest">${nm}<span class="iata" style="margin-left:7px">${r.dest}</span></div>
-        <div class="xtot">${r.total} €</div></div>
+        <div class="xtot">${r.total} €${r.partial?" +":""}</div></div>
       ${legs}
-      <div class="xmetrics">écart entre voyageurs : ${r.spread} €${r.avgDur!=null?" · durée moyenne "+fmtDur(Math.round(r.avgDur)):""}</div>
+      <div class="xmetrics">écart entre voyageurs : ${r.spread} €${r.avgDur!=null?" · durée moyenne "+fmtDur(Math.round(r.avgDur)):""}
+        ${LIVE_OK?`<button class="live xlive" data-xlive="${r.dest}" title="Prix réels pour tous">⚡</button>`:""}</div>
     </div>`;}).join("");
+  box.querySelectorAll(".xlive").forEach(b=>b.onclick=()=>crossLive(b.dataset.xlive,rows,b));
+}
+
+async function crossLive(dest,rows,btn){
+  const row=rows.find(r=>r.dest===dest); if(!row)return;
+  btn.classList.add("busy");btn.disabled=true;
+  let total=0, ok=true;
+  for(const l of row.legs){
+    const el=document.querySelector(`[data-xp="${dest}|${l.code}"]`);
+    if(el)el.textContent="…";
+    try{
+      const j=await askLiveOD(l.code,dest);
+      if(j&&j.price!=null){ if(el)el.innerHTML=`⚡ ${j.price} €`; total+=j.price; }
+      else{ ok=false; if(el)el.textContent=l.price+" €"; total+=l.price; }
+    }catch(_){ ok=false; if(el)el.textContent=l.price+" €"; total+=l.price; }
+    if(LIVE_Q&&LIVE_Q.exhausted){ok=false;break;}
+  }
+  const tot=btn.closest(".xcard").querySelector(".xtot");
+  if(tot)tot.innerHTML=`${total} €${ok?" ⚡":""}`;
+  btn.classList.remove("busy");btn.disabled=!!(LIVE_Q&&LIVE_Q.exhausted);
 }
 
 /* ================= LOCATION DE VOITURE (Discover Cars) ================= */
@@ -1750,7 +2138,7 @@ function carCard(c,nights,cur){
       <div class="cprice">${c.priceTotal} ${sym}${perDay}</div>
     </div>
     <div class="cmeta">${note}${trans}${seats}${mil}${term}${free}</div>
-    ${c.url?`<a class="cgo" href="${c.url}" target="_blank" rel="noopener">Réserver →</a>`:""}
+    <a class="cgo" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Réserver →</a>
   </div>`;
 }
 function renderCars(list,nights,cur,meta){
@@ -1758,10 +2146,12 @@ function renderCars(list,nights,cur,meta){
   if(!list||!list.length){box.innerHTML=`<div class="empty">${meta||"Aucune voiture pour ce lieu / ces dates."}</div>`;return;}
   box.innerHTML=list.map(c=>carCard(c,nights,cur)).join("");
 }
+let _carBook={city:"",ci:"",co:""};
 async function searchCars(){
   const t=hotelTarget();
   if(!t){renderCars(null,0,"","Tape une ville, ou choisis une destination plus haut.");return;}
   const d=hotelDates(),nights=nightsBetween(d.ci,d.co),btn=document.getElementById("carSearch");
+  _carBook={city:t.q,ci:d.ci,co:d.co};
   btn.disabled=true;
   document.getElementById("cars").innerHTML='<div class="empty">recherche des voitures…</div>';
   const p=new URLSearchParams({q:t.q,pickUpDate:d.ci,dropOffDate:d.co});
@@ -1775,6 +2165,101 @@ async function searchCars(){
   btn.disabled=false;
 }
 const _carBtn=document.getElementById("carSearch"); if(_carBtn)_carBtn.onclick=searchCars;
+
+/* ================= TRANSFERT / TAXI ================= */
+let TAXI_OK=false;
+fetch(`${API_BASE}/api/taxi`).then(r=>r.json()).then(j=>{TAXI_OK=!!(j&&j.configured);
+  ["taxiHead","taxiTo","taxiSearch"].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=TAXI_OK?"":"none";});
+  const w=document.getElementById("taxiTo");if(w)w.parentElement.style.display=TAXI_OK?"":"none";
+}).catch(()=>{});
+function taxiCard(t,cur){
+  const sym=cur==="EUR"?"€":(cur==="USD"?"$":cur||"€");
+  const cap=t.passengers?`<span class="hbadge">${t.passengers} pers.</span>`:"";
+  const bag=t.bags?`<span class="hbadge">${t.bags} bagages</span>`:"";
+  const dur=t.durationMin?`<span class="hbadge">${t.durationMin} min</span>`:"";
+  const meet=t.meetGreet?`<span class="hbadge free">accueil pancarte</span>`:"";
+  const free=t.freeCancellation?`<span class="hbadge free">annulation gratuite</span>`:"";
+  const img=t.image?`<img class="txi" src="${t.image}" alt="" loading="lazy">`:"";
+  return `<div class="tx">${img}<div class="txb"><div class="txn">${t.category}</div>
+    <div class="txs">${t.supplier||""}</div>
+    <div class="txmeta">${cap}${bag}${dur}${meet}${free}</div></div>
+    <div class="txp">${t.price} ${sym}</div></div>`;
+}
+async function searchTaxi(){
+  const dst=hotelTarget(); const to=document.getElementById("taxiTo").value.trim();
+  if(!dst){document.getElementById("taxis").innerHTML='<div class="empty">Choisis une destination plus haut.</div>';return;}
+  if(!to){document.getElementById("taxis").innerHTML='<div class="empty">Indique l\'adresse ou l\'hôtel d\'arrivée.</div>';return;}
+  const d=hotelDates(),btn=document.getElementById("taxiSearch");btn.disabled=true;
+  document.getElementById("taxis").innerHTML='<div class="empty">recherche du transfert…</div>';
+  const p=new URLSearchParams({from:dst.q+" airport",to:to,date:d.ci,time:"10:00",passengers:String(HF.ad)});
+  try{const j=await (await fetch(`${API_BASE}/api/taxi?${p}`)).json();
+    const box=document.getElementById("taxis");
+    if(j.taxis&&j.taxis.length)box.innerHTML=j.taxis.map(t=>taxiCard(t,j.currency)).join("");
+    else box.innerHTML=`<div class="empty">${j.note||"Aucun transfert trouvé."}</div>`;
+  }catch(_){document.getElementById("taxis").innerHTML='<div class="empty">Transfert indisponible.</div>';}
+  btn.disabled=false;
+}
+const _tx=document.getElementById("taxiSearch"); if(_tx)_tx.onclick=searchTaxi;
+
+/* ================= ATTRACTIONS ================= */
+let ATTR_OK=false;
+fetch(`${API_BASE}/api/attractions`).then(r=>r.json()).then(j=>{ATTR_OK=!!(j&&j.configured);
+  ["attrHead","attrSearch"].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=ATTR_OK?"":"none";});
+}).catch(()=>{});
+function attrCard(a,cur){
+  const sym=cur==="EUR"?"€":(cur==="USD"?"$":cur||"€");
+  const note=a.rating!=null?`<span class="abadge note">${a.rating}/5${a.reviews?` · ${a.reviews} avis`:""}</span>`:"";
+  const best=a.bestseller?`<span class="abadge best">top vente</span>`:"";
+  const free=a.freeCancellation?`<span class="abadge free">annulation gratuite</span>`:"";
+  const price=a.price!=null?`<span class="ap">dès ${Math.round(a.price)} ${sym}</span>`:"";
+  const pic=a.photo?`<img class="api" src="${a.photo}" alt="" loading="lazy">`:"";
+  return `<div class="attr">${pic}<div class="ain"><div class="an">${a.name}</div>
+    ${a.desc?`<div class="ad">${a.desc}</div>`:""}
+    <div class="am">${best}${note}${free}${price}</div>
+    ${a.url?`<a class="ago" href="${a.url}" target="_blank" rel="noopener">Réserver →</a>`:""}</div></div>`;
+}
+async function searchAttractions(){
+  const dst=hotelTarget();
+  if(!dst){document.getElementById("attractions").innerHTML='<div class="empty">Choisis une destination plus haut.</div>';return;}
+  const btn=document.getElementById("attrSearch");btn.disabled=true;
+  document.getElementById("attractions").innerHTML='<div class="empty">recherche des activités…</div>';
+  try{const j=await (await fetch(`${API_BASE}/api/attractions?q=${encodeURIComponent(dst.q)}`)).json();
+    const box=document.getElementById("attractions");
+    if(j.attractions&&j.attractions.length)box.innerHTML=j.attractions.map(a=>attrCard(a,j.currency)).join("");
+    else box.innerHTML=`<div class="empty">${j.note||"Aucune activité trouvée."}</div>`;
+  }catch(_){document.getElementById("attractions").innerHTML='<div class="empty">Activités indisponibles.</div>';}
+  btn.disabled=false;
+}
+const _at=document.getElementById("attrSearch"); if(_at)_at.onclick=searchAttractions;
+
+/* ================= QUOI VOIR (OpenStreetMap) ================= */
+function seeCard(x){
+  const d=x.distanceKm!=null?`<span class="sd">${x.distanceKm} km</span>`:"";
+  const link=x.wiki?`<a class="slink" href="${x.wiki}" target="_blank" rel="noopener">wiki ↗</a>`
+            :(x.site?`<a class="slink" href="${x.site}" target="_blank" rel="noopener">site ↗</a>`
+            :`<a class="slink" href="${x.osm}" target="_blank" rel="noopener">carte ↗</a>`);
+  return `<div class="see"><span class="semo">${x.emo}</span>
+    <div class="sbody"><div class="sn">${x.name}</div><div class="sc">${x.cat}</div></div>
+    ${d}${link}</div>`;
+}
+async function searchSeeWhat(){
+  const dst=hotelTarget();
+  if(!dst){document.getElementById("seewhat").innerHTML='<div class="empty">Choisis une destination plus haut.</div>';return;}
+  const btn=document.getElementById("seeSearch");btn.disabled=true;
+  document.getElementById("seewhat").innerHTML='<div class="empty">recherche des lieux à voir…</div>';
+  const p=new URLSearchParams({radius:"8000"});
+  if(dst.lat!=null&&dst.lng!=null){p.set("lat",dst.lat);p.set("lng",dst.lng);}
+  else p.set("q",dst.q);
+  try{
+    const j=await (await fetch(`${API_BASE}/api/seewhat?${p}`)).json();
+    const box=document.getElementById("seewhat");
+    if(j.places&&j.places.length)
+      box.innerHTML=`<div class="hnote">${j.total} lieux dans un rayon de ${j.radiusKm||8} km · source OpenStreetMap (gratuit)</div>`+j.places.map(seeCard).join("");
+    else box.innerHTML=`<div class="empty">${j.note||"Aucun lieu trouvé autour."}</div>`;
+  }catch(_){document.getElementById("seewhat").innerHTML='<div class="empty">OpenStreetMap indisponible pour le moment.</div>';}
+  btn.disabled=false;
+}
+const _sw=document.getElementById("seeSearch"); if(_sw)_sw.onclick=searchSeeWhat;
 
 function refreshCarLink(){
   const el=document.getElementById("carLink"); if(!el)return;
@@ -1797,11 +2282,14 @@ async function renderStay(){
         <span class="stayline" data-stayh="${x.i}">hôtel …</span>
         <span class="stayline" data-stayt="${x.i}"></span>
       </div>
+      ${LIVE_OK?`<button class="live" data-slive="${x.i}" title="Prix réel Google Flights">⚡</button>`:""}
       <button class="go" data-i="${i}">Chercher</button>
     </div>`).join("");
   box.querySelectorAll(".go").forEach(b=>b.onclick=()=>window.open(skyURL(list[+b.dataset.i].i),"_blank"));
+  box.querySelectorAll(".live[data-slive]").forEach(b=>b.onclick=()=>stayLive(b.dataset.slive,nights,b));
   syncButtons();
 
+  _stayNuit={};
   for(const x of list){
     let vol=null,nuit=null;
     try{
@@ -1809,18 +2297,40 @@ async function renderStay(){
       if(!oneWay&&ret)u+=`&return=${ret}`;
       const j=await (await fetch(u)).json(); vol=j&&j.price?j.price:null;
     }catch(_){}
+    _stayVol[x.i]=vol;
     const fe=document.querySelector(`[data-stayf="${x.i}"]`);
     if(fe){fe.className="price show";fe.textContent=vol?`vol ≈ ${vol} €`:"vol —";}
     try{
-      const p=hotelParams({lat:x.lat,lng:x.lng},d);p.set("location",x.n);p.set("limit","5");
-      const j=await (await fetch(`${API_BASE}/api/hotels?${p}`)).json();
+      // recherche hôtel LARGE (sans filtres de distance/catégorie) pour toujours obtenir un « à partir de »
+      const hp=new URLSearchParams({location:x.n,checkIn:d.ci,checkOut:d.co,privateOnly:"1",limit:"8"});
+      if(x.lat!=null&&x.lng!=null){hp.set("lat",x.lat);hp.set("lng",x.lng);}
+      const j=await (await fetch(`${API_BASE}/api/hotels?${hp}`)).json();
       const best=j.hotels&&j.hotels[0]; nuit=best?best.pricePerNight:null;
     }catch(_){}
+    _stayNuit[x.i]=nuit;
     const he=document.querySelector(`[data-stayh="${x.i}"]`);
-    if(he)he.innerHTML=nuit?`hôtel dès ${nuit} €/nuit × ${nights} = ${nuit*nights} €`:"hôtel —";
-    const te=document.querySelector(`[data-stayt="${x.i}"]`);
-    if(te&&vol&&nuit)te.innerHTML=`<b>séjour ≈ ${vol+nuit*nights} €</b> pour ${nights} nuit${nights>1?"s":""}`;
+    if(he)he.innerHTML=nuit?`hôtel dès ${nuit} €/nuit × ${nights} = ${nuit*nights} €`:"hôtel — (essaie ⚡ ou l'onglet Hôtels)";
+    stayTotal(x.i,nights);
   }
+}
+let _stayNuit={}, _stayVol={};
+function stayTotal(code,nights){
+  const vol=_stayVol[code], nuit=_stayNuit[code];
+  const te=document.querySelector(`[data-stayt="${code}"]`);
+  if(te)te.innerHTML=(vol&&nuit)?`<b>séjour ≈ ${vol+nuit*nights} €</b> pour ${nights} nuit${nights>1?"s":""}`:"";
+}
+async function stayLive(code,nights,btn){
+  btn.classList.add("busy");btn.disabled=true;
+  const fe=document.querySelector(`[data-stayf="${code}"]`);
+  if(fe)fe.textContent="vol (réel)…";
+  try{
+    const j=await askLiveOD(origin.code,code);
+    if(j&&j.price!=null){_stayVol[code]=j.price;
+      if(fe)fe.innerHTML=`⚡ vol ${j.price} €${j.stops===0?" · direct":""}`;
+      stayTotal(code,nights);}
+    else if(fe)fe.textContent=liveFail(j);
+  }catch(_){ if(fe)fe.textContent="prix live indisponible"; }
+  btn.classList.remove("busy");btn.disabled=!!(LIVE_Q&&LIVE_Q.exhausted);
 }
 
 /* ================= MODE « N'IMPORTE OÙ » ================= */
@@ -1903,6 +2413,75 @@ loadCityNames();
 
 /* ================= INIT ================= */
 drawCal();renderDests();refresh();
+
+/* ================= ASSISTANT PAS À PAS ================= */
+let wizStep=1, wizAllOn=false;
+const STEP_COUNT=4;
+function applyWiz(){
+  document.body.classList.toggle("showall",wizAllOn);
+  document.querySelectorAll(".wizsec").forEach(sec=>
+    sec.classList.toggle("active",sec.dataset.step===String(wizStep)));
+  document.querySelectorAll(".wstep").forEach(b=>{
+    const n=+b.dataset.go;
+    b.classList.toggle("on",!wizAllOn&&n===wizStep);
+    b.classList.toggle("done",n<wizStep);
+  });
+  const prev=document.getElementById("wizPrev"),next=document.getElementById("wizNext");
+  if(prev)prev.disabled=wizStep<=1;
+  if(next)next.textContent=wizStep>=STEP_COUNT?"Terminer ↺":"Suivant →";
+  if(!wizAllOn)window.scrollTo({top:0,behavior:"smooth"});
+}
+function wizGo(n){wizStep=Math.max(1,Math.min(STEP_COUNT,n));wizAllOn=false;applyWiz();}
+document.querySelectorAll(".wstep").forEach(b=>b.onclick=()=>wizGo(+b.dataset.go));
+document.getElementById("wizPrev").onclick=()=>wizGo(wizStep-1);
+document.getElementById("wizNext").onclick=()=>{ if(wizStep>=STEP_COUNT){wizGo(1);} else wizGo(wizStep+1); };
+document.getElementById("wizAll").onclick=function(){
+  wizAllOn=!wizAllOn;this.classList.toggle("on",wizAllOn);this.textContent=wizAllOn?"Vue étape":"Tout voir";
+  applyWiz();
+};
+applyWiz();
+
+/* ================= FLÈCHE RETOUR EN HAUT ================= */
+(function(){
+  const btn=document.getElementById("toTop"); if(!btn)return;
+  const onScroll=()=>btn.classList.toggle("show",window.scrollY>380);
+  window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
+  btn.onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
+})();
+
+/* ================= OUTILS (navigation niveau 1) ================= */
+let currentTool="simple";
+const TOOL_HINT={
+  compare:"Comparateur — ajoute jusqu'à 5 aéroports, compare les dessertes (ou verrouille une destination).",
+  cross:"Croisé — 2 à 3 voyageurs, chacun son départ : trouve un point de rendez-vous commun.",
+  stay:"Séjour — vol + hôtel combinés : le coût total du voyage par destination.",
+  hotels:"Hôtels — cache gratuit, photos Booking ou ⚡ Google, filtrés par tes critères.",
+  car:"Voiture — location au meilleur prix (Booking), à la destination choisie.",
+  taxi:"Taxi — transfert depuis l'aéroport de destination vers ton adresse.",
+  attr:"Activités — que voir et réserver à destination.",
+  see:"À voir — musées, monuments, plages, nature autour (OpenStreetMap, gratuit)."
+};
+function showTool(t){
+  currentTool=t;
+  document.body.className=document.body.className.replace(/\btool-\S+/g,"").replace(/\bfocused\b/g,"").trim();
+  document.body.classList.add("tool-"+t);
+  if(t!=="simple")document.body.classList.add("focused");
+  document.querySelectorAll(".toolpill").forEach(x=>x.classList.toggle("on",x.dataset.tool===t));
+  const hint=document.getElementById("toolHint"); if(hint)hint.textContent=TOOL_HINT[t]||"";
+  // mode interne selon l'outil
+  if(t==="compare")mode="compare";
+  else if(t==="cross")mode="cross";
+  else if(t==="stay")mode="stay";
+  else if(t==="simple"){ if(["compare","cross","stay"].includes(mode))mode="list"; }
+  else mode="list";                       // outils au sol : la section IV est masquée
+  if(t==="simple"){ wizAllOn=false; applyWiz(); }
+  renderDispatch();
+  // déclenche l'affichage adapté des outils au sol
+  if(t==="hotels"||t==="car"||t==="taxi"||t==="attr"){ refreshCarLink&&refreshCarLink(); }
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".toolpill").forEach(b=>b.onclick=()=>showTool(b.dataset.tool));
+showTool("simple");
 </script>
 </body>
 </html>
