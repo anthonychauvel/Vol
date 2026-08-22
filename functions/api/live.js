@@ -105,6 +105,48 @@ async function serpAccount(env, ctx) {
 /* ------------------------------------------------------------- normalisation
    SerpApi et SearchApi renvoient la même forme (best_flights / other_flights),
    d'où un seul parseur pour les deux. */
+// Prix Aviasales/Travelpayouts (gratuit) — sert à croiser avec le live et garder le moins cher.
+async function tpPrice(env, origin, destination, depart, ret) {
+  if (!env.TP_TOKEN) return null;
+  try {
+    const api = new URL("https://api.travelpayouts.com/aviasales/v3/prices_for_dates");
+    api.searchParams.set("origin", origin);
+    api.searchParams.set("destination", destination);
+    if (depart) api.searchParams.set("departure_at", depart.slice(0, 7));
+    if (ret) api.searchParams.set("return_at", ret.slice(0, 7));
+    api.searchParams.set("one_way", ret ? "false" : "true");
+    api.searchParams.set("direct", "false");
+    api.searchParams.set("currency", "eur");
+    api.searchParams.set("sorting", "price");
+    api.searchParams.set("limit", "1");
+    api.searchParams.set("token", env.TP_TOKEN);
+    const r = await fetch(api.toString(), { headers: { Accept: "application/json" } });
+    const j = await r.json();
+    const b = Array.isArray(j?.data) && j.data.length ? j.data[0] : null;
+    if (!b || typeof b.price !== "number") return null;
+    return { price: b.price, transfers: b.transfers ?? null, duration: b.duration_to ?? null,
+             url: b.link ? "https://www.aviasales.com" + b.link : null };
+  } catch (_) { return null; }
+}
+
+// Compare le résultat live et le cache Aviasales, garde le moins cher, étiquette la source.
+// Le PRIX AFFICHÉ reste celui de Google Flights (LIVE, réservable maintenant).
+// Aviasales/Travelpayouts est du CACHE (« vu récemment, ≤ 7 j ») → seulement indicatif,
+// jamais substitué au prix live. On l'expose à part, avec l'écart, pour information.
+function pickCheapest(live, tp) {
+  const out = { ...live };
+  out.live_price = live.price ?? null;            // Google Flights, ferme
+  out.tp_price = tp ? tp.price : null;            // Aviasales, indicatif
+  out.tp_url = tp && tp.url ? tp.url : null;
+  out.tp_stops = tp && tp.transfers != null ? tp.transfers : null;
+  // le prix principal NE CHANGE PAS : c'est le live. La source reste Google.
+  if (live.price != null) out.cheapest_source = "google";
+  // repère informatif : Aviasales est-il plus bas (à confirmer) ?
+  if (out.live_price != null && out.tp_price != null && out.tp_price < out.live_price)
+    out.tp_cheaper_by = Math.round(out.live_price - out.tp_price);
+  return out;
+}
+
 function normalize(j, provider) {
   const all = [].concat(j?.best_flights || [], j?.other_flights || [])
                 .filter(o => typeof o?.price === "number");
@@ -392,9 +434,17 @@ export async function onRequest(context) {
     if (hit) return json({ ...(await hit.json()), cached: true, quota: st });
   } catch (_) {}
 
-  if (st.exhausted)
+  if (st.exhausted) {
+    const tp = await tpPrice(env, origin, destination, depart, ret);
+    if (tp && tp.price != null)
+      return json({ configured: true, price: tp.price, stops: tp.transfers, duration: tp.duration,
+                    url: tp.url, cheapest_source: "aviasales", indicative: true,
+                    tp_price: tp.price, live_price: null,
+                    exhausted: true, quota: st,
+                    note: "quota Google épuisé — prix Aviasales indicatif (cache, à confirmer)" });
     return json({ configured: true, price: null, exhausted: true, quota: st,
                   note: "quota live épuisé pour ce mois — les prix affichés restent ceux du cache Aviasales" });
+  }
 
   const led = ledger(env);
   const tried = [];
@@ -414,8 +464,12 @@ export async function onRequest(context) {
       }
 
       await led.bump(prov.id);                       // compteur interne (relais + secours)
-      const out = { configured: true, origin, destination, depart, return: ret || null,
+      let out = { configured: true, origin, destination, depart, return: ret || null,
                     ...normalize(raw, prov.id), fetched_at: new Date().toISOString() };
+
+      // croisement gratuit avec Aviasales : on garde le moins cher des deux
+      const tp = await tpPrice(env, origin, destination, depart, ret);
+      out = pickCheapest(out, tp);
 
       if (out.price != null) {
         context.waitUntil(caches.default.put(ck, new Response(JSON.stringify(out), {
