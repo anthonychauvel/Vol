@@ -166,13 +166,26 @@ sans lien de réservation unique fiable, donc à composer toi-même une fois le 
 
 **Complétude des données (23/08/2026)** : constaté sur Brest→Montpellier qu'un vol Volotea direct moins
 cher n'apparaissait pas dans la réponse SerpApi alors qu'il était bien visible sur la page Google Flights
-elle-même (via le lien cliquable que l'app fournit). Cause identifiée : SerpApi répond par défaut en mode
-rapide et documente lui-même que « les résultats reçus par défaut peuvent différer de ce qu'on voit sur
-Google Flights dans le navigateur ». Le paramètre `deep_search=true` est maintenant activé sur chaque appel
-(temps de réponse plus long, mais sans coût de quota ni de CPU Cloudflare supplémentaire — juste plus
-d'attente réseau). Ça corrige ce cas précis, mais ne garantit pas une complétude à 100 % dans l'absolu :
-**le prix affiché n'est jamais garanti être LE moins cher qui existe** — d'où le lien cliquable vers Google
-sur le texte du prix, à utiliser par réflexe avant de réserver.
+elle-même (via le lien cliquable que l'app fournit). Diagnostic en 3 temps :
+1. `deep_search=true` (SerpApi documente que sans lui, la réponse est volontairement incomplète) — pas
+   suffisant seul.
+2. `show_hidden=true` en plus (la doc précise qu'il « n'a aucun effet seul », doit être combiné à
+   `deep_search`) — toujours pas suffisant.
+3. **Cause réelle** : l'onglet « Meilleurs vols » et l'onglet « Prix le moins cher » de Google sont **deux
+   requêtes distinctes** côté Google (constaté en cliquant sur les 2 onglets), pas un re-tri de la même
+   liste. SerpApi expose ça via le paramètre `sort_by` (1 = Meilleurs vols, par défaut ; 2 = Prix). L'app
+   interroge maintenant **les deux** et fusionne : « Meilleur » reste ancré sur la requête par défaut
+   (choix éditorial de Google), « Moins cher »/« Plus rapide » piochent dans le pool fusionné des deux
+   requêtes.
+
+**Coût** : ce croisement consomme **2 crédits SerpApi par recherche** au lieu d'1 (~124 recherches/mois au
+lieu de 249 avec un budget de 249). L'app saute la 2ᵉ requête si moins de 2 crédits restent ce mois-ci —
+dans ce cas « Meilleur » reste fiable mais « Moins cher »/« Plus rapide » peuvent rater des offres, comme
+avant ce correctif.
+
+Même avec ça, aucune garantie de complétude à 100 % dans l'absolu : **le prix affiché n'est jamais garanti
+être LE moins cher qui existe** — d'où le lien cliquable vers Google sur le texte du prix, à utiliser par
+réflexe avant de réserver.
 
 # Comparateur Sky Scrapper (combinaisons multi-compagnies) — facultatif
 
