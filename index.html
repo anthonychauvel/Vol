@@ -324,6 +324,7 @@
   .priceflex:empty{display:none}
   .priceflex .lvl{font-weight:400;color:var(--muted)}
   .priceflex a.adopt{color:var(--amber);text-decoration:underline;cursor:pointer}
+  .altcmp{color:var(--amber);text-decoration:underline;font-size:11.5px;font-weight:400;font-family:var(--mono)}
   .livebar{display:flex;align-items:center;gap:9px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:11px;padding:9px 11px;margin-bottom:11px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
   .livebar button{background:var(--amber);color:#1a1305;border:none;border-radius:9px;
@@ -1615,6 +1616,24 @@ function fmtOffer(o){
   const tag=o.source==="sky"?" · combinaison à réserver toi-même":"";
   return `${o.price} € ${[al,st,dur].filter(Boolean).join(" · ")}${tag}`;
 }
+/* Lien de comparaison « ailleurs » (Booking Flights). C'est une simple URL de
+   recherche : n'utilise PAS l'API RapidAPI Booking, ne consomme aucun quota.
+   Format vérifié. Renseigne BOOKING_AID (ton ID d'affiliation Booking) pour
+   monétiser le clic ; vide = lien nu qui marche quand même. */
+const BOOKING_AID="";
+function bookingFlightsURL(from,to,dep,ret){
+  if(!from||!to||!dep)return null;
+  const u=new URL("https://www.booking.com/flights/index.html");
+  u.searchParams.set("type",ret?"ROUNDTRIP":"ONEWAY");
+  u.searchParams.set("adults","1");
+  u.searchParams.set("cabinClass","ECONOMY");
+  u.searchParams.set("from",from);
+  u.searchParams.set("to",to);
+  u.searchParams.set("depart",dep);
+  if(ret)u.searchParams.set("return",ret);
+  if(BOOKING_AID){u.searchParams.set("aid",BOOKING_AID);u.searchParams.set("label","escale-flights");}
+  return u.toString();
+}
 function liveLabel(j){
   if(!j||j.price==null)return null;
   const lvl={low:"prix bas",typical:"prix normal",high:"prix élevé"}[j.insights&&j.insights.level]||"";
@@ -1647,9 +1666,11 @@ function liveLabel(j){
   const foot=j.sky_checked
     ? `<br><span class="lvl">ⓘ comparé aussi via un 2nd comparateur (combinaisons multi-compagnies incluses) — vérifie quand même via le lien ci-dessus avant de réserver</span>`
     : `<br><span class="lvl">ⓘ ces données peuvent être incomplètes (offres manquantes, pas seulement sur petits aéroports) — vérifie via le lien ci-dessus avant de réserver</span>`;
+  const _bk=bookingFlightsURL(j.origin,j.destination,j.depart,j.return);
+  const _alt=_bk?`<br><a href="${_bk}" target="_blank" rel="noopener" class="altcmp">↗ comparer aussi ailleurs</a>`:"";
   return lines.join("<br>")
        + `<br><span class="lvl">· ${src}</span>` + aside
-       + foot;
+       + _alt + foot;
 }
 function liveFail(j){
   if(j&&j.exhausted)return "quota live épuisé ce mois — prix en cache uniquement";
