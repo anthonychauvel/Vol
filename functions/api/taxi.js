@@ -19,7 +19,9 @@ function host(env) { return env.RAPIDAPI_HOST || "booking-com18.p.rapidapi.com";
 function H(env) { return { "x-rapidapi-key": env.RAPIDAPI_KEY, "x-rapidapi-host": host(env), Accept: "application/json" }; }
 
 function pickPlaceId(x) {
-  return x.id ?? x.place_id ?? x.googlePlaceId ?? x.resultId ?? x.locationId ?? x.value ?? null;
+  // "placeId" (camelCase) est le champ réellement renvoyé par l'auto-complete —
+  // vérifié sur un vrai appel Paris/Caen. Les autres noms restent en repli.
+  return x.placeId ?? x.id ?? x.place_id ?? x.googlePlaceId ?? x.resultId ?? x.locationId ?? x.value ?? null;
 }
 async function place(env, q) {
   const tryQ = async (term) => {
@@ -86,16 +88,26 @@ export async function onRequest(context) {
 
     const su = new URL(`https://${host(env)}/taxi/search`);
     su.searchParams.set("pick_up_place_id", String(pickId));
+    su.searchParams.set("pickUpPlaceId", String(pickId));
     su.searchParams.set("drop_off_place_id", String(dropId));
+    su.searchParams.set("dropOffPlaceId", String(dropId));
     su.searchParams.set("pick_up_date", date);
+    su.searchParams.set("pickUpDate", date);
     su.searchParams.set("pick_up_time", time);
+    su.searchParams.set("pickUpTime", time);
     su.searchParams.set("passenger", String(passengers));
+    su.searchParams.set("passengers", String(passengers));
     su.searchParams.set("currency_code", "EUR");
+    su.searchParams.set("currencyCode", "EUR");
     const r = await fetch(su.toString(), { headers: H(env) });
     const j = await r.json();
-    const rows = j?.data?.results;
+    const rows = Array.isArray(j?.data) ? j.data
+              : (Array.isArray(j?.data?.results) ? j.data.results
+              : (Array.isArray(j?.data?.taxis) ? j.data.taxis
+              : (Array.isArray(j?.results) ? j.results : null)));
     if (!Array.isArray(rows) || !rows.length)
-      return json({ configured: true, taxis: [], total: 0, note: "aucun transfert pour ce trajet / cette date" });
+      return json({ configured: true, taxis: [], total: 0, note: "aucun transfert pour ce trajet / cette date",
+        _dbgKeys: p.get("raw")==="1" ? { topKeys: j?Object.keys(j):null, dataKeys: j?.data?Object.keys(j.data):null } : undefined });
 
     const taxis = rows.map(normTaxi).filter(t => t.price != null).sort((a, b) => a.price - b.price).slice(0, 15);
     const out = { configured: true, from, to, date, currency: taxis[0]?.currency || "EUR", taxis, total: taxis.length };
