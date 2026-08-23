@@ -48,15 +48,16 @@ async function resolveDest(env, q) {
   const j = await r.json();
   const arr = Array.isArray(j?.data) ? j.data : [];
   if (!arr.length) return null;
-  const pick = arr.find(x => (x.dest_type || x.type) === "city") || arr[0];
+  const pick = arr.find(x => (x.dest_type || x.search_type || x.type) === "city") || arr[0];
   return pick ? {
-    dest_id: pick.dest_id ?? pick.id, dest_type: pick.dest_type || pick.type || "city",
-    label: pick.label || pick.name || pick.city_name || q,
-    lat: num(pick.latitude), lng: num(pick.longitude)
+    dest_id: pick.dest_id ?? pick.id ?? pick.city_ufi ?? pick.ufi ?? pick.value,
+    dest_type: pick.dest_type || pick.search_type || pick.type || "city",
+    label: pick.label || pick.name || pick.city_name || pick.cityName || q,
+    lat: num(pick.latitude ?? pick.lat), lng: num(pick.longitude ?? pick.lon ?? pick.lng)
   } : null;
 }
 
-function normalizeStay(x, centre) {
+function normalizeStay(x, centre, checkIn, checkOut, adults) {
   const pb = x.priceBreakdown || {};
   const gross = pb.grossPrice || {};
   const strike = pb.strikethroughPrice || {};
@@ -78,8 +79,13 @@ function normalizeStay(x, centre) {
       ? Math.round(haversine(centre, { lat, lng }) * 10) / 10 : null,
     checkin: x.checkin ? x.checkin.fromTime : null,
     country: x.countryCode || null,
-    // lien de réservation Booking reconstruit (stable)
-    url: x.id ? `https://www.booking.com/hotel.html?hotel_id=${x.id}` : null
+    // lien de réservation Booking reconstruit (stable) — checkin/checkout/group_adults/no_rooms
+    // sont les paramètres officiels de pré-remplissage documentés par Booking (Demand API).
+    url: x.id
+      ? `https://www.booking.com/hotel.html?hotel_id=${x.id}`
+        + `&checkin=${encodeURIComponent(checkIn || "")}&checkout=${encodeURIComponent(checkOut || "")}`
+        + `&group_adults=${adults || 2}&no_rooms=1`
+      : null
   };
 }
 
@@ -133,7 +139,7 @@ export async function onRequest(context) {
         note: "aucun hôtel Booking pour cette ville / ces dates" });
 
     // on garde une base large en cache (filtres appliqués à la lecture)
-    const base = rows.map(x => normalizeStay(x, centre)).filter(h => h.priceTotal != null);
+    const base = rows.map(x => normalizeStay(x, centre, checkIn, checkOut, adults)).filter(h => h.priceTotal != null);
     const out = { configured: true, label: loc.label, checkIn, checkOut, nights,
       currency: base[0]?.currency || "EUR", hotelsBase: base, fetched_at: new Date().toISOString() };
     context.waitUntil(cache.put(ckey, new Response(JSON.stringify(out), {

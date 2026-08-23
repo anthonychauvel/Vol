@@ -103,7 +103,7 @@ export async function onRequest(context) {
   const nights = Math.max(1, Math.round((new Date(dropOffDate) - new Date(pickUpDate)) / 86400000));
 
   // --- cache résultat : même ville/dates = 0 crédit pendant CARS_TTL ---
-  const ttl = parseInt(env.CARS_TTL || "21600", 10);
+  const ttl = parseInt(env.CARS_TTL || "1800", 10); // 30 min : le lien de réservation reste frais
   const ckey = new Request(`https://escale.cache/cars/${encodeURIComponent(q || lat + "," + lng)}-${pickUpDate}-${dropOffDate}`);
   const cache = caches.default;
   try { const hit = await cache.match(ckey); if (hit) return json({ ...(await hit.json()), cached: true }); } catch (_) {}

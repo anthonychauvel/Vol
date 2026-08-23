@@ -93,12 +93,16 @@ export async function onRequest(context) {
   // deux miroirs Overpass pour la robustesse
   const endpoints = [
     "https://overpass-api.de/api/interpreter",
-    "https://overpass.kumi.systems/api/interpreter"
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    "https://overpass.openstreetmap.ru/api/interpreter"
   ];
   let data = null;
   for (const ep of endpoints) {
     try {
-      const r = await fetch(ep, { method: "POST", headers: { "Content-Type": "text/plain" }, body });
+      // POST puis, si échec, GET (?data=) — certains miroirs préfèrent l'un ou l'autre
+      let r = await fetch(ep, { method: "POST", headers: { "Content-Type": "text/plain" }, body });
+      if (!r.ok) r = await fetch(ep + "?data=" + encodeURIComponent(body));
       if (!r.ok) continue;
       const j = await r.json();
       if (j && Array.isArray(j.elements)) { data = j.elements; break; }

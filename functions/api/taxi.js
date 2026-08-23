@@ -18,12 +18,19 @@ const num = (x) => (typeof x === "number" ? x : (x != null && !isNaN(parseFloat(
 function host(env) { return env.RAPIDAPI_HOST || "booking-com18.p.rapidapi.com"; }
 function H(env) { return { "x-rapidapi-key": env.RAPIDAPI_KEY, "x-rapidapi-host": host(env), Accept: "application/json" }; }
 
+function pickPlaceId(x) {
+  return x.id ?? x.place_id ?? x.googlePlaceId ?? x.resultId ?? x.locationId ?? x.value ?? null;
+}
 async function place(env, q) {
-  const u = `https://${host(env)}/taxi/auto-complete?query=${encodeURIComponent(q)}`;
-  const r = await fetch(u, { headers: H(env) });
-  const j = await r.json();
-  const arr = Array.isArray(j?.data) ? j.data : [];
-  return arr.length ? (arr[0].id ?? arr[0].place_id ?? arr[0].googlePlaceId ?? null) : null;
+  const tryQ = async (term) => {
+    const u = `https://${host(env)}/taxi/auto-complete?query=${encodeURIComponent(term)}`;
+    const r = await fetch(u, { headers: H(env) });
+    const j = await r.json();
+    const arr = Array.isArray(j?.data) ? j.data : (Array.isArray(j?.data?.results) ? j.data.results : []);
+    return arr.length ? pickPlaceId(arr[0]) : null;
+  };
+  // essaie tel quel, puis en retirant " airport" si présent (ex. villes sans aéroport unique)
+  return (await tryQ(q)) || (/ airport$/i.test(q) ? await tryQ(q.replace(/ airport$/i, "")) : null);
 }
 
 function normTaxi(x) {

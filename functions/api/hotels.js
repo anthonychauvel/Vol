@@ -46,6 +46,7 @@ export async function onRequest(context) {
   const minStars    = parseInt(p.get("minStars") || "0", 10) || 0;
   const privateOnly = p.get("privateOnly") !== "0";      // exclut les dortoirs par défaut
   const limit       = Math.min(parseInt(p.get("limit") || "40", 10) || 40, 100);
+  const adults      = parseInt(p.get("adults") || "2", 10) || 2;
 
   const cache = caches.default;
   const ckey = new Request(`https://escale.cache/hotels/${encodeURIComponent(location)}-${checkIn}-${checkOut}`);
@@ -100,7 +101,7 @@ export async function onRequest(context) {
       // note voyageurs absente du cache Hotellook : ⚡ Google Hotels la fournit
       rating: null, reviews: null,
       url: h.hotelId
-        ? `https://search.hotellook.com/hotels?hotelId=${h.hotelId}&checkIn=${checkIn}&checkOut=${checkOut}&adults=2`
+        ? `https://search.hotellook.com/hotels?hotelId=${h.hotelId}&checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}`
         : null
     };
   })
