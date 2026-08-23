@@ -456,7 +456,13 @@ async function callSerp(env, o, d, dep, ret) {
   // in the browser". Constaté sur Brest→Montpellier (Volotea direct absent alors que
   // visible sur Google) — deep_search=true corrige exactement ce trou, au prix d'un
   // temps de réponse plus long (sans coût CPU Cloudflare, juste de l'attente réseau).
+  // deep_search=true seul ne suffisait pas (constaté : toujours 273€ au lieu de 197€
+  // avec &nocache=1). La doc précise que show_hidden "n'a aucun effet seul" — il faut
+  // les DEUX ensemble pour retrouver les vols que l'algo "meilleurs vols" de Google
+  // relègue par défaut (souvent des tarifs simples/economy basiques, ce qui correspond
+  // au profil du Volotea manquant).
   u.searchParams.set("deep_search", "true");
+  u.searchParams.set("show_hidden", "true");
   u.searchParams.set("api_key", env.SERP_TOKEN);
   const r = await fetch(u.toString(), { headers: { Accept: "application/json" } });
   return await r.json();
