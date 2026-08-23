@@ -1735,8 +1735,8 @@ function hotelCard(h,nights){
       <div class="hprice">${h.pricePerNight} €<small>/ nuit</small>${tot}</div>
     </div>
     <div class="hmeta">${note}${st}${dist}${cancel}${am}</div>
-    ${h.googleUrl?`<a class="hgo" href="${h.googleUrl}" target="_blank" rel="noopener">Voir sur Google →</a>`:""}
-    ${h.url?`<a class="hgo alt" href="${h.url}" target="_blank" rel="noopener">Réserver (dates pré-remplies) →</a>`:""}
+    ${h.url?`<a class="hgo" href="${h.url}" target="_blank" rel="noopener">Réserver (dates pré-remplies) →</a>`:""}
+    ${h.googleUrl?`<a class="hgo alt" href="${h.googleUrl}" target="_blank" rel="noopener">comparer sur Google (dates à revérifier) →</a>`:""}
   </div>`;
 }
 function hotelPhotoCard(h,nights,cur){
@@ -2170,8 +2170,10 @@ function carCard(c,nights,cur){
       <div class="cprice">${c.priceTotal} ${sym}${perDay}</div>
     </div>
     <div class="cmeta">${note}${trans}${seats}${mil}${term}${free}</div>
-    <a class="cgo" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Réserver →</a>
-    ${c.url?`<a class="cgo alt" href="${c.url}" target="_blank" rel="noopener">essayer sur Booking →</a>`:""}
+    ${c.url
+      ?`<a class="cgo" href="${c.url}" target="_blank" rel="noopener">Réserver ce prix →</a>
+        <a class="cgo alt" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">ou sur DiscoverCars (dates à ressaisir) →</a>`
+      :`<a class="cgo" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Chercher sur DiscoverCars (dates à ressaisir) →</a>`}
   </div>`;
 }
 function renderCars(list,nights,cur,meta){
