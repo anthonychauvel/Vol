@@ -65,6 +65,16 @@ export async function onRequest(context) {
   const passengers = p.get("passengers") || "2";
   if (!from || !to || !date) return json({ configured: true, error: "from, to et date requis" }, 400);
 
+  if (p.get("raw") === "1") {
+    const dump = async (term) => {
+      const u = `https://${host(env)}/taxi/auto-complete?query=${encodeURIComponent(term)}`;
+      const rr = await fetch(u, { headers: H(env) });
+      let body; try { body = await rr.json(); } catch (_) { body = (await rr.text()).slice(0, 600); }
+      return { term, status: rr.status, body };
+    };
+    return json({ _debug: "taxi/auto-complete", from: await dump(from), to: await dump(to) });
+  }
+
   const ttl = parseInt(env.CARS_TTL || "21600", 10);
   const ckey = new Request(`https://escale.cache/taxi/${encodeURIComponent(from)}-${encodeURIComponent(to)}-${date}-${time}-${passengers}`);
   const cache = caches.default;

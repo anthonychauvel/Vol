@@ -131,6 +131,11 @@ export async function onRequest(context) {
     const r = await fetch(su.toString(), { headers: rapidHeaders(env) });
     const j = await r.json();
 
+    if (p.get("raw") === "1") return json({ _debug: "stays/search", status: r.status,
+      topKeys: (j && typeof j === "object") ? Object.keys(j) : null,
+      dataKeys: (j?.data && typeof j.data === "object") ? Object.keys(j.data) : null,
+      raw: j });
+
     const rows = Array.isArray(j?.data) ? j.data
               : (Array.isArray(j?.data?.hotels) ? j.data.hotels
               : (Array.isArray(j?.data?.results) ? j.data.results : null));

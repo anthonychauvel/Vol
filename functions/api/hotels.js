@@ -60,6 +60,11 @@ export async function onRequest(context) {
       + `&currency=eur&limit=100&token=${encodeURIComponent(env.TP_TOKEN)}`;
     try {
       const r = await fetch(src, { headers: { Accept: "application/json" } });
+      if (p.get("raw") === "1") { const t = await r.text();
+        return json({ _debug: "hotellook", status: r.status,
+          ctype: r.headers.get("content-type"),
+          url: src.replace(encodeURIComponent(env.TP_TOKEN), "***"),
+          body: t.slice(0, 1200) }); }
       raw = await r.json();
       if (Array.isArray(raw)) {
         context.waitUntil(cache.put(ckey, new Response(JSON.stringify(raw), {
