@@ -451,6 +451,12 @@ async function callSerp(env, o, d, dep, ret) {
   u.searchParams.set("currency", "EUR");
   u.searchParams.set("hl", "fr");
   u.searchParams.set("gl", "fr");
+  // Sans ça, SerpApi répond en mode rapide et volontairement incomplet — documenté :
+  // "results you receive by default may differ from what you see on Google Flights
+  // in the browser". Constaté sur Brest→Montpellier (Volotea direct absent alors que
+  // visible sur Google) — deep_search=true corrige exactement ce trou, au prix d'un
+  // temps de réponse plus long (sans coût CPU Cloudflare, juste de l'attente réseau).
+  u.searchParams.set("deep_search", "true");
   u.searchParams.set("api_key", env.SERP_TOKEN);
   const r = await fetch(u.toString(), { headers: { Accept: "application/json" } });
   return await r.json();
