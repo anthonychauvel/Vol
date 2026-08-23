@@ -120,6 +120,10 @@ export async function onRequest(context) {
       return json({ configured: true, hotels: [], total: 0, note: "ville introuvable côté Booking" });
 
     const su = new URL(`https://${host(env)}/stays/search`);
+    // Le fournisseur a renommé le paramètre : il exige maintenant "locationId"
+    // (message d'erreur explicite "locationId is required"). On envoie la valeur
+    // résolue par l'auto-complete. On garde destId/destType en plus par compat.
+    su.searchParams.set("locationId", String(loc.dest_id));
     su.searchParams.set("destId", String(loc.dest_id));
     su.searchParams.set("destType", loc.dest_type || "city");
     su.searchParams.set("checkinDate", checkIn);
@@ -132,13 +136,15 @@ export async function onRequest(context) {
     const j = await r.json();
 
     if (p.get("raw") === "1") return json({ _debug: "stays/search", status: r.status,
+      loc,
       topKeys: (j && typeof j === "object") ? Object.keys(j) : null,
       dataKeys: (j?.data && typeof j.data === "object") ? Object.keys(j.data) : null,
       raw: j });
 
     const rows = Array.isArray(j?.data) ? j.data
               : (Array.isArray(j?.data?.hotels) ? j.data.hotels
-              : (Array.isArray(j?.data?.results) ? j.data.results : null));
+              : (Array.isArray(j?.data?.results) ? j.data.results
+              : (Array.isArray(j?.data?.properties) ? j.data.properties : null)));
     if (!rows || !rows.length)
       return json({ configured: true, hotels: [], total: 0, label: loc.label,
         note: "aucun hôtel Booking pour cette ville / ces dates" });

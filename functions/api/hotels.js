@@ -54,7 +54,7 @@ export async function onRequest(context) {
   try { const hit = await cache.match(ckey); if (hit) raw = await hit.json(); } catch (_) {}
 
   if (!raw) {
-    const src = "https://engine.hotellook.com/api/v2/cache.json"
+    const src = "http://engine.hotellook.com/api/v2/cache.json"
       + `?location=${encodeURIComponent(location)}`
       + `&checkIn=${checkIn}&checkOut=${checkOut}`
       + `&currency=eur&limit=100&token=${encodeURIComponent(env.TP_TOKEN)}`;
