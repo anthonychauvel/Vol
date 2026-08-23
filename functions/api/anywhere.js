@@ -13,6 +13,7 @@ export async function onRequest(context) {
   const origin = (p.get("origin") || "").toUpperCase();
   const month  = p.get("month") || "";        // YYYY-MM (optionnel)
   const oneway = p.get("oneway") === "1";
+  const direct = p.get("direct") === "1" || p.get("direct") === "true";
 
   const cors = {
     "Access-Control-Allow-Origin": "*",
@@ -31,7 +32,13 @@ export async function onRequest(context) {
   api.searchParams.set("unique", "true");              // 1 résultat par destination
   api.searchParams.set("sorting", "price");
   api.searchParams.set("one_way", oneway ? "true" : "false");
-  api.searchParams.set("direct", "false");
+  // direct=true : ne renvoie QUE le moins cher SANS correspondance, par destination.
+  // Nécessaire pour "Directs par aéroport" : le résultat "unique" par défaut (direct=false)
+  // renvoie le moins cher tout court, correspondance comprise — sur un petit aéroport
+  // (Brest) la correspondance est presque toujours moins chère qu'un vol direct, donc
+  // filtrer transfers===0 sur cette liste-là masque des vols directs qui existent
+  // réellement (constaté BES vide / NTE plein, 23/08/2026).
+  api.searchParams.set("direct", direct ? "true" : "false");
   api.searchParams.set("currency", "eur");
   api.searchParams.set("limit", "1000");
   if (month) {
