@@ -56,8 +56,7 @@ async function resolveDest(env, q) {
     dest_id: pick.dest_id ?? pick.city_ufi ?? pick.ufi ?? pick.value,
     dest_type: pick.dest_type || pick.search_type || pick.type || "city",
     label: pick.label || pick.name || pick.city_name || pick.cityName || q,
-    lat: num(pick.latitude ?? pick.lat), lng: num(pick.longitude ?? pick.lon ?? pick.lng),
-    _all: pick
+    lat: num(pick.latitude ?? pick.lat), lng: num(pick.longitude ?? pick.lon ?? pick.lng)
   } : null;
 }
 
@@ -137,12 +136,6 @@ export async function onRequest(context) {
     su.searchParams.set("currencyCode", "EUR");
     const r = await fetch(su.toString(), { headers: rapidHeaders(env) });
     const j = await r.json();
-
-    if (p.get("raw") === "1") return json({ _debug: "stays/search", status: r.status,
-      loc,
-      topKeys: (j && typeof j === "object") ? Object.keys(j) : null,
-      dataKeys: (j?.data && typeof j.data === "object") ? Object.keys(j.data) : null,
-      raw: j });
 
     const rows = Array.isArray(j?.data) ? j.data
               : (Array.isArray(j?.data?.hotels) ? j.data.hotels
