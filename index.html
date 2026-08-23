@@ -574,7 +574,6 @@
   body.tool-stay    [data-blk="depart"], body.tool-stay [data-blk="dates"], body.tool-stay [data-blk="dates2"], body.tool-stay [data-blk="butin"]{display:block !important}
   body.tool-hotels  [data-blk="dates"], body.tool-hotels [data-blk="surplace"]{display:block !important}
   body.tool-car     [data-blk="dates"], body.tool-car    [data-blk="surplace"]{display:block !important}
-  body.tool-taxi    [data-blk="dates"], body.tool-taxi   [data-blk="surplace"]{display:block !important}
   body.tool-attr    [data-blk="surplace"]{display:block !important}
   body.tool-see     [data-blk="surplace"]{display:block !important}
   body.tool-see     [data-sub]:not([data-sub="see"]){display:none}
@@ -582,7 +581,6 @@
   /* dans les outils « au sol », ne montrer que le sous-bloc concerné */
   body.tool-hotels [data-sub]:not([data-sub="hotels"]){display:none}
   body.tool-car    [data-sub]:not([data-sub="car"]){display:none}
-  body.tool-taxi   [data-sub]:not([data-sub="taxi"]){display:none}
   body.tool-attr   [data-sub]:not([data-sub="attr"]){display:none}
   body.tool-see    [data-sub]:not([data-sub="see"]){display:none}
   /* petit rappel du contexte en haut d'un outil focalisé */
@@ -654,7 +652,6 @@
     <button class="toolpill" data-tool="stay">Séjour</button>
     <button class="toolpill" data-tool="hotels">Hôtels</button>
     <button class="toolpill" data-tool="car">Voiture</button>
-    <button class="toolpill" data-tool="taxi">Taxi</button>
     <button class="toolpill" data-tool="attr">Activités</button>
     <button class="toolpill" data-tool="see">À voir</button>
   </nav>
@@ -838,13 +835,6 @@
     <div id="cars"></div>
     <a class="carbtn" id="carLink" href="#" target="_blank" rel="noopener">Comparer d'autres <span>loueurs</span> →</a>
     </div><!--/car-->
-
-    <div data-sub="taxi">
-    <div class="subhead" id="taxiHead">🚕 Transfert aéroport</div>
-    <div class="destsearch"><input id="taxiTo" type="search" autocomplete="off" placeholder="Adresse / hôtel d'arrivée (départ = aéroport de destination)"></div>
-    <div class="carbar"><button class="carlive" id="taxiSearch">Chercher un transfert</button></div>
-    <div id="taxis"></div>
-    </div><!--/taxi-->
 
     <div data-sub="attr">
     <div class="subhead" id="attrHead">🎟️ Activités & visites</div>
@@ -2139,6 +2129,15 @@ function carURL(city,ci,co){
   }
   return base;
 }
+// Recherche Google classique (pas de "Google Cars" dédié) : fait remonter le
+// comparateur de prix voiture intégré aux résultats Google, sans fausse promesse
+// de pré-remplissage — juste une requête texte, toujours fiable.
+function googleCarURL(city,ci,co){
+  const parts=["location de voiture"];
+  if(city)parts.push(city);
+  if(ci&&co)parts.push(`du ${ci} au ${co}`);
+  return "https://www.google.com/search?q="+encodeURIComponent(parts.join(" "));
+}
 let CARS_OK=false;
 // sonde : la clé RapidAPI est-elle branchée ?
 fetch(`${API_BASE}/api/cars`).then(r=>r.json()).then(j=>{
@@ -2170,10 +2169,7 @@ function carCard(c,nights,cur){
       <div class="cprice">${c.priceTotal} ${sym}${perDay}</div>
     </div>
     <div class="cmeta">${note}${trans}${seats}${mil}${term}${free}</div>
-    ${c.url
-      ?`<a class="cgo" href="${c.url}" target="_blank" rel="noopener">Réserver ce prix →</a>
-        <a class="cgo alt" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">ou sur DiscoverCars (dates à ressaisir) →</a>`
-      :`<a class="cgo" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Chercher sur DiscoverCars (dates à ressaisir) →</a>`}
+    <a class="cgo" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Chercher sur DiscoverCars (dates à ressaisir) →</a>
   </div>`;
 }
 function renderCars(list,nights,cur,meta){
@@ -2200,41 +2196,6 @@ async function searchCars(){
   btn.disabled=false;
 }
 const _carBtn=document.getElementById("carSearch"); if(_carBtn)_carBtn.onclick=searchCars;
-
-/* ================= TRANSFERT / TAXI ================= */
-let TAXI_OK=false;
-fetch(`${API_BASE}/api/taxi`).then(r=>r.json()).then(j=>{TAXI_OK=!!(j&&j.configured);
-  ["taxiHead","taxiTo","taxiSearch"].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=TAXI_OK?"":"none";});
-  const w=document.getElementById("taxiTo");if(w)w.parentElement.style.display=TAXI_OK?"":"none";
-}).catch(()=>{});
-function taxiCard(t,cur){
-  const sym=cur==="EUR"?"€":(cur==="USD"?"$":cur||"€");
-  const cap=t.passengers?`<span class="hbadge">${t.passengers} pers.</span>`:"";
-  const bag=t.bags?`<span class="hbadge">${t.bags} bagages</span>`:"";
-  const dur=t.durationMin?`<span class="hbadge">${t.durationMin} min</span>`:"";
-  const meet=t.meetGreet?`<span class="hbadge free">accueil pancarte</span>`:"";
-  const free=t.freeCancellation?`<span class="hbadge free">annulation gratuite</span>`:"";
-  const img=t.image?`<img class="txi" src="${t.image}" alt="" loading="lazy">`:"";
-  return `<div class="tx">${img}<div class="txb"><div class="txn">${t.category}</div>
-    <div class="txs">${t.supplier||""}</div>
-    <div class="txmeta">${cap}${bag}${dur}${meet}${free}</div></div>
-    <div class="txp">${t.price} ${sym}</div></div>`;
-}
-async function searchTaxi(){
-  const dst=hotelTarget(); const to=document.getElementById("taxiTo").value.trim();
-  if(!dst){document.getElementById("taxis").innerHTML='<div class="empty">Choisis une destination plus haut.</div>';return;}
-  if(!to){document.getElementById("taxis").innerHTML='<div class="empty">Indique l\'adresse ou l\'hôtel d\'arrivée.</div>';return;}
-  const d=hotelDates(),btn=document.getElementById("taxiSearch");btn.disabled=true;
-  document.getElementById("taxis").innerHTML='<div class="empty">recherche du transfert…</div>';
-  const p=new URLSearchParams({from:dst.q+" airport",to:to,date:d.ci,time:"10:00",passengers:String(HF.ad)});
-  try{const j=await (await fetch(`${API_BASE}/api/taxi?${p}`)).json();
-    const box=document.getElementById("taxis");
-    if(j.taxis&&j.taxis.length)box.innerHTML=j.taxis.map(t=>taxiCard(t,j.currency)).join("");
-    else box.innerHTML=`<div class="empty">${j.note||"Aucun transfert trouvé."}</div>`;
-  }catch(_){document.getElementById("taxis").innerHTML='<div class="empty">Transfert indisponible.</div>';}
-  btn.disabled=false;
-}
-const _tx=document.getElementById("taxiSearch"); if(_tx)_tx.onclick=searchTaxi;
 
 /* ================= ATTRACTIONS ================= */
 let ATTR_OK=false;
@@ -2299,7 +2260,7 @@ const _sw=document.getElementById("seeSearch"); if(_sw)_sw.onclick=searchSeeWhat
 function refreshCarLink(){
   const el=document.getElementById("carLink"); if(!el)return;
   const t=hotelTarget(),d=hotelDates();
-  el.href=carURL(t?t.q:"",d.ci,d.co);
+  el.href=googleCarURL(t?t.q:"",d.ci,d.co);
 }
 
 /* ================= MODE SÉJOUR (vol + hôtel) ================= */
@@ -2501,7 +2462,6 @@ const TOOL_HINT={
   stay:"Séjour — vol + hôtel combinés : le coût total du voyage par destination.",
   hotels:"Hôtels — cache gratuit, photos Booking ou ⚡ Google, filtrés par tes critères.",
   car:"Voiture — location au meilleur prix (Booking), à la destination choisie.",
-  taxi:"Taxi — transfert depuis l'aéroport de destination vers ton adresse.",
   attr:"Activités — que voir et réserver à destination.",
   see:"À voir — musées, monuments, plages, nature autour (gratuit)."
 };
@@ -2521,7 +2481,7 @@ function showTool(t){
   if(t==="simple"){ wizAllOn=false; applyWiz(); }
   renderDispatch();
   // déclenche l'affichage adapté des outils au sol
-  if(t==="hotels"||t==="car"||t==="taxi"||t==="attr"){ refreshCarLink&&refreshCarLink(); }
+  if(t==="hotels"||t==="car"||t==="attr"){ refreshCarLink&&refreshCarLink(); }
   window.scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll(".toolpill").forEach(b=>b.onclick=()=>showTool(b.dataset.tool));

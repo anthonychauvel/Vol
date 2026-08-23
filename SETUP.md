@@ -242,7 +242,7 @@ prennent le relais.
 
 En haut de l'app, une barre d'outils sépare le **mode simplifié** (assistant pas à pas, recherche rapide
 vol + destination + sur place) des **outils spécialisés**, chacun avec son propre écran focalisé :
-**Comparateur**, **Croisé**, **Séjour**, **Hôtels**, **Voiture**, **Taxi**, **Activités**. Choisir un outil masque
+**Comparateur**, **Croisé**, **Séjour**, **Hôtels**, **Voiture**, **Activités**. Choisir un outil masque
 le reste et n'affiche que ce dont il a besoin (ex. « Voiture » = dates + recherche voiture). Le simplifié
 reste l'assistant 4 étapes ; les onglets avancés (Comparateur/Croisé/Séjour) sont désormais **en haut**,
 plus enfouis dans l'étape Destination. Aucune fonction n'est perdue — tout est réorganisé.
@@ -305,9 +305,8 @@ quota. Le ⚡ live reste réservé à la vérification d'une route précise, une
   de vue autour de la destination, via **OpenStreetMap / Overpass** : **gratuit, sans clé, sans quota**,
   couvre même les petites villes. Complète les activités Booking (« quoi réserver ») par un « quoi voir »
   avec catégorie, distance et lien (Wikipédia / site / carte OSM).
-- **Transfert aéroport** (🚕) : `/api/taxi` — saisis l'adresse/hôtel d'arrivée, l'app cherche les transferts
-  depuis l'aéroport de destination (catégorie, prix, capacité, bagages, durée, accueil pancarte, annulation),
-  triés par prix.
+- **Transfert aéroport** : retiré (`booking-com18` ne couvrait pas les trajets inter-villes comme testé sur
+  Paris→Caen — utile seulement sur de vrais aéroport↔centre-ville proches).
 - **Activités & visites** (🎟️) : `/api/attractions` — les activités de la destination avec photo, note /5,
   badge « top vente », prix « dès X € » et lien de réservation ; triées par note.
 - **Louer une voiture** : bouton « prix réels » (Booking via RapidAPI, `/api/cars`) qui affiche
@@ -370,7 +369,6 @@ départ comme en destination.
 /functions/api/hotels.js      → /api/hotels     (hôtels en cache Hotellook, ton TP_TOKEN)
 /functions/api/cars.js        → /api/cars       (location voiture, Booking via RapidAPI)
 /functions/api/stays.js       → /api/stays      (hôtels Booking : photos + notes, RapidAPI)
-/functions/api/taxi.js        → /api/taxi       (transfert aéroport, RapidAPI)
 /functions/api/attractions.js → /api/attractions (activités & visites, RapidAPI)
 /functions/api/seewhat.js     → /api/seewhat    (quoi voir : POI OpenStreetMap, gratuit sans clé)
 /SETUP.md
