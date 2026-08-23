@@ -1626,11 +1626,15 @@ function liveLabel(j){
     const al=(j.airlines||[]).slice(0,2).join(" + ");
     lines.push(`⚡ ${j.price} € ${[al,st,dur].filter(Boolean).join(" · ")}`+(lvl?` <span class="lvl">(${lvl})</span>`:""));
   }
-  // Rappel adapté : si on a réellement croisé un 2e comparateur, pas besoin d'alerter
-  // dans le vide — sinon on garde l'avertissement honnête.
+  // Rappel honnête : SerpApi peut manquer des offres (même un simple vol direct,
+  // pas seulement des combinaisons exotiques — constaté sur Brest→Montpellier où
+  // un Volotea direct moins cher n'apparaissait pas dans la réponse structurée
+  // alors qu'il était bien visible sur la page Google elle-même). Le prix affiché
+  // n'est donc jamais garanti être LE moins cher réel — d'où le lien cliquable
+  // vers Google juste au-dessus, à utiliser avant de réserver.
   const foot=j.sky_checked
-    ? `<br><span class="lvl">ⓘ comparé aussi via un 2nd comparateur (combinaisons multi-compagnies incluses)</span>`
-    : `<br><span class="lvl">ⓘ petits aéroports : d'autres combinaisons multi-compagnies existent parfois ailleurs</span>`;
+    ? `<br><span class="lvl">ⓘ comparé aussi via un 2nd comparateur (combinaisons multi-compagnies incluses) — vérifie quand même via le lien ci-dessus avant de réserver</span>`
+    : `<br><span class="lvl">ⓘ ces données peuvent être incomplètes (offres manquantes, pas seulement sur petits aéroports) — vérifie via le lien ci-dessus avant de réserver</span>`;
   return lines.join("<br>")
        + `<br><span class="lvl">· ${src}</span>` + aside
        + foot;

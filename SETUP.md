@@ -164,6 +164,16 @@ live : il n'est donc **jamais substitué** au prix Google. Un prix venu de Sky S
 « combinaison à réserver toi-même » — ce sont des billets self-transfer (compagnies sans accord entre elles),
 sans lien de réservation unique fiable, donc à composer toi-même une fois le bon horaire repéré.
 
+**Complétude des données (23/08/2026)** : constaté sur Brest→Montpellier qu'un vol Volotea direct moins
+cher n'apparaissait pas dans la réponse SerpApi alors qu'il était bien visible sur la page Google Flights
+elle-même (via le lien cliquable que l'app fournit). Cause identifiée : SerpApi répond par défaut en mode
+rapide et documente lui-même que « les résultats reçus par défaut peuvent différer de ce qu'on voit sur
+Google Flights dans le navigateur ». Le paramètre `deep_search=true` est maintenant activé sur chaque appel
+(temps de réponse plus long, mais sans coût de quota ni de CPU Cloudflare supplémentaire — juste plus
+d'attente réseau). Ça corrige ce cas précis, mais ne garantit pas une complétude à 100 % dans l'absolu :
+**le prix affiché n'est jamais garanti être LE moins cher qui existe** — d'où le lien cliquable vers Google
+sur le texte du prix, à utiliser par réflexe avant de réserver.
+
 # Comparateur Sky Scrapper (combinaisons multi-compagnies) — facultatif
 
 Google Flights ne voit pas les billets **self-transfer** : des billets séparés de compagnies sans accord
