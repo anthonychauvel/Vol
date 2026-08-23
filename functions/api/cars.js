@@ -25,6 +25,8 @@ const CORS = {
   "Cache-Control": "public, max-age=1800"
 };
 const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: CORS });
+const jsonNoCache = (o, s = 200) => new Response(JSON.stringify(o), { status: s,
+  headers: { ...CORS, "Cache-Control": "no-store" } });
 const num = (x) => (typeof x === "number" ? x : (x != null && !isNaN(parseFloat(x)) ? parseFloat(x) : null));
 
 function host(env) { return env.RAPIDAPI_HOST || "booking-com18.p.rapidapi.com"; }

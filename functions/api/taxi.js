@@ -14,6 +14,8 @@ const CORS = {
   "Cache-Control": "public, max-age=1800"
 };
 const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: CORS });
+const jsonNoCache = (o, s = 200) => new Response(JSON.stringify(o), { status: s,
+  headers: { ...CORS, "Cache-Control": "no-store" } });
 const num = (x) => (typeof x === "number" ? x : (x != null && !isNaN(parseFloat(x)) ? parseFloat(x) : null));
 function host(env) { return env.RAPIDAPI_HOST || "booking-com18.p.rapidapi.com"; }
 function H(env) { return { "x-rapidapi-key": env.RAPIDAPI_KEY, "x-rapidapi-host": host(env), Accept: "application/json" }; }
@@ -95,13 +97,13 @@ export async function onRequest(context) {
 
   if (p.get("raw") === "1") {
     const [pickId, dropId] = await Promise.all([place(env, from), place(env, to)]);
-    if (!pickId || !dropId) return json({ _debug: "taxi/full", step: "resolve", pickId, dropId,
+    if (!pickId || !dropId) return jsonNoCache({ _debug: "taxi/full", step: "resolve", pickId, dropId,
       note: "résolution du lieu échouée — le souci est dans place()/pickPlaceId()" });
 
     const su = taxiSearchUrl(env, pickId, dropId, date, time, passengers);
     const r = await fetch(su.toString(), { headers: H(env) });
     let body; try { body = await r.json(); } catch (_) { body = (await r.text()).slice(0, 1200); }
-    return json({ _debug: "taxi/full", step: "search", pickId, dropId, status: r.status,
+    return jsonNoCache({ _debug: "taxi/full", step: "search", pickId, dropId, status: r.status,
       topKeys: (body && typeof body === "object") ? Object.keys(body) : null,
       dataKeys: (body?.data && typeof body.data === "object") ? Object.keys(body.data) : null,
       raw: body });
