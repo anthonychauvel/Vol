@@ -204,6 +204,8 @@
   .see a.slink{color:var(--amber);text-decoration:none;font-size:12px;border-bottom:1px solid #4d3d1c;flex-shrink:0}
   .stayline{font-family:var(--mono);font-size:11.5px;color:#ffd98a;margin-top:4px;display:block}
   .stayline b{color:var(--green)}
+  .stayline.hotelTap{cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px}
+  .stayline.hotelTap:active{opacity:.6}
   input,select,textarea{font-size:16px !important}   /* iOS ne zoome plus au focus */
   .dest.direct{border-left:3px solid var(--green)}
   .cmpcard.direct{border-left:3px solid var(--green)}
@@ -822,7 +824,6 @@
         <span class="fo" data-f="ad" data-v="4">4</span></div>
     </div>
     <div class="hbtns">
-      <button class="hsearchbtn" id="hSearch">Cache gratuit</button>
       <button class="hlivebtn" id="hBooking">📸 Photos + notes</button>
       <button class="hlivebtn" id="hLive">⚡ Temps réel</button>
     </div>
@@ -857,7 +858,7 @@
     <div class="note">
       « <b>Privative uniquement</b> » écarte les auberges de jeunesse et dortoirs : on ne garde
       que les établissements classés (2★ et plus), donc chambre et salle de bain à toi.
-      <b>Cache gratuit</b> : rapide et illimité, mais sans note. <b>📸 Photos + notes</b> et <b>⚡ Temps réel</b>
+      <b>📸 Photos + notes</b> (Booking) et <b>⚡ Temps réel</b> (Google) donnent photos, notes voyageurs,
       ajoutent photos, notes voyageurs, annulation et distance exacte (un crédit du quota mensuel).
       Les prix de vol en vert (≈) sont les <b>meilleurs tarifs du mois</b>, à des dates parfois différentes
       de ton choix ; le bouton <b>⚡</b> donne le prix <b>réel pour TES dates</b>.
@@ -1839,7 +1840,6 @@ async function searchHotelsLive(){
   }catch(_){renderHotels(null,0,"Prix live indisponible.");}
   btn.disabled=!!(LIVE_Q&&LIVE_Q.exhausted);
 }
-document.getElementById("hSearch").onclick=searchHotelsCache;
 document.getElementById("hLive").onclick=searchHotelsLive;
 
 /* ================= COMPARATEUR & CROISÉ (multi-départs) ================= */
@@ -2308,7 +2308,7 @@ async function renderStay(){
         <div class="name">${x.n}<span class="iata">${x.i}</span></div>
         <div class="meta"><span class="dur">${x.min!=null?fmtDur(x.min):""}</span>
           <span class="price show loading" data-stayf="${x.i}">vol …</span></div>
-        <span class="stayline" data-stayh="${x.i}">hôtel …</span>
+        <span class="stayline hotelTap" data-stayh="${x.i}">🏨 touche pour le prix hôtel</span>
         <span class="stayline" data-stayt="${x.i}"></span>
       </div>
       ${LIVE_OK?`<button class="live" data-slive="${x.i}" title="Prix réel pour tes dates">⚡</button>`:""}
@@ -2316,11 +2316,14 @@ async function renderStay(){
     </div>`).join("");
   box.querySelectorAll(".go").forEach(b=>b.onclick=()=>window.open(skyURL(list[+b.dataset.i].i),"_blank"));
   box.querySelectorAll(".live[data-slive]").forEach(b=>b.onclick=()=>stayLive(b.dataset.slive,nights,b));
+  box.querySelectorAll(".hotelTap[data-stayh]").forEach(el=>{
+    el.onclick=()=>loadStayHotel(el.dataset.stayh, list.find(v=>v.i===el.dataset.stayh), d, nights);
+  });
   syncButtons();
 
   _stayNuit={};
   for(const x of list){
-    let vol=null,nuit=null;
+    let vol=null;
     try{
       let u=`${API_BASE}/api/prices?origin=${origin.code}&destination=${x.i}&depart=${dep}`;
       if(!oneWay&&ret)u+=`&return=${ret}`;
@@ -2329,18 +2332,24 @@ async function renderStay(){
     _stayVol[x.i]=vol;
     const fe=document.querySelector(`[data-stayf="${x.i}"]`);
     if(fe){fe.className="price show";fe.innerHTML=vol?`vol dès ${vol} € <span class="lvl">(mois)</span>`:"vol —";}
-    try{
-      // recherche hôtel LARGE (sans filtres de distance/catégorie) pour toujours obtenir un « à partir de »
-      const hp=new URLSearchParams({location:x.n,checkIn:d.ci,checkOut:d.co,privateOnly:"1",limit:"8"});
-      if(x.lat!=null&&x.lng!=null){hp.set("lat",x.lat);hp.set("lng",x.lng);}
-      const j=await (await fetch(`${API_BASE}/api/hotels?${hp}`)).json();
-      const best=j.hotels&&j.hotels[0]; nuit=best?best.pricePerNight:null;
-    }catch(_){}
-    _stayNuit[x.i]=nuit;
-    const he=document.querySelector(`[data-stayh="${x.i}"]`);
-    if(he)he.innerHTML=nuit?`hôtel dès ${nuit} €/nuit × ${nights} = ${nuit*nights} €`:"hôtel — (essaie ⚡ ou l'onglet Hôtels)";
-    stayTotal(x.i,nights);
   }
+}
+// Prix hôtel « à partir de » via Booking (/api/stays), chargé UNIQUEMENT au tap —
+// chaque ville consultée coûte 1 crédit RapidAPI (mis en cache 6h ensuite), donc
+// on ne charge que ce que tu regardes vraiment, pas les 8 destinations d'un coup.
+async function loadStayHotel(code, x, d, nights){
+  const he=document.querySelector(`[data-stayh="${code}"]`);
+  if(he){he.className="stayline";he.textContent="hôtel …";he.onclick=null;}
+  let nuit=null;
+  try{
+    const hp=new URLSearchParams({q:x?x.n:code,checkIn:d.ci,checkOut:d.co,privateOnly:"1"});
+    if(x&&x.lat!=null&&x.lng!=null){hp.set("lat",x.lat);hp.set("lng",x.lng);}
+    const j=await (await fetch(`${API_BASE}/api/stays?${hp}`)).json();
+    const best=j.hotels&&j.hotels[0]; nuit=best?best.pricePerNight:null;
+  }catch(_){}
+  _stayNuit[code]=nuit;
+  if(he)he.innerHTML=nuit?`hôtel dès ${nuit} €/nuit × ${nights} = ${nuit*nights} €`:"hôtel — indisponible pour cette ville/ces dates";
+  stayTotal(code,nights);
 }
 let _stayNuit={}, _stayVol={};
 function stayTotal(code,nights){
