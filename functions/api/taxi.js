@@ -54,6 +54,32 @@ function normTaxi(x) {
   };
 }
 
+// Diagnostic du 23/08 : le fournisseur renvoyait "Pickup date time is in the past"
+// alors que le lieu ET la date étaient corrects — signe qu'il attend un datetime
+// COMBINÉ, pas 2 champs séparés (sinon il retombe sur "aujourd'hui" + l'heure seule,
+// donc "dans le passé" dès qu'on teste l'après-midi). On envoie les deux formes.
+function taxiSearchUrl(env, pickId, dropId, date, time, passengers) {
+  const hhmmss = time.length === 5 ? time + ":00" : time;
+  const dt = `${date}T${hhmmss}`;
+  const su = new URL(`https://${host(env)}/taxi/search`);
+  su.searchParams.set("pick_up_place_id", String(pickId));
+  su.searchParams.set("pickUpPlaceId", String(pickId));
+  su.searchParams.set("drop_off_place_id", String(dropId));
+  su.searchParams.set("dropOffPlaceId", String(dropId));
+  su.searchParams.set("pick_up_date", date);
+  su.searchParams.set("pickUpDate", date);
+  su.searchParams.set("pick_up_time", time);
+  su.searchParams.set("pickUpTime", time);
+  su.searchParams.set("pickUpDateTime", dt);
+  su.searchParams.set("pickupDateTime", dt);
+  su.searchParams.set("pick_up_date_time", dt);
+  su.searchParams.set("passenger", String(passengers));
+  su.searchParams.set("passengers", String(passengers));
+  su.searchParams.set("currency_code", "EUR");
+  su.searchParams.set("currencyCode", "EUR");
+  return su;
+}
+
 export async function onRequest(context) {
   const { request, env } = context;
   const p = new URL(request.url).searchParams;
@@ -72,19 +98,7 @@ export async function onRequest(context) {
     if (!pickId || !dropId) return json({ _debug: "taxi/full", step: "resolve", pickId, dropId,
       note: "résolution du lieu échouée — le souci est dans place()/pickPlaceId()" });
 
-    const su = new URL(`https://${host(env)}/taxi/search`);
-    su.searchParams.set("pick_up_place_id", String(pickId));
-    su.searchParams.set("pickUpPlaceId", String(pickId));
-    su.searchParams.set("drop_off_place_id", String(dropId));
-    su.searchParams.set("dropOffPlaceId", String(dropId));
-    su.searchParams.set("pick_up_date", date);
-    su.searchParams.set("pickUpDate", date);
-    su.searchParams.set("pick_up_time", time);
-    su.searchParams.set("pickUpTime", time);
-    su.searchParams.set("passenger", String(passengers));
-    su.searchParams.set("passengers", String(passengers));
-    su.searchParams.set("currency_code", "EUR");
-    su.searchParams.set("currencyCode", "EUR");
+    const su = taxiSearchUrl(env, pickId, dropId, date, time, passengers);
     const r = await fetch(su.toString(), { headers: H(env) });
     let body; try { body = await r.json(); } catch (_) { body = (await r.text()).slice(0, 1200); }
     return json({ _debug: "taxi/full", step: "search", pickId, dropId, status: r.status,
@@ -102,19 +116,7 @@ export async function onRequest(context) {
     const [pickId, dropId] = await Promise.all([place(env, from), place(env, to)]);
     if (!pickId || !dropId) return json({ configured: true, taxis: [], total: 0, note: "lieu introuvable pour le transfert" });
 
-    const su = new URL(`https://${host(env)}/taxi/search`);
-    su.searchParams.set("pick_up_place_id", String(pickId));
-    su.searchParams.set("pickUpPlaceId", String(pickId));
-    su.searchParams.set("drop_off_place_id", String(dropId));
-    su.searchParams.set("dropOffPlaceId", String(dropId));
-    su.searchParams.set("pick_up_date", date);
-    su.searchParams.set("pickUpDate", date);
-    su.searchParams.set("pick_up_time", time);
-    su.searchParams.set("pickUpTime", time);
-    su.searchParams.set("passenger", String(passengers));
-    su.searchParams.set("passengers", String(passengers));
-    su.searchParams.set("currency_code", "EUR");
-    su.searchParams.set("currencyCode", "EUR");
+    const su = taxiSearchUrl(env, pickId, dropId, date, time, passengers);
     const r = await fetch(su.toString(), { headers: H(env) });
     const j = await r.json();
     const rows = Array.isArray(j?.data) ? j.data
