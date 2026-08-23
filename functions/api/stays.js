@@ -50,7 +50,10 @@ async function resolveDest(env, q) {
   if (!arr.length) return null;
   const pick = arr.find(x => (x.dest_type || x.search_type || x.type) === "city") || arr[0];
   return pick ? {
-    dest_id: pick.dest_id ?? pick.id ?? pick.city_ufi ?? pick.ufi ?? pick.value,
+    // "id" est le token que le nouveau /stays/search exige comme locationId
+    // (base64 "eyJ..."), à ne pas confondre avec dest_id (l'UFI numérique).
+    location_id: pick.id ?? null,
+    dest_id: pick.dest_id ?? pick.city_ufi ?? pick.ufi ?? pick.value,
     dest_type: pick.dest_type || pick.search_type || pick.type || "city",
     label: pick.label || pick.name || pick.city_name || pick.cityName || q,
     lat: num(pick.latitude ?? pick.lat), lng: num(pick.longitude ?? pick.lon ?? pick.lng),
@@ -121,10 +124,9 @@ export async function onRequest(context) {
       return json({ configured: true, hotels: [], total: 0, note: "ville introuvable côté Booking" });
 
     const su = new URL(`https://${host(env)}/stays/search`);
-    // Le fournisseur a renommé le paramètre : il exige maintenant "locationId"
-    // (message d'erreur explicite "locationId is required"). On envoie la valeur
-    // résolue par l'auto-complete. On garde destId/destType en plus par compat.
-    su.searchParams.set("locationId", String(loc.dest_id));
+    // Le fournisseur exige "locationId" = le token "id" de l'auto-complete (base64),
+    // PAS l'UFI dest_id. On envoie le token ; on garde dest_id/destType par compat.
+    su.searchParams.set("locationId", String(loc.location_id ?? loc.dest_id));
     su.searchParams.set("destId", String(loc.dest_id));
     su.searchParams.set("destType", loc.dest_type || "city");
     su.searchParams.set("checkinDate", checkIn);
