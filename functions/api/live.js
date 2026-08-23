@@ -165,9 +165,10 @@ function packOffer(o) {
 // MÊMES données déjà reçues (aucun appel en plus, donc aucun coût de quota). Les
 // trois peuvent être identiques si le fournisseur ne renvoie qu'une poignée d'offres
 // pour la route — c'est attendu, pas un bug.
-function normalize(j, provider) {
-  const all = [].concat(j?.best_flights || [], j?.other_flights || [])
-                .filter(o => typeof o?.price === "number");
+function normalize(j, provider, jPrice) {
+  const poolOf = (resp) => [].concat(resp?.best_flights || [], resp?.other_flights || [])
+                            .filter(o => typeof o?.price === "number");
+  const all = poolOf(j).concat(jPrice ? poolOf(jPrice) : []);
   if (!all.length) return { price: null, currency: "EUR", offers: 0, provider };
 
   const byPrice = [...all].sort((a, b) => a.price - b.price);
@@ -176,8 +177,10 @@ function normalize(j, provider) {
 
   const cheapestRaw = byPrice[0];
   const fastestRaw = byDur[0];
-  // « Le meilleur » : le choix mis en avant par le fournisseur lui-même (best_flights[0]),
-  // son propre compromis prix/durée/qualité — sinon repli sur le moins cher.
+  // « Le meilleur » : le choix mis en avant par le fournisseur lui-même, dans la
+  // requête PRINCIPALE uniquement (best_flights[0], tri "Meilleurs vols" par défaut)
+  // — jamais celui du 2e appel "Prix" (jPrice), qui ne sert qu'à compléter
+  // cheapest/fastest avec les offres que l'onglet "Meilleurs vols" écarte.
   const bestRaw = (j?.best_flights || []).find(o => typeof o?.price === "number") || cheapestRaw;
 
   const best = packOffer(bestRaw), cheapest = packOffer(cheapestRaw), fastest = packOffer(fastestRaw);
@@ -440,7 +443,7 @@ function mergeExternalOffer(trio, offers, source) {
 }
 
 /* ---------------------------------------------------------------- requêtes */
-async function callSerp(env, o, d, dep, ret) {
+async function callSerp(env, o, d, dep, ret, sortBy) {
   const u = new URL("https://serpapi.com/search.json");
   u.searchParams.set("engine", "google_flights");
   u.searchParams.set("departure_id", o);
@@ -463,6 +466,11 @@ async function callSerp(env, o, d, dep, ret) {
   // au profil du Volotea manquant).
   u.searchParams.set("deep_search", "true");
   u.searchParams.set("show_hidden", "true");
+  // sort_by : 1=Meilleurs vols (défaut, onglet "best_flights" de Google) / 2=Prix
+  // (onglet "Prix le moins cher"). Constaté : ce sont 2 requêtes DISTINCTES côté
+  // Google, pas juste un re-tri — sort_by=1 seul peut rater la vraie offre la moins
+  // chère si elle est écartée de la sélection "top flights" (cas Volotea/BES→MPL).
+  if (sortBy) u.searchParams.set("sort_by", sortBy);
   u.searchParams.set("api_key", env.SERP_TOKEN);
   const r = await fetch(u.toString(), { headers: { Accept: "application/json" } });
   return await r.json();
@@ -649,9 +657,25 @@ export async function onRequest(context) {
   for (const prov of st.providers) {
     if (!prov.available) continue;
     try {
-      const raw = prov.id === "serpapi"
-        ? await callSerp(env, origin, destination, depart, ret)
-        : await callSearchApi(env, origin, destination, depart, ret);
+      let raw, rawPrice = null, credits = 1;
+      if (prov.id === "serpapi") {
+        raw = await callSerp(env, origin, destination, depart, ret);
+        const err0 = raw?.error || raw?.message;
+        // 2e requête "Prix" (sort_by=2), fusionnée dans normalize() pour que
+        // cheapest/fastest reflètent le vrai onglet "Prix le moins cher" de Google —
+        // pas seulement "Meilleurs vols" (découverte du 23/08 : ce sont 2 requêtes
+        // distinctes côté Google, pas un re-tri de la même liste). Coûte 1 crédit
+        // de plus ; sautée si le budget est trop juste ou si elle échoue (on garde
+        // alors quand même "best" du 1er appel, sans amélioration de cheapest/fastest).
+        if (!err0 && prov.left >= 2) {
+          try {
+            const rp = await callSerp(env, origin, destination, depart, ret, "2");
+            if (!(rp?.error || rp?.message)) { rawPrice = rp; credits = 2; }
+          } catch (_) {}
+        }
+      } else {
+        raw = await callSearchApi(env, origin, destination, depart, ret);
+      }
 
       const err = raw?.error || raw?.message;
       if (err) {
@@ -660,9 +684,9 @@ export async function onRequest(context) {
         continue;
       }
 
-      await led.bump(prov.id);                       // compteur interne (relais + secours)
+      await led.bump(prov.id, credits);                       // compteur interne (relais + secours)
       let out = { configured: true, origin, destination, depart, return: ret || null,
-                    ...normalize(raw, prov.id), fetched_at: new Date().toISOString() };
+                    ...normalize(raw, prov.id, rawPrice), fetched_at: new Date().toISOString() };
 
       // croisement gratuit avec Aviasales : on garde le moins cher des deux
       const tp = await tpPrice(env, origin, destination, depart, ret);
