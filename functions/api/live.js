@@ -618,10 +618,12 @@ export async function onRequest(context) {
   // --- cache résultat : même route + mêmes dates = 0 crédit pendant LIVE_TTL ---
   const ttl = parseInt(env.LIVE_TTL || "21600", 10);
   const ck = new Request(`https://escale.cache/live/${origin}-${destination}-${depart}-${ret || "ow"}`);
-  try {
-    const hit = await caches.default.match(ck);
-    if (hit) return json({ ...(await hit.json()), cached: true, quota: st });
-  } catch (_) {}
+  if (p.get("nocache") !== "1") {
+    try {
+      const hit = await caches.default.match(ck);
+      if (hit) return json({ ...(await hit.json()), cached: true, quota: st });
+    } catch (_) {}
+  }
 
   if (st.exhausted) {
     const tp = await tpPrice(env, origin, destination, depart, ret);
