@@ -161,8 +161,9 @@
   .hbadge.dist{color:#8fd9c0;border-color:#2f5f52}
   .hbadge.stars{color:var(--amber);border-color:#4d3d1c}
   .hbadge.cancel{color:#8fd9c0;border-color:#2f5f52}
-  .hotel .hgo{display:inline-block;margin-top:9px;font-size:12.5px;color:var(--amber);
+  .hotel .hgo{display:inline-block;margin-top:9px;margin-right:10px;font-size:12.5px;color:var(--amber);
     text-decoration:none;border-bottom:1px solid #4d3d1c}
+  .hotel .hgo.alt{font-size:11px;color:var(--muted);border-bottom:1px solid var(--line)}
   .hnote{color:var(--muted);font-size:11.5px;margin-top:9px;font-style:italic}
 
   .hotel.photo{padding:0;overflow:hidden}
@@ -302,7 +303,8 @@
   .cb.note.bad{background:#3a2226;color:#e0a0a0;border-color:#5a3238}
   .cb.free{color:#8fd9c0;border-color:#2f5f52}
   .cb.term{color:#8fd9c0;border-color:#2f5f52}
-  .car .cgo{display:inline-block;margin-top:9px;font-size:12.5px;color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c}
+  .car .cgo{display:inline-block;margin-top:9px;margin-right:10px;font-size:12.5px;color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c}
+  .car .cgo.alt{font-size:11px;color:var(--muted);border-bottom:1px solid var(--line)}
   .rmdest:hover{color:var(--oxblood);background:#2a1518}
   .restore{text-align:center;color:var(--muted);font-size:12px;padding:10px;cursor:pointer;font-style:italic}
   .restore:hover{color:var(--amber)}
@@ -1733,7 +1735,8 @@ function hotelCard(h,nights){
       <div class="hprice">${h.pricePerNight} €<small>/ nuit</small>${tot}</div>
     </div>
     <div class="hmeta">${note}${st}${dist}${cancel}${am}</div>
-    ${h.url?`<a class="hgo" href="${h.url}" target="_blank" rel="noopener">Voir l'offre →</a>`:""}
+    ${h.googleUrl?`<a class="hgo" href="${h.googleUrl}" target="_blank" rel="noopener">Voir sur Google →</a>`:""}
+    ${h.url?`<a class="hgo alt" href="${h.url}" target="_blank" rel="noopener">Réserver (dates pré-remplies) →</a>`:""}
   </div>`;
 }
 function hotelPhotoCard(h,nights,cur){
@@ -2167,7 +2170,8 @@ function carCard(c,nights,cur){
       <div class="cprice">${c.priceTotal} ${sym}${perDay}</div>
     </div>
     <div class="cmeta">${note}${trans}${seats}${mil}${term}${free}</div>
-    <a class="cgo" href="${c.url||carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Réserver →</a>
+    <a class="cgo" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Réserver →</a>
+    ${c.url?`<a class="cgo alt" href="${c.url}" target="_blank" rel="noopener">essayer sur Booking →</a>`:""}
   </div>`;
 }
 function renderCars(list,nights,cur,meta){
