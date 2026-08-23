@@ -243,7 +243,14 @@ function normalizeHotels(j, provider, opts) {
       amenities: (x.amenities || []).slice(0, 6),
       freeCancellation: !!x.free_cancellation,
       thumb: x.images?.[0]?.thumbnail || null,
-      url: x.link || null,
+      // Lien qui pré-remplit dates+voyageurs sur le site (le lien Google brut ne
+      // porte pas les dates). On garde le lien Google d'origine comme repli.
+      url: x.name
+        ? `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(x.name)}`
+          + `&checkin=${encodeURIComponent(opts.checkIn || "")}&checkout=${encodeURIComponent(opts.checkOut || "")}`
+          + `&group_adults=${opts.adults || 2}&no_rooms=1&group_children=0`
+        : (x.link || null),
+      googleUrl: x.link || null,
       essential: (x.essential_info || []).slice(0, 4)
     };
   })

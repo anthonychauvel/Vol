@@ -82,12 +82,13 @@ function normalizeStay(x, centre, checkIn, checkOut, adults) {
       ? Math.round(haversine(centre, { lat, lng }) * 10) / 10 : null,
     checkin: x.checkin ? x.checkin.fromTime : null,
     country: x.countryCode || null,
-    // lien de réservation Booking reconstruit (stable) — checkin/checkout/group_adults/no_rooms
-    // sont les paramètres officiels de pré-remplissage documentés par Booking (Demand API).
-    url: x.id
-      ? `https://www.booking.com/hotel.html?hotel_id=${x.id}`
+    // Lien de réservation Booking : searchresults.html avec ss=nom d'hôtel pré-remplit
+    // dates + voyageurs de façon fiable (contrairement à hotel.html?hotel_id= qui perd
+    // les paramètres à la redirection). L'hôtel exact apparaît en tête des résultats.
+    url: x.name
+      ? `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(x.name + " " + (x.city_name || ""))}`
         + `&checkin=${encodeURIComponent(checkIn || "")}&checkout=${encodeURIComponent(checkOut || "")}`
-        + `&group_adults=${adults || 2}&no_rooms=1`
+        + `&group_adults=${adults || 2}&no_rooms=1&group_children=0`
       : null
   };
 }
