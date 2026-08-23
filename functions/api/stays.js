@@ -60,6 +60,30 @@ async function resolveDest(env, q) {
   } : null;
 }
 
+function ymd(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+  return m ? { y: m[1], mo: String(+m[2]), d: String(+m[3]) } : null;
+}
+// Lien de réservation Booking. Deux formats de date envoyés ENSEMBLE : "checkin="
+// (ISO, documenté par la Demand API) et "checkin_year/month/monthday" (vu sur une
+// vraie URL de résultats Booking captée récemment) — impossible de vérifier lequel
+// le site utilise vraiment depuis cet environnement (pas d'accès réseau sortant),
+// donc les deux sont envoyés plutôt que de parier sur un seul.
+function bookingSearchUrl(name, checkIn, checkOut, adults) {
+  if (!name) return null;
+  const u = new URL("https://www.booking.com/searchresults.html");
+  u.searchParams.set("ss", name);
+  u.searchParams.set("checkin", checkIn || "");
+  u.searchParams.set("checkout", checkOut || "");
+  const ci = ymd(checkIn), co = ymd(checkOut);
+  if (ci) { u.searchParams.set("checkin_year", ci.y); u.searchParams.set("checkin_month", ci.mo); u.searchParams.set("checkin_monthday", ci.d); }
+  if (co) { u.searchParams.set("checkout_year", co.y); u.searchParams.set("checkout_month", co.mo); u.searchParams.set("checkout_monthday", co.d); }
+  u.searchParams.set("group_adults", String(adults || 2));
+  u.searchParams.set("no_rooms", "1");
+  u.searchParams.set("group_children", "0");
+  return u.toString();
+}
+
 function normalizeStay(x, centre, checkIn, checkOut, adults) {
   const pb = x.priceBreakdown || {};
   const gross = pb.grossPrice || {};
@@ -82,14 +106,7 @@ function normalizeStay(x, centre, checkIn, checkOut, adults) {
       ? Math.round(haversine(centre, { lat, lng }) * 10) / 10 : null,
     checkin: x.checkin ? x.checkin.fromTime : null,
     country: x.countryCode || null,
-    // Lien de réservation Booking : searchresults.html avec ss=nom d'hôtel pré-remplit
-    // dates + voyageurs de façon fiable (contrairement à hotel.html?hotel_id= qui perd
-    // les paramètres à la redirection). L'hôtel exact apparaît en tête des résultats.
-    url: x.name
-      ? `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(x.name + " " + (x.city_name || ""))}`
-        + `&checkin=${encodeURIComponent(checkIn || "")}&checkout=${encodeURIComponent(checkOut || "")}`
-        + `&group_adults=${adults || 2}&no_rooms=1&group_children=0`
-      : null
+    url: bookingSearchUrl(x.name ? (x.name + " " + (x.city_name || "")) : null, checkIn, checkOut, adults)
   };
 }
 

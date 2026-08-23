@@ -68,13 +68,29 @@ export async function onRequest(context) {
   if (!from || !to || !date) return json({ configured: true, error: "from, to et date requis" }, 400);
 
   if (p.get("raw") === "1") {
-    const dump = async (term) => {
-      const u = `https://${host(env)}/taxi/auto-complete?query=${encodeURIComponent(term)}`;
-      const rr = await fetch(u, { headers: H(env) });
-      let body; try { body = await rr.json(); } catch (_) { body = (await rr.text()).slice(0, 600); }
-      return { term, status: rr.status, body };
-    };
-    return json({ _debug: "taxi/auto-complete", from: await dump(from), to: await dump(to) });
+    const [pickId, dropId] = await Promise.all([place(env, from), place(env, to)]);
+    if (!pickId || !dropId) return json({ _debug: "taxi/full", step: "resolve", pickId, dropId,
+      note: "résolution du lieu échouée — le souci est dans place()/pickPlaceId()" });
+
+    const su = new URL(`https://${host(env)}/taxi/search`);
+    su.searchParams.set("pick_up_place_id", String(pickId));
+    su.searchParams.set("pickUpPlaceId", String(pickId));
+    su.searchParams.set("drop_off_place_id", String(dropId));
+    su.searchParams.set("dropOffPlaceId", String(dropId));
+    su.searchParams.set("pick_up_date", date);
+    su.searchParams.set("pickUpDate", date);
+    su.searchParams.set("pick_up_time", time);
+    su.searchParams.set("pickUpTime", time);
+    su.searchParams.set("passenger", String(passengers));
+    su.searchParams.set("passengers", String(passengers));
+    su.searchParams.set("currency_code", "EUR");
+    su.searchParams.set("currencyCode", "EUR");
+    const r = await fetch(su.toString(), { headers: H(env) });
+    let body; try { body = await r.json(); } catch (_) { body = (await r.text()).slice(0, 1200); }
+    return json({ _debug: "taxi/full", step: "search", pickId, dropId, status: r.status,
+      topKeys: (body && typeof body === "object") ? Object.keys(body) : null,
+      dataKeys: (body?.data && typeof body.data === "object") ? Object.keys(body.data) : null,
+      raw: body });
   }
 
   const ttl = parseInt(env.CARS_TTL || "21600", 10);
@@ -106,8 +122,7 @@ export async function onRequest(context) {
               : (Array.isArray(j?.data?.taxis) ? j.data.taxis
               : (Array.isArray(j?.results) ? j.results : null)));
     if (!Array.isArray(rows) || !rows.length)
-      return json({ configured: true, taxis: [], total: 0, note: "aucun transfert pour ce trajet / cette date",
-        _dbgKeys: p.get("raw")==="1" ? { topKeys: j?Object.keys(j):null, dataKeys: j?.data?Object.keys(j.data):null } : undefined });
+      return json({ configured: true, taxis: [], total: 0, note: "aucun transfert pour ce trajet / cette date" });
 
     const taxis = rows.map(normTaxi).filter(t => t.price != null).sort((a, b) => a.price - b.price).slice(0, 15);
     const out = { configured: true, from, to, date, currency: taxis[0]?.currency || "EUR", taxis, total: taxis.length };

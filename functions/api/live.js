@@ -217,6 +217,28 @@ function hav(a, b) {
   return 2 * R * Math.asin(Math.sqrt(s));
 }
 
+function ymd(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+  return m ? { y: m[1], mo: String(+m[2]), d: String(+m[3]) } : null;
+}
+// Lien Booking défensif : deux formats de date envoyés ensemble (ISO + année/mois/jour
+// séparés), impossible de vérifier lequel le site utilise réellement sans accès réseau
+// sortant depuis cet environnement — voir la même fonction dans stays.js.
+function bookingSearchUrl(name, checkIn, checkOut, adults) {
+  if (!name) return null;
+  const u = new URL("https://www.booking.com/searchresults.html");
+  u.searchParams.set("ss", name);
+  u.searchParams.set("checkin", checkIn || "");
+  u.searchParams.set("checkout", checkOut || "");
+  const ci = ymd(checkIn), co = ymd(checkOut);
+  if (ci) { u.searchParams.set("checkin_year", ci.y); u.searchParams.set("checkin_month", ci.mo); u.searchParams.set("checkin_monthday", ci.d); }
+  if (co) { u.searchParams.set("checkout_year", co.y); u.searchParams.set("checkout_month", co.mo); u.searchParams.set("checkout_monthday", co.d); }
+  u.searchParams.set("group_adults", String(adults || 2));
+  u.searchParams.set("no_rooms", "1");
+  u.searchParams.set("group_children", "0");
+  return u.toString();
+}
+
 function normalizeHotels(j, provider, opts) {
   const centre = opts.centre, maxKm = opts.maxKm, privateOnly = opts.privateOnly;
   const props = [].concat(j?.properties || []);
@@ -243,13 +265,10 @@ function normalizeHotels(j, provider, opts) {
       amenities: (x.amenities || []).slice(0, 6),
       freeCancellation: !!x.free_cancellation,
       thumb: x.images?.[0]?.thumbnail || null,
-      // Lien qui pré-remplit dates+voyageurs sur le site (le lien Google brut ne
-      // porte pas les dates). On garde le lien Google d'origine comme repli.
-      url: x.name
-        ? `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(x.name)}`
-          + `&checkin=${encodeURIComponent(opts.checkIn || "")}&checkout=${encodeURIComponent(opts.checkOut || "")}`
-          + `&group_adults=${opts.adults || 2}&no_rooms=1&group_children=0`
-        : (x.link || null),
+      // Lien Booking qui pré-remplit dates+voyageurs (le lien Google brut, x.link,
+      // ne porte pas les dates de façon fiable — gardé à part comme comparaison,
+      // sans promettre qu'il pré-remplit quoi que ce soit).
+      url: bookingSearchUrl(x.name, opts.checkIn, opts.checkOut, opts.adults),
       googleUrl: x.link || null,
       essential: (x.essential_info || []).slice(0, 4)
     };
