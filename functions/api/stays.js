@@ -53,7 +53,8 @@ async function resolveDest(env, q) {
     dest_id: pick.dest_id ?? pick.id ?? pick.city_ufi ?? pick.ufi ?? pick.value,
     dest_type: pick.dest_type || pick.search_type || pick.type || "city",
     label: pick.label || pick.name || pick.city_name || pick.cityName || q,
-    lat: num(pick.latitude ?? pick.lat), lng: num(pick.longitude ?? pick.lon ?? pick.lng)
+    lat: num(pick.latitude ?? pick.lat), lng: num(pick.longitude ?? pick.lon ?? pick.lng),
+    _all: pick
   } : null;
 }
 
