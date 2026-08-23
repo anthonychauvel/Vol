@@ -128,20 +128,23 @@ sans consommer un seul crédit :
   "providers": [
     {"id":"serpapi","used":13,"budget":249,"left":236,"counter":"compte SerpApi (officiel)","available":true},
     {"id":"searchapi","used":0,"budget":99,"left":99,"counter":"local (kv)","available":true}
-  ]
+  ],
+  "sky": {"id":"skyscrapper","configured":true,"used":2,"budget":95,"left":93,"available":true}
 }
 ```
 
 Puis une vraie requête :
 `…/api/live?origin=NTE&destination=DUB&depart=2026-03-06&return=2026-03-08`
-→ la réponse contient `"provider":"serpapi"` (ou `"searchapi"` après bascule).
+→ la réponse contient `"provider":"serpapi"` (ou `"searchapi"` après bascule), et si
+`RAPIDAPI_KEY` est branchée, `"sky_checked":true` une fois le croisement Sky Scrapper fait.
 
 ## 6. Ce que tu vois dans l'app
 
-- Le reste des deux quotas s'affiche en haut du calendrier de prix :
-  `SerpApi 236/249 · relais 99/99`.
-- Chaque résultat live indique sa provenance : `· SerpApi`, `· relais SearchApi`
-  ou `· en cache`.
+- Le reste des quotas s'affiche en haut du calendrier de prix :
+  `prix réel 236/249 · relais 99/99 · combinaisons 93/95` (le dernier segment
+  n'apparaît que si Sky Scrapper est branché, cf. section dédiée plus bas).
+- Chaque résultat de recherche d'hôtel indique sa provenance : `· prix réel`,
+  `· relais` ou `· en cache`.
 - Quota épuisé → les boutons ⚡ se verrouillent avec le message
   « quota live épuisé ce mois — prix en cache uniquement ». Le reste de l'app
   continue normalement.
@@ -150,15 +153,62 @@ Puis une vraie requête :
 
 ---
 
-# Prix vol au plus juste (croisement 2 sources)
+# Prix vol au plus juste (croisement de sources)
 
-Quand tu demandes le tarif réel (⚡), le prix affiché est celui de **Google Flights (live, réservable
-maintenant)**. En parallèle, l'app interroge **Aviasales/Travelpayouts** (gratuit) et l'affiche **à titre
-indicatif** à côté (« Aviasales : ~150 € vu récemment, à confirmer ») — car Aviasales est un **cache**
-(prix constaté ≤ 7 j), pas un tarif live : il n'est donc **jamais substitué** au prix Google. Si Aviasales
-est plus bas, l'écart est signalé (« −64 €, à confirmer ») pour t'inviter à vérifier, sans te promettre un
-tarif qui pourrait ne plus exister. Si le quota Google est épuisé, Aviasales s'affiche mais **clairement
-marqué indicatif**.
+Quand tu demandes le tarif réel (⚡), le prix **« Meilleur »** affiché est celui de **Google Flights (live,
+réservable maintenant)**. En parallèle, l'app interroge **Aviasales/Travelpayouts** (gratuit, cache ≤ 7 j) et
+**Sky Scrapper** si branché (voir section suivante) — et affiche en plus les prix **« Moins cher »** et
+**« Plus rapide »** dès que l'un des deux fait réellement mieux que le choix Google. Aviasales reste **à
+titre indicatif** à côté (« cache : ~150 € (autre date), à vérifier ») — car c'est un **cache**, pas un tarif
+live : il n'est donc **jamais substitué** au prix Google. Un prix venu de Sky Scrapper est marqué
+« combinaison à réserver toi-même » — ce sont des billets self-transfer (compagnies sans accord entre elles),
+sans lien de réservation unique fiable, donc à composer toi-même une fois le bon horaire repéré.
+
+# Comparateur Sky Scrapper (combinaisons multi-compagnies) — facultatif
+
+Google Flights ne voit pas les billets **self-transfer** : des billets séparés de compagnies sans accord
+entre elles, souvent le seul moyen d'avoir un tarif bas au départ d'un petit aéroport régional (constaté sur
+Brest→Bangkok : 706 € chez Google, 688 € en self-transfer réel). **Sky Scrapper** (wrapper non officiel des
+données Skyscanner, sur RapidAPI) comble ce trou. Il tourne **en plus** du prix Google, jamais à sa place :
+« Meilleur » reste toujours le choix Google, « Moins cher »/« Plus rapide » peuvent venir de Sky Scrapper si
+ça fait mieux.
+
+## Activer
+
+Aucun nouveau secret Cloudflare : Sky Scrapper réutilise la clé `RAPIDAPI_KEY` déjà branchée pour
+hôtels/voiture (une clé RapidAPI marche sur toutes les API auxquelles tu es abonné, chacune avec son propre
+quota). Il suffit de s'abonner en plus, gratuitement :
+
+1. Sur [rapidapi.com](https://rapidapi.com), cherche **« Sky Scrapper »** (éditeur *apiheya*).
+2. **Subscribe to Test** ▸ plan **Basic (gratuit, ~100 requêtes/mois)**.
+3. Rien à faire côté Cloudflare — `RAPIDAPI_KEY` fonctionne aussitôt dessus aussi.
+4. *(Facultatif)* variable `SKY_BUDGET` — seuil de bascule, défaut `95` (sur 100, marge de sécurité).
+
+## Coût en crédits
+
+- Recherche **aller simple** : 1 crédit.
+- Recherche **aller-retour** : 2 crédits (le paramètre natif A/R de cette API n'étant pas fiable, l'app fait
+  une recherche aller simple dans chaque sens et additionne le moins cher de chaque côté — c'est d'ailleurs
+  exactement le principe du self-transfer). Avec 100/mois, ça fait ~50 recherches A/R.
+- La résolution aéroport (IATA → identifiants internes Sky Scrapper) est mise en cache 90 jours : elle ne
+  consomme un crédit qu'une fois par aéroport, jamais à chaque recherche.
+- Résultat mis en cache 6 h comme le reste : recliquer la même route aux mêmes dates ne recoûte rien.
+
+## Non vérifié / limites connues
+
+- Le round-trip natif (paramètre `returnDate` ou équivalent) n'est pas documenté de façon fiable pour cette
+  API précise → contournement par 2 appels aller simple (voir ci-dessus), pas testé en conditions réelles
+  faute d'accès réseau depuis l'environnement de dev.
+- Pas de lien de réservation direct fourni par cette API pour une combinaison self-transfer : ces prix sont
+  informatifs, à réserver toi-même une fois l'horaire repéré (compagnie par compagnie).
+- **Kiwi.com** : Tequila (l'API historique) n'accepte plus d'inscription libre — invitation seulement. La
+  route via Travelpayouts existe mais exige un projet à ≥ 50 000 visiteurs/mois : pas praticable pour un usage
+  perso. Pas intégré.
+- **Vols via ton abonnement Booking (RapidAPI, `booking-com18`)** : pas confirmé publiquement que ce
+  abonnement précis expose un endpoint vols — à vérifier toi-même côté dashboard RapidAPI (onglet
+  *Endpoints* de ta souscription) avant de le brancher, pour ne pas taper un endpoint qui n'existe pas.
+
+
 
 # Prix réel (⚡) partout & retour-en-haut
 
@@ -172,6 +222,21 @@ Une **flèche ↑** flottante (en bas à droite) apparaît dès qu'on descend et
 Séjour corrigé : la recherche d'hôtel « à partir de » se fait désormais en **mode large** (sans filtre de
 distance/catégorie) pour toujours proposer un prix indicatif ; si le cache est vide, le ⚡ ou l'onglet Hôtels
 prennent le relais.
+
+# Zoom désactivé, marques retirées, prix "mois" clarifiés
+
+- **Zoom désactivé** partout (pincer-zoomer et l'auto-zoom iOS au focus d'un champ) : `maximum-scale=1,
+  user-scalable=no` + tous les champs en 16px minimum.
+- **Aucun nom de marque/partenaire visible** dans l'app (Google, Booking, Aviasales, Skyscanner,
+  Discover Cars, OpenStreetMap…) — reformulé en langage neutre ("photos + notes", "temps réel", "cache",
+  "prix réel", "cartographie ouverte"). Les liens de sortie (vers le vendeur choisi) gardent forcément
+  leur propre nom une fois sur LEUR site — normal, ce n'est plus dans l'app.
+- **Prix "≈" clarifiés** : partout où un prix vient du cache (recherche par MOIS), le libellé précise
+  maintenant "**· mois**" ou "**(mois)**" — ce sont les meilleurs tarifs du mois, pas forcément tes dates
+  exactes. Le ⚡ reste la seule source du prix réel pour TES dates précises.
+- **Voiture** : le bouton Réserver utilise en priorité le lien pré-rempli de l'offre choisie (frais
+  30 min), avec un lien de comparaison générique en repli.
+- **Cartographie (quoi voir)** : 4 miroirs + repli GET si POST échoue, pour plus de robustesse.
 
 # Barre d'outils (navigation principale)
 
