@@ -316,6 +316,14 @@
   .live.busy{color:var(--muted)}
   .pricelive{font-family:var(--mono);font-size:12px;font-weight:700;color:#ffd27a;display:block;margin-top:3px}
   .pricelive .lvl{font-weight:400;color:var(--muted)}
+  .flex{flex-shrink:0;background:var(--panel-2);border:1px solid var(--line);color:var(--green);
+    border-radius:10px;padding:10px 8px;font-size:11px;font-weight:700;cursor:pointer;line-height:1;font-family:var(--mono)}
+  .flex:disabled{opacity:.35;cursor:not-allowed}
+  .flex.busy{color:var(--muted)}
+  .priceflex{font-family:var(--mono);font-size:12px;font-weight:700;color:#8fe3b6;display:block;margin-top:3px}
+  .priceflex:empty{display:none}
+  .priceflex .lvl{font-weight:400;color:var(--muted)}
+  .priceflex a.adopt{color:var(--amber);text-decoration:underline;cursor:pointer}
   .livebar{display:flex;align-items:center;gap:9px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:11px;padding:9px 11px;margin-bottom:11px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
   .livebar button{background:var(--amber);color:#1a1305;border:none;border-radius:9px;
@@ -1411,12 +1419,15 @@ function renderDests(){
           <span class="price" data-price="${d.i}"></span>
         </div>
         <span class="pricelive" data-livep="${d.i}"></span>
+        <span class="priceflex" data-flexp="${d.i}"></span>
       </div>
       ${LIVE_OK?`<button class="live" data-live="${idx}" title="Prix réel pour tes dates" ${(!origin||!dep)?'disabled':''}>⚡</button>`:''}
+      <button class="flex" data-flex="${idx}" title="Le moins cher à ±3 jours de tes dates (cache, gratuit)" ${(!origin||!dep)?'disabled':''}>±3j</button>
       <button class="go" data-i="${idx}" ${(!origin||!dep)?'disabled':''}>Chercher</button>
     </div>`).join("");
   box.querySelectorAll(".go").forEach(b=>b.onclick=()=>window.open(skyURL(list[+b.dataset.i].i),"_blank"));
   box.querySelectorAll(".live").forEach(b=>b.onclick=()=>runLiveRow(list[+b.dataset.live],b));
+  box.querySelectorAll(".flex").forEach(b=>b.onclick=()=>runFlexRow(list[+b.dataset.flex],b));
   box.querySelectorAll(".rmdest").forEach(el=>el.onclick=(ev)=>{ev.stopPropagation();
     const code=el.dataset.rm;
     if(CUSTOM_DEST.some(d=>d.i===code)){CUSTOM_DEST=CUSTOM_DEST.filter(d=>d.i!==code);saveArr(LS_DESTC,CUSTOM_DEST);}
@@ -1435,6 +1446,7 @@ function renderDests(){
 }
 function syncButtons(){const ready=origin&&dep, live=ready&&!(LIVE_Q&&LIVE_Q.exhausted);
   document.querySelectorAll(".go").forEach(b=>b.disabled=!ready);
+  document.querySelectorAll(".flex").forEach(b=>b.disabled=!ready);
   document.querySelectorAll(".live").forEach(b=>b.disabled=!live);}
 
 /* ================= PRIX LISTE ================= */
@@ -1657,6 +1669,62 @@ async function runLiveRow(d,btn){
   }catch(_){ if(el)el.innerHTML='<span class="lvl">prix live indisponible</span>'; }
   btn.classList.remove("busy");
   btn.disabled=!(origin&&dep)||!!(LIVE_Q&&LIVE_Q.exhausted);
+}
+
+/* ===== Flexible ±3 j : le moins cher AUTOUR des dates, via le cache =====
+   N'utilise QUE /api/calendar (grouped_prices) : gratuit, illimité, aucun crédit
+   live/SerpApi consommé même en balayant plusieurs jours. Sert à révéler les dates
+   derrière le « ≈ … € · mois » et à basculer dessus en un tap. */
+const _calCache={};
+async function calMonthDays(destCode,month){
+  const key=origin.code+"|"+destCode+"|"+month+"|"+(oneWay?1:0);
+  if(_calCache[key])return _calCache[key];
+  try{
+    const r=await fetch(`${API_BASE}/api/calendar?origin=${origin.code}&destination=${destCode}&month=${month}&oneway=${oneWay?1:0}`);
+    if(!r.ok)return {};
+    const j=await r.json();
+    const days=(j&&j.days)?j.days:{};
+    _calCache[key]=days;return days;
+  }catch(_){return {};}
+}
+// Décale une date ISO de n jours (en LOCAL, pas d'UTC → pas de glissement de jour).
+function shiftISO(ds,n){const[Y,M,D]=ds.split("-").map(Number);const d=new Date(Y,M-1,D+n);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+// Mois (YYYY-MM) couverts par la fenêtre [dep-3 … dep+3].
+function windowMonths(){const s=new Set();for(let n=-3;n<=3;n++)s.add(shiftISO(dep,n).slice(0,7));return [...s];}
+async function runFlexRow(d,btn){
+  if(!(origin&&dep))return;
+  const el=document.querySelector(`.priceflex[data-flexp="${d.i}"]`);
+  btn.classList.add("busy");btn.disabled=true;
+  if(el)el.innerHTML='<span class="lvl">recherche des dates les moins chères…</span>';
+  try{
+    const maps=await Promise.all(windowMonths().map(m=>calMonthDays(d.i,m)));
+    const days=Object.assign({},...maps);
+    let best=null;
+    for(let n=-3;n<=3;n++){
+      const ds=shiftISO(dep,n),o=days[ds];
+      if(!o||typeof o.price!=="number")continue;
+      if(!best||o.price<best.price)best={price:o.price,dep:ds,
+        ret:(!oneWay&&o.return_at)?o.return_at.slice(0,10):null,
+        tr:(o.transfers==null?null:o.transfers),link:o.link||null};
+    }
+    if(!best){ if(el)el.innerHTML='<span class="lvl">pas de tarif en cache autour de ces dates</span>'; }
+    else{
+      const trTxt=best.tr===0?" · direct":(best.tr!=null?" · "+best.tr+" esc":"");
+      const dates=best.ret?`${frShort(best.dep)}→${frShort(best.ret)}`:`départ ${frShort(best.dep)}`;
+      const same=best.dep===dep&&(oneWay||best.ret===ret);
+      const price=`dès ${best.price} € — ${dates}${trTxt}`;
+      const priceHtml=best.link?`<a href="${best.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${price}</a>`:price;
+      const adopt=same?` <span class="lvl">(= tes dates)</span>`
+                      :` · <a class="adopt" data-ad-dep="${best.dep}" data-ad-ret="${best.ret||""}">adopter ces dates</a>`;
+      el.innerHTML=`🗓️ Flexible ±3 j : ${priceHtml}${adopt}`
+        +`<br><span class="lvl">· cache (à confirmer par ⚡ sur ces dates)</span>`;
+      const a=el.querySelector("a.adopt");
+      if(a)a.onclick=()=>{const rd=a.dataset.adRet;dep=a.dataset.adDep;ret=rd?rd:(oneWay?null:ret);drawCal();refresh();};
+    }
+  }catch(_){ if(el)el.innerHTML='<span class="lvl">recherche impossible</span>'; }
+  btn.classList.remove("busy");
+  btn.disabled=!(origin&&dep);
 }
 document.getElementById("ovLiveBtn").onclick=async function(){
   if(!(origin&&dep&&calDest))return;
