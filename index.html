@@ -316,15 +316,6 @@
   .live.busy{color:var(--muted)}
   .pricelive{font-family:var(--mono);font-size:12px;font-weight:700;color:#ffd27a;display:block;margin-top:3px}
   .pricelive .lvl{font-weight:400;color:var(--muted)}
-  .flex{flex-shrink:0;background:var(--panel-2);border:1px solid var(--line);color:var(--green);
-    border-radius:10px;padding:10px 8px;font-size:11px;font-weight:700;cursor:pointer;line-height:1;font-family:var(--mono)}
-  .flex:disabled{opacity:.35;cursor:not-allowed}
-  .flex.busy{color:var(--muted)}
-  .priceflex{font-family:var(--mono);font-size:12px;font-weight:700;color:#8fe3b6;display:block;margin-top:3px}
-  .priceflex:empty{display:none}
-  .priceflex .lvl{font-weight:400;color:var(--muted)}
-  .priceflex a.adopt{color:var(--amber);text-decoration:underline;cursor:pointer}
-  .altcmp{color:var(--amber);text-decoration:underline;font-size:11.5px;font-weight:400;font-family:var(--mono)}
   .livebar{display:flex;align-items:center;gap:9px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:11px;padding:9px 11px;margin-bottom:11px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
   .livebar button{background:var(--amber);color:#1a1305;border:none;border-radius:9px;
@@ -1420,15 +1411,12 @@ function renderDests(){
           <span class="price" data-price="${d.i}"></span>
         </div>
         <span class="pricelive" data-livep="${d.i}"></span>
-        <span class="priceflex" data-flexp="${d.i}"></span>
       </div>
       ${LIVE_OK?`<button class="live" data-live="${idx}" title="Prix réel pour tes dates" ${(!origin||!dep)?'disabled':''}>⚡</button>`:''}
-      <button class="flex" data-flex="${idx}" title="Le moins cher à ±3 jours de tes dates (cache, gratuit)" ${(!origin||!dep)?'disabled':''}>±3j</button>
       <button class="go" data-i="${idx}" ${(!origin||!dep)?'disabled':''}>Chercher</button>
     </div>`).join("");
   box.querySelectorAll(".go").forEach(b=>b.onclick=()=>window.open(skyURL(list[+b.dataset.i].i),"_blank"));
   box.querySelectorAll(".live").forEach(b=>b.onclick=()=>runLiveRow(list[+b.dataset.live],b));
-  box.querySelectorAll(".flex").forEach(b=>b.onclick=()=>runFlexRow(list[+b.dataset.flex],b));
   box.querySelectorAll(".rmdest").forEach(el=>el.onclick=(ev)=>{ev.stopPropagation();
     const code=el.dataset.rm;
     if(CUSTOM_DEST.some(d=>d.i===code)){CUSTOM_DEST=CUSTOM_DEST.filter(d=>d.i!==code);saveArr(LS_DESTC,CUSTOM_DEST);}
@@ -1447,7 +1435,6 @@ function renderDests(){
 }
 function syncButtons(){const ready=origin&&dep, live=ready&&!(LIVE_Q&&LIVE_Q.exhausted);
   document.querySelectorAll(".go").forEach(b=>b.disabled=!ready);
-  document.querySelectorAll(".flex").forEach(b=>b.disabled=!ready);
   document.querySelectorAll(".live").forEach(b=>b.disabled=!live);}
 
 /* ================= PRIX LISTE ================= */
@@ -1616,24 +1603,6 @@ function fmtOffer(o){
   const tag=o.source==="sky"?" · combinaison à réserver toi-même":"";
   return `${o.price} € ${[al,st,dur].filter(Boolean).join(" · ")}${tag}`;
 }
-/* Lien de comparaison « ailleurs » (Booking Flights). C'est une simple URL de
-   recherche : n'utilise PAS l'API RapidAPI Booking, ne consomme aucun quota.
-   Format vérifié. Renseigne BOOKING_AID (ton ID d'affiliation Booking) pour
-   monétiser le clic ; vide = lien nu qui marche quand même. */
-const BOOKING_AID="";
-function bookingFlightsURL(from,to,dep,ret){
-  if(!from||!to||!dep)return null;
-  const u=new URL("https://www.booking.com/flights/index.html");
-  u.searchParams.set("type",ret?"ROUNDTRIP":"ONEWAY");
-  u.searchParams.set("adults","1");
-  u.searchParams.set("cabinClass","ECONOMY");
-  u.searchParams.set("from",from);
-  u.searchParams.set("to",to);
-  u.searchParams.set("depart",dep);
-  if(ret)u.searchParams.set("return",ret);
-  if(BOOKING_AID){u.searchParams.set("aid",BOOKING_AID);u.searchParams.set("label","escale-flights");}
-  return u.toString();
-}
 function liveLabel(j){
   if(!j||j.price==null)return null;
   const lvl={low:"prix bas",typical:"prix normal",high:"prix élevé"}[j.insights&&j.insights.level]||"";
@@ -1666,11 +1635,9 @@ function liveLabel(j){
   const foot=j.sky_checked
     ? `<br><span class="lvl">ⓘ comparé aussi via un 2nd comparateur (combinaisons multi-compagnies incluses) — vérifie quand même via le lien ci-dessus avant de réserver</span>`
     : `<br><span class="lvl">ⓘ ces données peuvent être incomplètes (offres manquantes, pas seulement sur petits aéroports) — vérifie via le lien ci-dessus avant de réserver</span>`;
-  const _bk=bookingFlightsURL(j.origin,j.destination,j.depart,j.return);
-  const _alt=_bk?`<br><a href="${_bk}" target="_blank" rel="noopener" class="altcmp">↗ comparer aussi ailleurs</a>`:"";
   return lines.join("<br>")
        + `<br><span class="lvl">· ${src}</span>` + aside
-       + _alt + foot;
+       + foot;
 }
 function liveFail(j){
   if(j&&j.exhausted)return "quota live épuisé ce mois — prix en cache uniquement";
@@ -1690,62 +1657,6 @@ async function runLiveRow(d,btn){
   }catch(_){ if(el)el.innerHTML='<span class="lvl">prix live indisponible</span>'; }
   btn.classList.remove("busy");
   btn.disabled=!(origin&&dep)||!!(LIVE_Q&&LIVE_Q.exhausted);
-}
-
-/* ===== Flexible ±3 j : le moins cher AUTOUR des dates, via le cache =====
-   N'utilise QUE /api/calendar (grouped_prices) : gratuit, illimité, aucun crédit
-   live/SerpApi consommé même en balayant plusieurs jours. Sert à révéler les dates
-   derrière le « ≈ … € · mois » et à basculer dessus en un tap. */
-const _calCache={};
-async function calMonthDays(destCode,month){
-  const key=origin.code+"|"+destCode+"|"+month+"|"+(oneWay?1:0);
-  if(_calCache[key])return _calCache[key];
-  try{
-    const r=await fetch(`${API_BASE}/api/calendar?origin=${origin.code}&destination=${destCode}&month=${month}&oneway=${oneWay?1:0}`);
-    if(!r.ok)return {};
-    const j=await r.json();
-    const days=(j&&j.days)?j.days:{};
-    _calCache[key]=days;return days;
-  }catch(_){return {};}
-}
-// Décale une date ISO de n jours (en LOCAL, pas d'UTC → pas de glissement de jour).
-function shiftISO(ds,n){const[Y,M,D]=ds.split("-").map(Number);const d=new Date(Y,M-1,D+n);
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-// Mois (YYYY-MM) couverts par la fenêtre [dep-3 … dep+3].
-function windowMonths(){const s=new Set();for(let n=-3;n<=3;n++)s.add(shiftISO(dep,n).slice(0,7));return [...s];}
-async function runFlexRow(d,btn){
-  if(!(origin&&dep))return;
-  const el=document.querySelector(`.priceflex[data-flexp="${d.i}"]`);
-  btn.classList.add("busy");btn.disabled=true;
-  if(el)el.innerHTML='<span class="lvl">recherche des dates les moins chères…</span>';
-  try{
-    const maps=await Promise.all(windowMonths().map(m=>calMonthDays(d.i,m)));
-    const days=Object.assign({},...maps);
-    let best=null;
-    for(let n=-3;n<=3;n++){
-      const ds=shiftISO(dep,n),o=days[ds];
-      if(!o||typeof o.price!=="number")continue;
-      if(!best||o.price<best.price)best={price:o.price,dep:ds,
-        ret:(!oneWay&&o.return_at)?o.return_at.slice(0,10):null,
-        tr:(o.transfers==null?null:o.transfers),link:o.link||null};
-    }
-    if(!best){ if(el)el.innerHTML='<span class="lvl">pas de tarif en cache autour de ces dates</span>'; }
-    else{
-      const trTxt=best.tr===0?" · direct":(best.tr!=null?" · "+best.tr+" esc":"");
-      const dates=best.ret?`${frShort(best.dep)}→${frShort(best.ret)}`:`départ ${frShort(best.dep)}`;
-      const same=best.dep===dep&&(oneWay||best.ret===ret);
-      const price=`dès ${best.price} € — ${dates}${trTxt}`;
-      const priceHtml=best.link?`<a href="${best.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${price}</a>`:price;
-      const adopt=same?` <span class="lvl">(= tes dates)</span>`
-                      :` · <a class="adopt" data-ad-dep="${best.dep}" data-ad-ret="${best.ret||""}">adopter ces dates</a>`;
-      el.innerHTML=`🗓️ Flexible ±3 j : ${priceHtml}${adopt}`
-        +`<br><span class="lvl">· cache (à confirmer par ⚡ sur ces dates)</span>`;
-      const a=el.querySelector("a.adopt");
-      if(a)a.onclick=()=>{const rd=a.dataset.adRet;dep=a.dataset.adDep;ret=rd?rd:(oneWay?null:ret);drawCal();refresh();};
-    }
-  }catch(_){ if(el)el.innerHTML='<span class="lvl">recherche impossible</span>'; }
-  btn.classList.remove("busy");
-  btn.disabled=!(origin&&dep);
 }
 document.getElementById("ovLiveBtn").onclick=async function(){
   if(!(origin&&dep&&calDest))return;
