@@ -258,6 +258,9 @@
   .cmpcard .cbadge.dur{color:#8fd9c0;border-color:#2f5f52}
   .cmpcard .cbadge.best{color:var(--amber);border-color:#4d3d1c}
   .cmpcard .cgo{margin-top:8px;display:inline-block;font-size:12.5px;color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c}
+  .cmplinks{display:flex;gap:12px;flex-wrap:wrap;margin-top:7px}
+  .cmplinks .cgo{margin-top:0;font-size:12px}
+  .cmplinks .cgo.alt{color:var(--muted);border-bottom:1px solid var(--line)}
   /* croisé */
   .xsort{display:flex;gap:6px;margin-bottom:11px}
   .xsort button{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:8px;
@@ -1398,6 +1401,44 @@ function currentList(){let l=withDur().filter(d=>inBand(d.min));
 function skyURL(to){const yy=s=>s.slice(2,4)+s.slice(5,7)+s.slice(8,10);
   let u=`https://www.skyscanner.fr/transport/vols/${origin.code.toLowerCase()}/${to.toLowerCase()}/`;
   if(dep)u+=yy(dep)+"/";if(!oneWay&&dep&&ret)u+=yy(ret)+"/";return u;}
+
+/* ================= LIENS MULTI-COMPARATEURS (vols) ================= */
+// Un seul endroit pour construire tous les liens comparateurs pré-remplis, réutilisé
+// partout (Ma sélection, Comparer, Croisé, Séjour). Skyscanner et Kayak ont un vrai
+// schéma d'URL public confirmé. Aviasales vient toujours du lien réel renvoyé par
+// Travelpayouts (c.link / r.link) — jamais reconstruit ici. Booking Vols n'a PAS de
+// schéma d'URL public officiellement documenté pour le pré-remplissage (contrairement
+// à Skyscanner/Kayak) : le lien ci-dessous est une estimation raisonnable à tester —
+// s'il n'ouvre pas la bonne recherche, le moteur Booking Vols s'ouvre quand même.
+function skyURLFrom(from,to){
+  if(!from||!to)return null;
+  const yy=s=>s.slice(2,4)+s.slice(5,7)+s.slice(8,10);
+  let u=`https://www.skyscanner.fr/transport/vols/${from.toLowerCase()}/${to.toLowerCase()}/`;
+  if(dep)u+=yy(dep)+"/";if(!oneWay&&dep&&ret)u+=yy(ret)+"/";return u;
+}
+function kayakURL(from,to){
+  if(!from||!to||!dep)return null;
+  let u=`https://www.kayak.fr/flights/${from}-${to}/${dep}`;
+  if(!oneWay&&ret)u+=`/${ret}`;
+  return u;
+}
+function bookingFlightURL(from,to){
+  if(!from||!to||!dep)return null;
+  const p=new URLSearchParams({type:oneWay?"ONEWAY":"ROUNDTRIP",
+    from:`${from}.AIRPORT`,to:`${to}.AIRPORT`,depart:dep,adults:"1",cabinClass:"ECONOMY"});
+  if(!oneWay&&ret)p.set("return",ret);
+  return "https://www.booking.com/flights/index.html?"+p.toString();
+}
+// aviaLink = lien réel Aviasales (c.link/r.link) si connu. withSky=false quand un gros
+// bouton "Chercher" Skyscanner dédié existe déjà juste à côté (évite le doublon).
+function cmpLinksHtml(from,to,aviaLink,withSky){
+  const items=[];
+  if(withSky){const s=skyURLFrom(from,to);if(s)items.push(`<a class="cgo" href="${s}" target="_blank" rel="noopener">Skyscanner</a>`);}
+  const k=kayakURL(from,to);if(k)items.push(`<a class="cgo" href="${k}" target="_blank" rel="noopener">Kayak</a>`);
+  if(aviaLink)items.push(`<a class="cgo" href="${aviaLink}" target="_blank" rel="noopener">Aviasales</a>`);
+  const bk=bookingFlightURL(from,to);if(bk)items.push(`<a class="cgo alt" href="${bk}" target="_blank" rel="noopener">Booking</a>`);
+  return items.length?`<div class="cmplinks">${items.join("")}</div>`:"";
+}
 function renderDests(){
   const box=document.getElementById("dests"),list=currentList();
   document.getElementById("destCount").textContent=origin?list.length+" · depuis "+origin.city:list.length+" destinations";
@@ -1411,6 +1452,7 @@ function renderDests(){
           <span class="price" data-price="${d.i}"></span>
         </div>
         <span class="pricelive" data-livep="${d.i}"></span>
+        ${origin&&dep?cmpLinksHtml(origin.code,d.i,null,false):""}
       </div>
       ${LIVE_OK?`<button class="live" data-live="${idx}" title="Prix réel pour tes dates" ${(!origin||!dep)?'disabled':''}>⚡</button>`:''}
       <button class="go" data-i="${idx}" ${(!origin||!dep)?'disabled':''}>Chercher</button>
@@ -1889,12 +1931,13 @@ document.querySelectorAll("#cmpView button").forEach(b=>b.onclick=()=>{
 
 /* cache client des résultats "n'importe où" par départ (gratuit, illimité) */
 const _anyCache={};
-function anyKey(code){return code+"|"+(dep?dep.slice(0,7):"any")+"|"+(oneWay?"ow":"rt");}
-async function anywhereFor(code){
-  const k=anyKey(code);
+function anyKey(code,directOnly){return code+"|"+(dep?dep.slice(0,7):"any")+"|"+(oneWay?"ow":"rt")+(directOnly?"|d":"");}
+async function anywhereFor(code,directOnly){
+  const k=anyKey(code,directOnly);
   if(_anyCache[k])return _anyCache[k];
   let u=`${API_BASE}/api/anywhere?origin=${code}&oneway=${oneWay?1:0}`;
   if(dep)u+=`&month=${dep.slice(0,7)}`;
+  if(directOnly)u+=`&direct=1`;
   try{
     const j=await (await fetch(u)).json();
     const map={};
@@ -1990,7 +2033,7 @@ function cmpCard(r,titleCode,titleName,viaText,scoreText){
     <div class="cmeta">${dirB}${dur}${sc}
       ${LIVE_OK?`<button class="live clive" data-clive="${r.dest}" data-cfrom="${r.from}" title="Prix réel depuis ${r.from}">⚡</button>`:""}</div>
     <span class="pricelive" data-clivep="${r.dest}-${r.from}"></span>
-    ${r.link?`<a class="cgo" href="${r.link}" target="_blank" rel="noopener">Voir l'offre →</a>`:""}
+    ${cmpLinksHtml(r.from,r.dest,r.link,true)}
   </div>`;
 }
 async function renderCompare(){
@@ -1998,6 +2041,29 @@ async function renderCompare(){
   document.getElementById("destCount").textContent=cmpOrigins.length+" départ"+(cmpOrigins.length>1?"s":"");
   if(!cmpOrigins.length){box.innerHTML='<div class="empty">Ajoute au moins un aéroport de départ à comparer.</div>';return;}
   box.innerHTML='<div class="empty">calcul des dessertes…</div>';
+
+  // ---- MODE 2 : directs par aéroport — requête TP dédiée direct=true. La liste
+  // "moins cher tout court" (direct=false, modes 1/3) mélange direct+correspondance :
+  // sur un petit aéroport (Brest), la correspondance gagne presque toujours, donc
+  // filtrer transfers===0 dessus renvoie une liste vide même quand des vols directs
+  // existent réellement. direct=true demande à Travelpayouts le moins cher SANS
+  // correspondance, spécifiquement, par destination — fix du bug Brest vide/Nantes plein.
+  if(!cmpDestCode && cmpView==="airport"){
+    const dmaps=await Promise.all(cmpOrigins.map(o=>anywhereFor(o.code,true)));
+    let html="";
+    cmpOrigins.forEach((o,i)=>{
+      const m=dmaps[i];
+      const dl=Object.keys(m).map(d=>({dest:d,from:o.code,fromCity:o.city,price:m[d].price,dur:m[d].dur,transfers:0,link:m[d].link}))
+        .sort((a,b)=>a.price-b.price).slice(0,15);
+      html+=`<div class="cmphead">${o.code} · ${o.city} — ${dl.length} direct${dl.length>1?"s":""}</div>`;
+      html+= dl.length? dl.map(r=>cmpCard(r,r.dest,null,`direct depuis ${o.code}`,"")).join("")
+                      : `<div class="empty">aucun vol direct en cache</div>`;
+    });
+    box.innerHTML=html;
+    box.querySelectorAll(".clive").forEach(b=>b.onclick=()=>cmpLive(b.dataset.cfrom,b.dataset.clive,b));
+    return;
+  }
+
   const maps=await Promise.all(cmpOrigins.map(o=>anywhereFor(o.code)));
 
   // ---- MODE 1 : destination verrouillée → quel aéroport est le moins cher ? ----
@@ -2009,23 +2075,6 @@ async function renderCompare(){
     if(!rows.length){box.innerHTML=`<div class="empty">Aucun tarif en cache vers ${cmpDestName||cmpDestCode} depuis tes aéroports. Essaie ⚡ ou d'autres dates.</div>`;return;}
     box.innerHTML=`<div class="cmphead">→ ${cmpDestName||cmpDestCode} · quel départ ?</div>`
       +rows.map(r=>cmpCard(r,r.from,r.fromCity,`vers ${cmpDestName||cmpDestCode}`,"")).join("");
-    box.querySelectorAll(".clive").forEach(b=>b.onclick=()=>cmpLive(b.dataset.cfrom,b.dataset.clive,b));
-    return;
-  }
-
-  // ---- MODE 2 : directs par aéroport (toutes les lignes directes de chaque aéroport) ----
-  if(cmpView==="airport"){
-    let html="";
-    cmpOrigins.forEach((o,i)=>{
-      const m=maps[i];
-      const dl=Object.keys(m).filter(d=>m[d].transfers===0)
-        .map(d=>({dest:d,from:o.code,fromCity:o.city,price:m[d].price,dur:m[d].dur,transfers:0,link:m[d].link}))
-        .sort((a,b)=>a.price-b.price).slice(0,15);
-      html+=`<div class="cmphead">${o.code} · ${o.city} — ${dl.length} direct${dl.length>1?"s":""}</div>`;
-      html+= dl.length? dl.map(r=>cmpCard(r,r.dest,null,`direct depuis ${o.code}`,"")).join("")
-                      : `<div class="empty">aucun vol direct en cache</div>`;
-    });
-    box.innerHTML=html;
     box.querySelectorAll(".clive").forEach(b=>b.onclick=()=>cmpLive(b.dataset.cfrom,b.dataset.clive,b));
     return;
   }
@@ -2073,7 +2122,7 @@ async function renderCross(){
   }
   if(!common.length){box.innerHTML=`<div class="empty">${xDests.length?"Aucune de tes villes d'arrivée n'est en cache depuis ces départs. Essaie ⚡ sur une carte.":"Aucune destination commune trouvée. Élargis les dates ou change un départ."}</div>`;return;}
   const rows=common.map(d=>{
-    const legs=xOrigins.map((o,i)=>{const c=maps[i][d];return {code:o.code,city:o.city,price:c?c.price:null,dur:c?c.dur:null};});
+    const legs=xOrigins.map((o,i)=>{const c=maps[i][d];return {code:o.code,city:o.city,price:c?c.price:null,dur:c?c.dur:null,link:c?c.link:null};});
     const known=legs.map(l=>l.price).filter(x=>x!=null);
     const durs=legs.map(l=>l.dur).filter(x=>x!=null);
     return {dest:d,legs,partial:known.length<legs.length,
@@ -2089,7 +2138,8 @@ async function renderCross(){
   box.innerHTML=rows.slice(0,30).map(r=>{
     const nm=NAMES[r.dest]||r.dest;
     const legs=r.legs.map(l=>`<div class="xleg" data-xleg="${r.dest}|${l.code}"><span class="xo">${l.code} · ${l.city}</span>
-      <span class="xp" data-xp="${r.dest}|${l.code}">${l.price!=null?l.price+" €":"— ⚡"}</span><span class="xd">${l.dur!=null?fmtDur(l.dur):"—"}</span></div>`).join("");
+      <span class="xp" data-xp="${r.dest}|${l.code}">${l.price!=null?l.price+" €":"— ⚡"}</span><span class="xd">${l.dur!=null?fmtDur(l.dur):"—"}</span></div>
+      ${cmpLinksHtml(l.code,r.dest,l.link,true)}`).join("");
     return `<div class="xcard">
       <div class="xhd"><div class="xdest">${nm}<span class="iata" style="margin-left:7px">${r.dest}</span></div>
         <div class="xtot">${r.total} €${r.partial?" +":""}</div></div>
@@ -2133,14 +2183,22 @@ function carURL(city,ci,co){
   }
   return base;
 }
-// Recherche Google classique (pas de "Google Cars" dédié) : fait remonter le
-// comparateur de prix voiture intégré aux résultats Google, sans fausse promesse
-// de pré-remplissage — juste une requête texte, toujours fiable.
-function googleCarURL(city,ci,co){
-  const parts=["location de voiture"];
-  if(city)parts.push(city);
-  if(ci&&co)parts.push(`du ${ci} au ${co}`);
-  return "https://www.google.com/search?q="+encodeURIComponent(parts.join(" "));
+// Rentalcars.com (groupe Booking Holdings — même famille que la source de prix
+// réels ci-dessus) : contrairement à Skyscanner/Kayak, Rentalcars ne documente pas
+// publiquement son schéma d'URL de pré-remplissage. Ces paramètres reprennent la
+// convention historique du groupe (jour/mois/année séparés) constatée sur leurs
+// liens d'affiliation — à vérifier une fois en conditions réelles : si le
+// pré-remplissage ne prend pas, le moteur de recherche Rentalcars s'ouvre quand
+// même, il suffit de retaper la ville.
+function rentalcarsURL(city,ci,co){
+  const p=new URLSearchParams({locationName:city||""});
+  if(ci){const d=new Date(ci+"T10:00:00");
+    p.set("puDay",d.getDate());p.set("puMonth",d.getMonth()+1);p.set("puYear",d.getFullYear());
+    p.set("puHour","10");p.set("puMinute","00");}
+  if(co){const d=new Date(co+"T10:00:00");
+    p.set("doDay",d.getDate());p.set("doMonth",d.getMonth()+1);p.set("doYear",d.getFullYear());
+    p.set("doHour","10");p.set("doMinute","00");}
+  return "https://www.rentalcars.com/SearchResults.do?"+p.toString();
 }
 let CARS_OK=false;
 // sonde : la clé RapidAPI est-elle branchée ?
@@ -2173,7 +2231,9 @@ function carCard(c,nights,cur){
       <div class="cprice">${c.priceTotal} ${sym}${perDay}</div>
     </div>
     <div class="cmeta">${note}${trans}${seats}${mil}${term}${free}</div>
-    <a class="cgo" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Chercher sur DiscoverCars (dates à ressaisir) →</a>
+    ${c.url
+      ? `<a class="cgo" href="${c.url}" target="_blank" rel="noopener">Réserver chez ${c.supplier} · ${c.priceTotal} ${sym} →</a>`
+      : `<a class="cgo alt" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Chercher sur DiscoverCars (dates à ressaisir) →</a>`}
   </div>`;
 }
 function renderCars(list,nights,cur,meta){
@@ -2264,7 +2324,7 @@ const _sw=document.getElementById("seeSearch"); if(_sw)_sw.onclick=searchSeeWhat
 function refreshCarLink(){
   const el=document.getElementById("carLink"); if(!el)return;
   const t=hotelTarget(),d=hotelDates();
-  el.href=googleCarURL(t?t.q:"",d.ci,d.co);
+  el.href=rentalcarsURL(t?t.q:"",d.ci,d.co);
 }
 
 /* ================= MODE SÉJOUR (vol + hôtel) ================= */
@@ -2281,6 +2341,7 @@ async function renderStay(){
           <span class="price show loading" data-stayf="${x.i}">vol …</span></div>
         <span class="stayline hotelTap" data-stayh="${x.i}">🏨 touche pour le prix hôtel</span>
         <span class="stayline" data-stayt="${x.i}"></span>
+        ${cmpLinksHtml(origin.code,x.i,null,false)}
       </div>
       ${LIVE_OK?`<button class="live" data-slive="${x.i}" title="Prix réel pour tes dates">⚡</button>`:""}
       <button class="go" data-i="${i}">Chercher</button>
