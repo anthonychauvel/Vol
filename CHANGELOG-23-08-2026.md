@@ -188,3 +188,32 @@ comme ça, et surtout ça exploite ce que toi seul as : parité de semaine + mul
   routes peu recherchées, certaines fenêtres auront peu de destinations. C'est attendu.
 - Le scoring « pont » est volontairement généreux (repère un férié à ±1–3 jours) ; à
   ajuster si tu trouves qu'il propose des ponts trop tirés par les cheveux.
+
+---
+
+# Round Cap Libre v2 — jour + parité précis (aller ET retour), fix visuel
+
+## Corrigé — bulles mal cadrées
+Les conteneurs de chips (`#clConstraints`, `#clMonths`) empruntaient la classe `.seg`
+partagée avec le sélecteur de mode — pensée pour 2-3 boutons COURTS sur une seule ligne
+(`border-radius:999px`, forme pilule). Avec du texte plus long qui passe à la ligne, ça
+donnait ce grand cadre arrondi avec un vide disproportionné. Classe dédiée `.clseg`
+maintenant, sans emprunt à `.seg`.
+
+## Ajouté — jour de la semaine + parité, pour l'aller ET le retour séparément
+Avant : seulement des tags larges (pont/impair/we). Maintenant : 7 chips jour
+(Lun…Dim, multi-sélection — coche plusieurs jours acceptables) + parité de semaine
+(Toutes/Paires/Impaires), dupliqué pour le départ ET le retour indépendamment.
+Permet exactement "vendredi des semaines paires → dimanche des semaines paires".
+La section retour se masque automatiquement en aller simple.
+
+Le filtrage est fait **côté serveur, avant le classement par score** (pas après) :
+sinon une fenêtre valide mais mal notée par le score brut aurait pu être exclue du
+top 12 avant même d'être testée contre tes contraintes. Le retour est vérifié pour
+CHAQUE destination individuellement (son `return_at` propre), pas au niveau du jour
+de départ global, puisque chaque tarif A/R a sa propre date de retour la moins chère.
+
+Vérifié sur ton exemple exact : les vendredis d'octobre 2026 alternent bien
+paire/impaire (2→S40 paire, 9→S41 impaire, 16→S42 paire…), et un dimanche juste après
+un vendredi reste dans la même semaine ISO — donc "ven paire → dim paire" fonctionne
+pour un week-end classique dans la même semaine.

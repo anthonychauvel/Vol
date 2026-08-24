@@ -409,9 +409,11 @@
   .quotaline{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:6px;letter-spacing:.02em}
   /* ---- Cap Libre ---- */
   .clfld{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
-  .clseg{display:flex;flex-wrap:wrap;gap:6px}
+  .clseg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
   .clseg button{background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:22px;padding:9px 14px;font-size:13px;cursor:pointer;font-family:var(--sans)}
   .clseg button.on{background:var(--brass-face);border-color:var(--brass-rim);color:#2c1d06;font-weight:600}
+  .clseg.cldow{gap:5px}
+  .clseg.cldow button{flex:1 1 0;min-width:0;padding:9px 4px;text-align:center;font-size:12.5px}
   .clgo{display:block;width:100%;background:var(--brass-face);border:1px solid var(--brass-rim);color:#2c1d06;font-weight:700;font-size:15px;border-radius:12px;padding:14px;margin-top:16px;cursor:pointer;font-family:var(--sans)}
   .clwin{border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:12px;background:var(--panel);margin-bottom:14px;overflow:hidden}
   .clwin.top{border-left-color:var(--green)}
@@ -810,14 +812,36 @@
 
     <div id="clPanel" style="display:none">
       <p class="sub" style="margin:0 0 12px">Tu ne choisis pas où aller. Tu dis <b>quand tu peux partir</b> — Escale trouve les fenêtres et les destinations les moins chères qui y rentrent. Balaie le cache Travelpayouts + les jours fériés officiels : <b>zéro quota consommé</b>.</p>
-      <label class="clfld">Tes contraintes</label>
-      <div class="seg clseg" id="clConstraints">
-        <button data-clc="ponts" class="on">🇫🇷 Ponts &amp; fériés</button>
-        <button data-clc="impair">Sem. impaires</button>
-        <button data-clc="we">Week-ends longs</button>
+
+      <label class="clfld">Jour de départ (touche pour restreindre — sinon tous)</label>
+      <div class="clseg cldow" id="clDowOut">
+        <button data-day="0">Lun</button><button data-day="1">Mar</button><button data-day="2">Mer</button>
+        <button data-day="3">Jeu</button><button data-day="4">Ven</button><button data-day="5">Sam</button><button data-day="6">Dim</button>
       </div>
+      <div class="clseg" id="clParOut">
+        <button data-par="all" class="on">Semaines : toutes</button>
+        <button data-par="even">Paires</button>
+        <button data-par="odd">Impaires</button>
+      </div>
+
+      <label class="clfld" style="margin-top:14px" id="clRetLabel">Jour de retour (idem)</label>
+      <div class="clseg cldow" id="clDowRet">
+        <button data-day="0">Lun</button><button data-day="1">Mar</button><button data-day="2">Mer</button>
+        <button data-day="3">Jeu</button><button data-day="4">Ven</button><button data-day="5">Sam</button><button data-day="6">Dim</button>
+      </div>
+      <div class="clseg" id="clParRet">
+        <button data-par="all" class="on">Semaines : toutes</button>
+        <button data-par="even">Paires</button>
+        <button data-par="odd">Impaires</button>
+      </div>
+
+      <label class="clfld" style="margin-top:14px">Et aussi</label>
+      <div class="clseg" id="clConstraints">
+        <button data-clc="ponts" class="on">🇫🇷 Ponts &amp; fériés</button>
+      </div>
+
       <label class="clfld" style="margin-top:14px">Mois à explorer</label>
-      <div class="seg clseg" id="clMonths"></div>
+      <div class="clseg" id="clMonths"></div>
       <button class="clgo" id="clGo">⚓ Trouver mes fenêtres</button>
     </div>
     <div class="destsearch" id="destSearchWrap">
@@ -1379,7 +1403,7 @@ function renderDispatch(){
   else if(mode==="stay") renderStay();
   else if(mode==="compare"){renderCmpChips();renderCmpDestChip();renderCompare();}
   else if(mode==="cross"){renderXChips();renderXDestChips();renderCross();}
-  else if(mode==="caplibre"){ if(!CL_MONTHS_BUILT)buildClMonths(); }
+  else if(mode==="caplibre"){ if(!CL_MONTHS_BUILT)buildClMonths(); clSyncOneWay(); }
   else renderAnywhere();
 }
 
@@ -2187,7 +2211,9 @@ async function cmpLive(from,dest,btn){
 
 /* ================= CAP LIBRE (disponibilité inversée) ================= */
 let CL_MONTHS_BUILT=false, clMonth=null;
-const CL_CONS={ponts:true,impair:false,we:false};
+const CL_CONS={ponts:true};
+const CL_DOW={out:new Set(),ret:new Set()};   // jours cochés (0=lun…6=dim) ; vide = tous
+const CL_PAR={out:"all",ret:"all"};
 const JOURS=["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
 
 function buildClMonths(){
@@ -2207,8 +2233,39 @@ function buildClMonths(){
   document.querySelectorAll("#clConstraints button").forEach(b=>{
     b.onclick=()=>{b.classList.toggle("on");CL_CONS[b.dataset.clc]=b.classList.contains("on");};
   });
+  // jours de départ/retour : multi-sélection (ex. "vendredi ou samedi") — case vide = tous
+  wireClDow("clDowOut",CL_DOW.out);
+  wireClDow("clDowRet",CL_DOW.ret);
+  // parité de semaine : choix unique (toutes / paires / impaires)
+  wireClPar("clParOut",v=>CL_PAR.out=v);
+  wireClPar("clParRet",v=>CL_PAR.ret=v);
   document.getElementById("clGo").onclick=runCapLibre;
   CL_MONTHS_BUILT=true;
+}
+function wireClDow(id,set){
+  const box=document.getElementById(id); if(!box)return;
+  box.querySelectorAll("button[data-day]").forEach(b=>{
+    b.onclick=()=>{
+      const d=+b.dataset.day;
+      b.classList.toggle("on");
+      if(b.classList.contains("on"))set.add(d);else set.delete(d);
+    };
+  });
+}
+function wireClPar(id,setFn){
+  const box=document.getElementById(id); if(!box)return;
+  box.querySelectorAll("button[data-par]").forEach(b=>{
+    b.onclick=()=>{
+      box.querySelectorAll("button").forEach(x=>x.classList.remove("on"));
+      b.classList.add("on");setFn(b.dataset.par);
+    };
+  });
+}
+// aller simple : la section "jour de retour" ne veut rien dire, on la masque
+function clSyncOneWay(){
+  const ret=document.getElementById("clDowRet"),retp=document.getElementById("clParRet"),lab=document.getElementById("clRetLabel");
+  const show=!oneWay;
+  [ret,retp,lab].forEach(el=>{if(el)el.style.display=show?"":"none";});
 }
 
 // destinations à balayer : la liste visible de l'app (déjà filtrée durée/budget par l'utilisateur)
@@ -2235,20 +2292,20 @@ async function runCapLibre(){
 
   box.innerHTML='<div class="empty">Balayage des fenêtres de départ… ('+dests.length+' destinations × '+origins.length+' départ'+(origins.length>1?"s":"")+')</div>';
   try{
-    const u=`${API_BASE}/api/caplibre?origins=${origins.join(",")}&dests=${dests.join(",")}&month=${clMonth}&oneway=${oneWay?1:0}&nights=3`;
+    const q=new URLSearchParams({origins:origins.join(","),dests:dests.join(","),month:clMonth,oneway:oneWay?"1":"0",nights:"3"});
+    if(CL_DOW.out.size)q.set("dowOut",[...CL_DOW.out].join(","));
+    if(CL_PAR.out!=="all")q.set("parOut",CL_PAR.out);
+    if(!oneWay){
+      if(CL_DOW.ret.size)q.set("dowRet",[...CL_DOW.ret].join(","));
+      if(CL_PAR.ret!=="all")q.set("parRet",CL_PAR.ret);
+    }
+    if(CL_CONS.ponts)q.set("ponts","1");
+    const u=`${API_BASE}/api/caplibre?`+q.toString();
     const j=await (await fetch(u)).json();
     if(j.error){box.innerHTML=`<div class="empty">${j.error}</div>`;return;}
-    let wins=j.windows||[];
-    // filtre selon les contraintes cochées
-    wins=wins.filter(w=>{
-      if(CL_CONS.ponts && (w.tags.includes("pont")||w.tags.includes("ferie")))return true;
-      if(CL_CONS.impair && w.tags.includes("impair"))return true;
-      if(CL_CONS.we && w.tags.includes("we"))return true;
-      // si aucune contrainte cochée, tout passe
-      return !CL_CONS.ponts && !CL_CONS.impair && !CL_CONS.we;
-    });
+    const wins=j.windows||[];
     if(!wins.length){
-      box.innerHTML=`<div class="empty">Aucune fenêtre ne colle à tes contraintes ce mois-ci${j.note?` — ${j.note}`:""}. Essaie un autre mois, ou décoche une contrainte.</div>`;
+      box.innerHTML=`<div class="empty">${j.note||"Aucune fenêtre ne colle à tes contraintes ce mois-ci."} Essaie un autre mois, ou élargis les jours/semaines cochés.</div>`;
       return;
     }
     box.innerHTML=wins.map((w,i)=>clWinCard(w,i===0)).join("");
