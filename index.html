@@ -259,8 +259,9 @@
   .cmpcard .cbadge.best{color:var(--amber);border-color:#4d3d1c}
   .cmpcard .cgo{margin-top:8px;display:inline-block;font-size:12.5px;color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c}
   .cmplinks{display:flex;gap:12px;flex-wrap:wrap;margin-top:7px}
-  .cmplinks .cgo{margin-top:0;font-size:12px}
+  .cmplinks .cgo{display:inline-block;margin-top:0;font-size:12px;color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c}
   .cmplinks .cgo.alt{color:var(--muted);border-bottom:1px solid var(--line)}
+  .cmplinks .calpick{cursor:pointer}
   /* croisé */
   .xsort{display:flex;gap:6px;margin-bottom:11px}
   .xsort button{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:8px;
@@ -1437,7 +1438,19 @@ function cmpLinksHtml(from,to,aviaLink,withSky){
   const k=kayakURL(from,to);if(k)items.push(`<a class="cgo" href="${k}" target="_blank" rel="noopener">Kayak</a>`);
   if(aviaLink)items.push(`<a class="cgo" href="${aviaLink}" target="_blank" rel="noopener">Aviasales</a>`);
   const bk=bookingFlightURL(from,to);if(bk)items.push(`<a class="cgo alt" href="${bk}" target="_blank" rel="noopener">Booking</a>`);
+  if(from&&to)items.push(`<span class="cgo alt calpick" data-calfrom="${from}" data-calto="${to}">📅 dates flexibles</span>`);
   return items.length?`<div class="cmplinks">${items.join("")}</div>`:"";
+}
+// Branche le calendrier de prix (existant, ex-Ma sélection) sur tous les boutons
+// "📅 dates flexibles" générés par cmpLinksHtml, quel que soit le mode.
+function bindCalPick(box){
+  box.querySelectorAll(".calpick[data-calfrom]").forEach(el=>{
+    el.onclick=(ev)=>{ev.stopPropagation();
+      const from=el.dataset.calfrom,to=el.dataset.calto;
+      if(!from||!to)return;
+      openPriceCal({i:to,n:NAMES[to]||to},from,NAMES[from]||from);
+    };
+  });
 }
 function renderDests(){
   const box=document.getElementById("dests"),list=currentList();
@@ -1458,6 +1471,7 @@ function renderDests(){
       <button class="go" data-i="${idx}" ${(!origin||!dep)?'disabled':''}>Chercher</button>
     </div>`).join("");
   box.querySelectorAll(".go").forEach(b=>b.onclick=()=>window.open(skyURL(list[+b.dataset.i].i),"_blank"));
+  bindCalPick(box);
   box.querySelectorAll(".live").forEach(b=>b.onclick=()=>runLiveRow(list[+b.dataset.live],b));
   box.querySelectorAll(".rmdest").forEach(el=>el.onclick=(ev)=>{ev.stopPropagation();
     const code=el.dataset.rm;
@@ -1530,10 +1544,12 @@ let calDest=null, pView=new Date(), pData=null, pReqId=0;
 document.getElementById("ovClose").onclick=closeCal;
 document.getElementById("pPrev").onclick=()=>{pView.setMonth(pView.getMonth()-1);loadPriceCal();};
 document.getElementById("pNext").onclick=()=>{pView.setMonth(pView.getMonth()+1);loadPriceCal();};
-function openPriceCal(d){
-  calDest=d; pView=new Date(view.getFullYear(),view.getMonth(),1);
-  document.getElementById("ovRoute").innerHTML=`${origin.code} <span class="arr">→</span> ${d.i} <span style="color:var(--muted);font-weight:500;font-size:14px">${d.n}</span>`;
-  document.getElementById("ovSub").textContent=(oneWay?"Aller simple":"Aller-retour")+" · prix indicatif le moins cher par jour de départ (cache ≤ 7 j)";
+let calFrom=null, calFromCity=null;
+function openPriceCal(d,fromCode,fromCity){
+  calDest=d; calFrom=fromCode||(origin&&origin.code); calFromCity=fromCity||(origin&&origin.city);
+  pView=new Date(view.getFullYear(),view.getMonth(),1);
+  document.getElementById("ovRoute").innerHTML=`${calFrom} <span class="arr">→</span> ${d.i} <span style="color:var(--muted);font-weight:500;font-size:14px">${d.n}</span>`;
+  document.getElementById("ovSub").textContent=(oneWay?"Aller simple":"Aller-retour")+" · prix indicatif le moins cher par jour de départ (cache ≤ 7 j)"+(calFromCity?" · depuis "+calFromCity:"");
   overlay.classList.add("show");document.body.style.overflow="hidden";
   const bar=document.getElementById("ovLiveBar");
   bar.style.display=LIVE_OK?"flex":"none";
@@ -1554,7 +1570,7 @@ async function loadPriceCal(){
   wrap.innerHTML=`<div class="ov-status">Chargement des prix…</div>`;
   const myId=++pReqId,month=y+"-"+pad(m+1);
   try{
-    const r=await fetch(`${API_BASE}/api/calendar?origin=${origin.code}&destination=${calDest.i}&month=${month}&oneway=${oneWay?1:0}`);
+    const r=await fetch(`${API_BASE}/api/calendar?origin=${calFrom}&destination=${calDest.i}&month=${month}&oneway=${oneWay?1:0}`);
     if(!r.ok)throw 0;const j=await r.json();if(myId!==pReqId)return;
     pData=j.days||{};renderPriceCal();
   }catch(_){
@@ -2061,6 +2077,7 @@ async function renderCompare(){
     });
     box.innerHTML=html;
     box.querySelectorAll(".clive").forEach(b=>b.onclick=()=>cmpLive(b.dataset.cfrom,b.dataset.clive,b));
+    bindCalPick(box);
     return;
   }
 
@@ -2076,6 +2093,7 @@ async function renderCompare(){
     box.innerHTML=`<div class="cmphead">→ ${cmpDestName||cmpDestCode} · quel départ ?</div>`
       +rows.map(r=>cmpCard(r,r.from,r.fromCity,`vers ${cmpDestName||cmpDestCode}`,"")).join("");
     box.querySelectorAll(".clive").forEach(b=>b.onclick=()=>cmpLive(b.dataset.cfrom,b.dataset.clive,b));
+    bindCalPick(box);
     return;
   }
 
@@ -2092,6 +2110,7 @@ async function renderCompare(){
   rows.sort((a,b)=>stopRank(a.transfers)-stopRank(b.transfers)||a.score-b.score);
   box.innerHTML=rows.slice(0,40).map(r=>cmpCard(r,r.dest,null,`meilleur départ : ${r.from} · ${r.fromCity}`,`score ${(100-Math.round(r.score*100))}/100`)).join("");
   box.querySelectorAll(".clive").forEach(b=>b.onclick=()=>cmpLive(b.dataset.cfrom,b.dataset.clive,b));
+  bindCalPick(box);
 }
 
 async function cmpLive(from,dest,btn){
@@ -2148,6 +2167,7 @@ async function renderCross(){
         ${LIVE_OK?`<button class="live xlive" data-xlive="${r.dest}" title="Prix réels pour tous">⚡</button>`:""}</div>
     </div>`;}).join("");
   box.querySelectorAll(".xlive").forEach(b=>b.onclick=()=>crossLive(b.dataset.xlive,rows,b));
+  bindCalPick(box);
 }
 
 async function crossLive(dest,rows,btn){
@@ -2214,6 +2234,36 @@ function carRating(c){
   return `<span class="cb note${bad?" bad":""}">${c.rating}/10${c.reviews?` · ${c.reviews} avis`:""}</span>`;
 }
 function carTerm(c){return c.locationType==="IN_TERMINAL"?"en aérogare":(/SHUTTLE/.test(c.locationType||"")?"navette":null);}
+// Site officiel du loueur quand on le reconnaît. Le lien "forward_url" renvoyé par
+// l'API Booking/RapidAPI s'est révélé mort à l'usage (probablement un lien de session
+// qui expire avant que tu cliques dessus) — retiré. Ici pas de pré-remplissage garanti
+// (chaque loueur a son propre système), mais au moins le lien s'ouvre toujours vraiment,
+// contrairement à l'ancien. DiscoverCars reste affiché à côté, lui pré-rempli et fiable.
+const VENDOR_SITES=[
+  ["hertz","https://www.hertz.com"],["europcar","https://www.europcar.com"],
+  ["sixt","https://www.sixt.com"],["avis","https://www.avis.com"],
+  ["budget","https://www.budget.com"],["enterprise","https://www.enterprise.com"],
+  ["national","https://www.nationalcar.com"],["alamo","https://www.alamo.com"],
+  ["dollar","https://www.dollar.com"],["thrifty","https://www.thrifty.com"],
+  ["firefly","https://www.fireflycarrental.com"],["goldcar","https://www.goldcar.com"],
+  ["interrent","https://www.interrent.com"],["keddy","https://www.keddy.com"],
+  ["ok mobility","https://www.okmobility.com"],["record go","https://www.recordgo.com"],
+  ["centauro","https://www.centauro.net"],["green motion","https://www.greenmotion.com"],
+  ["payless","https://www.paylesscarrental.com"],["fox rent","https://www.foxrentacar.com"]
+];
+function vendorSite(supplier){
+  if(!supplier)return null;
+  const s=supplier.toLowerCase();
+  const hit=VENDOR_SITES.find(([k])=>s.includes(k));
+  return hit?hit[1]:null;
+}
+function carLinksHtml(c){
+  const items=[];
+  const vs=vendorSite(c.supplier);
+  if(vs)items.push(`<a class="cgo" href="${vs}" target="_blank" rel="noopener">${c.supplier} · site officiel →</a>`);
+  items.push(`<a class="cgo alt" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">DiscoverCars (dates à ressaisir) →</a>`);
+  return `<div class="cmplinks">${items.join("")}</div>`;
+}
 function carCard(c,nights,cur){
   const sym=cur==="EUR"?"€":(cur==="USD"?"$":cur);
   const note=carRating(c);
@@ -2231,9 +2281,7 @@ function carCard(c,nights,cur){
       <div class="cprice">${c.priceTotal} ${sym}${perDay}</div>
     </div>
     <div class="cmeta">${note}${trans}${seats}${mil}${term}${free}</div>
-    ${c.url
-      ? `<a class="cgo" href="${c.url}" target="_blank" rel="noopener">Réserver chez ${c.supplier} · ${c.priceTotal} ${sym} →</a>`
-      : `<a class="cgo alt" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Chercher sur DiscoverCars (dates à ressaisir) →</a>`}
+    ${carLinksHtml(c)}
   </div>`;
 }
 function renderCars(list,nights,cur,meta){
@@ -2347,6 +2395,7 @@ async function renderStay(){
       <button class="go" data-i="${i}">Chercher</button>
     </div>`).join("");
   box.querySelectorAll(".go").forEach(b=>b.onclick=()=>window.open(skyURL(list[+b.dataset.i].i),"_blank"));
+  bindCalPick(box);
   box.querySelectorAll(".live[data-slive]").forEach(b=>b.onclick=()=>stayLive(b.dataset.slive,nights,b));
   box.querySelectorAll(".hotelTap[data-stayh]").forEach(el=>{
     el.onclick=()=>loadStayHotel(el.dataset.stayh, list.find(v=>v.i===el.dataset.stayh), d, nights);

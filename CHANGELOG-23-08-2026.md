@@ -64,3 +64,40 @@ sont une estimation raisonnable — à tester.
   le code (`DISCOVERCARS_MARKER` etc.) — à remplir quand tu auras tes identifiants.
 - Aucune clé/API ajoutée ou modifiée : `SERP_TOKEN`, `TP_TOKEN`, `RAPIDAPI_KEY` etc.
   restent tels quels côté Cloudflare.
+
+---
+
+# Round 2 — même session, suite à ton retour de test
+
+## 🐛 6. Corrigé — liens Kayak/Aviasales/Booking illisibles (Séjour, Croisé, Ma sélection)
+
+**Cause réelle trouvée** (pas une supposition) : la règle CSS `.cmplinks .cgo` ne
+définissait que `margin-top`/`font-size` — pas la couleur ni le soulignement. Ces liens
+héritaient donc leur style de `.cmpcard .cgo` (mode Comparer uniquement, `color:amber`),
+qui ne s'applique QUE dans le mode Comparer. Ailleurs (Ma sélection, Croisé, Séjour, tous
+en dehors de `.cmpcard`), aucune règle ne s'appliquait → retour au bleu souligné par
+défaut du navigateur, illisible sur fond sombre. `.cmplinks .cgo` est maintenant
+autonome (couleur + soulignement inclus), donc cohérent partout.
+
+## 🐛 7. Corrigé — lien voiture "mort" (forward_url Booking/RapidAPI)
+
+Confirmé par ton test : le lien par offre (`c.url`, renvoyé par l'API Booking via
+RapidAPI) ne s'ouvre pas correctement en pratique — probablement un lien de session qui
+expire avant que tu cliques. Retiré. Chaque carte affiche maintenant DEUX liens fixes :
+le **site officiel du loueur** quand il est reconnu (Hertz, Europcar, Sixt, Avis,
+Budget, Enterprise, National, Alamo, Dollar, Thrifty, Firefly, Goldcar, Interrent,
+Keddy, OK Mobility, Record Go, Centauro, Green Motion, Payless, Fox — liste dans
+`VENDOR_SITES`), et **DiscoverCars** (pré-rempli, déjà fiable) à côté. Pas de
+pré-remplissage garanti sur le site du loueur (chaque loueur a son propre système),
+mais le lien s'ouvre toujours vraiment, contrairement à l'ancien.
+
+## ➕ 8. Ajouté — "📅 dates flexibles" dans les 4 modes
+
+Le calendrier de prix par jour existait déjà (mode Ma sélection, tape sur une
+destination). Il est maintenant accessible partout : un bouton "📅 dates flexibles"
+a été ajouté dans `cmpLinksHtml()` — donc automatiquement dans Ma sélection, Comparer,
+Croisé et Séjour, sans dupliquer le code. `openPriceCal()` accepte maintenant un aéroport
+de départ explicite (avant : uniquement l'origine globale), donc ça fonctionne même
+pour un trajet secondaire (ex. Nantes dans une carte Comparer alors que ton origine
+globale est Brest).
+
