@@ -49,6 +49,34 @@ function normAttraction(x) {
   };
 }
 
+// L'autocomplétion attractions de Booking est anglophone : "Palma de Majorque" n'y
+// existe pas (il faut "Palma de Mallorca"), idem Séville/Seville, Londres/London…
+// On traduit donc AVANT d'appeler Booking, via l'autocomplétion Travelpayouts
+// (gratuite, sans token, déjà utilisée par /api/place et /api/seewhat) : nom FR →
+// code IATA → nom EN. Fait en premier justement pour ne pas gaspiller de quota
+// RapidAPI sur une requête vouée à ne rien trouver.
+async function tpAuto(locale, term) {
+  const u = `https://autocomplete.travelpayouts.com/places2?locale=${locale}&types[]=city&term=${encodeURIComponent(term)}`;
+  const r = await fetch(u, { headers: { Accept: "application/json" } });
+  const j = await r.json();
+  return Array.isArray(j) ? j : [];
+}
+async function enName(q, code) {
+  try {
+    let c = (code || "").trim().toUpperCase();
+    if (!c) {
+      const fr = await tpAuto("fr", q);
+      if (!fr.length) return null;
+      c = String(fr[0].code || "").toUpperCase();
+    }
+    if (!c) return null;
+    const en = await tpAuto("en", c);
+    if (!en.length) return null;
+    const hit = en.find(x => String(x.code || "").toUpperCase() === c) || en[0];
+    return hit && hit.name ? String(hit.name) : null;
+  } catch (_) { return null; }
+}
+
 export async function onRequest(context) {
   const { request, env } = context;
   const p = new URL(request.url).searchParams;
@@ -56,6 +84,7 @@ export async function onRequest(context) {
   if (!env.RAPIDAPI_KEY) return json({ configured: false });
 
   const q = (p.get("q") || "").trim();
+  const code = (p.get("code") || "").trim();   // code IATA si l'app le connaît (traduction plus fiable)
   if (!q) return json({ configured: true, error: "q requis" }, 400);
 
   const ttl = 43200; // 12 h : ça bouge peu
@@ -64,7 +93,10 @@ export async function onRequest(context) {
   try { const hit = await cache.match(ckey); if (hit) return json({ ...(await hit.json()), cached: true }); } catch (_) {}
 
   try {
-    const id = await place(env, q);
+    // nom anglais d'abord (gratuit), nom saisi en repli
+    const qEn = await enName(q, code);
+    let id = qEn ? await place(env, qEn) : null;
+    if (!id && (!qEn || qEn.toLowerCase() !== q.toLowerCase())) id = await place(env, q);
     if (!id) return json({ configured: true, attractions: [], total: 0, note: "ville introuvable pour les activités" });
 
     const su = new URL(`https://${host(env)}/attraction/search`);
