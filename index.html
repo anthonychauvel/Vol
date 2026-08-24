@@ -423,13 +423,16 @@
   .clwin.top .clbadge{background:rgba(91,199,162,.14);color:var(--green)}
   .clwin-cost{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:5px}
   .clwin-cost b{color:var(--green)}
-  .cld{display:flex;align-items:center;gap:12px;padding:11px 15px;border-top:1px solid var(--line)}
+  .cld{padding:11px 15px;border-top:1px solid var(--line)}
+  .cld .cldtop{display:flex;align-items:center;gap:12px}
   .cld .cldcity{flex:1;font-size:14px}
   .cld .cldcity small{color:var(--muted);font-family:var(--mono);font-size:11px;margin-left:5px}
   .cld .cldtag{font-family:var(--mono);font-size:10px;color:var(--green);border:1px solid rgba(91,199,162,.3);border-radius:6px;padding:2px 6px}
   .cld .cldprice{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--amber)}
   .cld .cldfrom{font-family:var(--mono);font-size:10px;color:var(--muted);display:block;text-align:right}
   .cld a.cldprice{text-decoration:none}
+  .cld .cmplinks{margin-top:8px}
+  .cld .live{padding:6px 10px;font-size:12px}
   .clwhy{padding:10px 15px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);background:var(--panel-2)}
   .clwhy b{color:var(--ink)}
 
@@ -764,9 +767,9 @@
       <button data-mode="list" class="on">Ma sélection</button>
       <button data-mode="anywhere">N'importe où</button>
       <button data-mode="compare">Comparateur</button>
+      <button data-mode="caplibre">✦ Cap Libre</button>
       <button data-mode="cross">Croisé</button>
       <button data-mode="stay">Séjour</button>
-      <button data-mode="caplibre">✦ Cap Libre</button>
     </div>
 
     <div id="cmpPanel" style="display:none">
@@ -1479,34 +1482,41 @@ function skyURL(to){const yy=s=>s.slice(2,4)+s.slice(5,7)+s.slice(8,10);
 // schéma d'URL public officiellement documenté pour le pré-remplissage (contrairement
 // à Skyscanner/Kayak) : le lien ci-dessous est une estimation raisonnable à tester —
 // s'il n'ouvre pas la bonne recherche, le moteur Booking Vols s'ouvre quand même.
-function skyURLFrom(from,to){
+// depOv/retOv : dates explicites à utiliser à la place de dep/ret globaux (Cap Libre
+// s'en sert pour pointer vers LA date de la fenêtre trouvée, pas la date globale
+// éventuellement différente ou absente). undefined = comportement inchangé (dep/ret).
+function skyURLFrom(from,to,depOv,retOv){
   if(!from||!to)return null;
+  const d=depOv!==undefined?depOv:dep, r=retOv!==undefined?retOv:ret;
   const yy=s=>s.slice(2,4)+s.slice(5,7)+s.slice(8,10);
   let u=`https://www.skyscanner.fr/transport/vols/${from.toLowerCase()}/${to.toLowerCase()}/`;
-  if(dep)u+=yy(dep)+"/";if(!oneWay&&dep&&ret)u+=yy(ret)+"/";return u;
+  if(d)u+=yy(d)+"/";if(!oneWay&&d&&r)u+=yy(r)+"/";return u;
 }
-function kayakURL(from,to,noDate){
+function kayakURL(from,to,noDate,depOv,retOv){
   if(!from||!to)return null;
-  if(noDate||!dep)return `https://www.kayak.fr/flights/${from}-${to}`;
-  let u=`https://www.kayak.fr/flights/${from}-${to}/${dep}`;
-  if(!oneWay&&ret)u+=`/${ret}`;
+  const d=depOv!==undefined?depOv:dep, r=retOv!==undefined?retOv:ret;
+  if(noDate||!d)return `https://www.kayak.fr/flights/${from}-${to}`;
+  let u=`https://www.kayak.fr/flights/${from}-${to}/${d}`;
+  if(!oneWay&&r)u+=`/${r}`;
   return u;
 }
-function bookingFlightURL(from,to){
+function bookingFlightURL(from,to,depOv,retOv){
   if(!from||!to)return null;
+  const d=depOv!==undefined?depOv:dep, r=retOv!==undefined?retOv:ret;
   const p=new URLSearchParams({type:oneWay?"ONEWAY":"ROUNDTRIP",
     from:`${from}.AIRPORT`,to:`${to}.AIRPORT`,adults:"1",cabinClass:"ECONOMY"});
-  if(dep){p.set("depart",dep);if(!oneWay&&ret)p.set("return",ret);}
+  if(d){p.set("depart",d);if(!oneWay&&r)p.set("return",r);}
   return "https://www.booking.com/flights/index.html?"+p.toString();
 }
 // aviaLink = lien réel Aviasales (c.link/r.link) si connu. withSky=false quand un gros
 // bouton "Chercher" Skyscanner dédié existe déjà juste à côté (évite le doublon).
-function cmpLinksHtml(from,to,aviaLink,withSky){
+// depOv/retOv optionnels (voir plus haut) : passés par Cap Libre pour la date de la fenêtre.
+function cmpLinksHtml(from,to,aviaLink,withSky,depOv,retOv){
   const items=[];
-  if(withSky){const s=skyURLFrom(from,to);if(s)items.push(`<a class="cgo" href="${s}" target="_blank" rel="noopener">Skyscanner</a>`);}
-  const k=kayakURL(from,to);if(k)items.push(`<a class="cgo" href="${k}" target="_blank" rel="noopener">Kayak</a>`);
+  if(withSky){const s=skyURLFrom(from,to,depOv,retOv);if(s)items.push(`<a class="cgo" href="${s}" target="_blank" rel="noopener">Skyscanner</a>`);}
+  const k=kayakURL(from,to,false,depOv,retOv);if(k)items.push(`<a class="cgo" href="${k}" target="_blank" rel="noopener">Kayak</a>`);
   if(aviaLink)items.push(`<a class="cgo" href="${aviaLink}" target="_blank" rel="noopener">Aviasales</a>`);
-  const bk=bookingFlightURL(from,to);if(bk)items.push(`<a class="cgo alt" href="${bk}" target="_blank" rel="noopener">Booking</a>`);
+  const bk=bookingFlightURL(from,to,depOv,retOv);if(bk)items.push(`<a class="cgo alt" href="${bk}" target="_blank" rel="noopener">Booking</a>`);
   if(from&&to)items.push(`<span class="cgo alt calpick" data-calfrom="${from}" data-calto="${to}">📅 dates flexibles</span>`);
   return items.length?`<div class="cmplinks">${items.join("")}</div>`:"";
 }
@@ -2268,13 +2278,6 @@ function clSyncOneWay(){
   [ret,retp,lab].forEach(el=>{if(el)el.style.display=show?"":"none";});
 }
 
-// destinations à balayer : la liste visible de l'app (déjà filtrée durée/budget par l'utilisateur)
-function clDestCodes(){
-  const l=currentList();
-  const codes=l.map(d=>d.i).filter(Boolean);
-  // dédoublonne, borne à 30 pour rester dans les clous (10 req/s TP)
-  return [...new Set(codes)].slice(0,30);
-}
 function clOriginCodes(){
   // Cap Libre est multi-départs : on réutilise les origines du mode Croisé si définies,
   // sinon l'origine simple. (xOrigins existe déjà pour le mode Croisé.)
@@ -2282,13 +2285,52 @@ function clOriginCodes(){
     return xOrigins.map(o=>o.code).filter(Boolean).slice(0,5);
   return origin?[origin.code]:[];
 }
+// destinations à balayer : le réseau RÉEL desservi par l'aéroport de départ noté —
+// vols directs ET lignes avec correspondance confondus (/api/anywhere, comme pour
+// Croisé) — plutôt que la liste "Ma sélection" (curatée/filtrée durée-budget par
+// l'utilisateur, hors sujet ici : Cap Libre doit balayer ce qui part vraiment de cet
+// aéroport, pas une sélection à part).
+const _clAnyCache={};
+async function clAnywhereDests(code){
+  const k=code+"|"+(clMonth||"any")+"|"+(oneWay?"ow":"rt");
+  if(_clAnyCache[k])return _clAnyCache[k];
+  let u=`${API_BASE}/api/anywhere?origin=${code}&oneway=${oneWay?1:0}`;
+  if(clMonth)u+=`&month=${clMonth}`;
+  let set=new Set();
+  try{
+    const j=await (await fetch(u)).json();
+    set=new Set((j.results||[]).map(r=>r.destination).filter(Boolean));
+  }catch(_){}
+  _clAnyCache[k]=set;return set;
+}
+async function clDestCodes(){
+  const origins=clOriginCodes();
+  if(!origins.length)return [];
+  const sets=await Promise.all(origins.map(clAnywhereDests));
+  const codes=new Set();
+  sets.forEach(s=>s.forEach(c=>codes.add(c)));
+  // borne à 40 (plafond déjà géré côté /api/caplibre) ; l'ordre suit celui
+  // d'/api/anywhere, trié moins cher d'abord.
+  if(codes.size)return [...codes].slice(0,40);
+  // repli : /api/anywhere n'a rien renvoyé (souci réseau, cache TP vide…) — retombe
+  // sur la liste visible pour ne jamais bloquer Cap Libre.
+  return clDestCodesFallback();
+}
+function clDestCodesFallback(){
+  const l=currentList();
+  const codes=l.map(d=>d.i).filter(Boolean);
+  return [...new Set(codes)].slice(0,30);
+}
 
 async function runCapLibre(){
   const box=document.getElementById("dests");
-  const origins=clOriginCodes(), dests=clDestCodes();
+  const origins=clOriginCodes();
   if(!origins.length){box.innerHTML='<div class="empty">Choisis d\'abord un aéroport de départ (étape I).</div>';return;}
-  if(!dests.length){box.innerHTML='<div class="empty">Ta liste de destinations est vide — ajoute des villes dans « Ma sélection » ou élargis le filtre de durée.</div>';return;}
   if(!clMonth){box.innerHTML='<div class="empty">Choisis un mois à explorer.</div>';return;}
+
+  box.innerHTML=`<div class="empty">Recherche des destinations desservies depuis ${origins.map(o=>NAMES[o]||o).join(", ")}…</div>`;
+  const dests=await clDestCodes();
+  if(!dests.length){box.innerHTML='<div class="empty">Aucune destination desservie trouvée pour cet aéroport pour le moment. Réessaie dans un instant, ou ajoute un aéroport de départ supplémentaire (mode Croisé).</div>';return;}
 
   box.innerHTML='<div class="empty">Balayage des fenêtres de départ… ('+dests.length+' destinations × '+origins.length+' départ'+(origins.length>1?"s":"")+')</div>';
   try{
@@ -2309,6 +2351,8 @@ async function runCapLibre(){
       return;
     }
     box.innerHTML=wins.map((w,i)=>clWinCard(w,i===0)).join("");
+    bindCalPick(box);
+    box.querySelectorAll(".cllive").forEach(b=>b.onclick=()=>clLive(b.dataset.clfrom,b.dataset.cldest,b.dataset.cldate,b.dataset.clret||null,b));
   }catch(e){
     box.innerHTML='<div class="empty">Cap Libre indisponible pour le moment. Réessaie dans un instant.</div>';
   }
@@ -2330,7 +2374,15 @@ function clWinCard(w,isTop){
     const price=d.link
       ? `<a class="cldprice" href="${d.link}" target="_blank" rel="noopener">${d.price} €</a>`
       : `<span class="cldprice">${d.price} €</span>`;
-    return `<div class="cld"><span class="cldcity">${nm} <small>${d.dest}</small></span>${tag}<span>${price}<small class="cldfrom">depuis ${d.from}</small></span></div>`;
+    // retour associé à CE tarif précis (chaque destination a sa propre date de retour
+    // la moins chère) — sert au bouton ⚡ et aux liens comparateurs ci-dessous.
+    const retDate=(!oneWay&&d.return_at)?d.return_at.slice(0,10):null;
+    const liveBtn=LIVE_OK?`<button class="live cllive" data-cldest="${d.dest}" data-clfrom="${d.from}" data-cldate="${w.date}" data-clret="${retDate||""}" title="Prix réel pour ce départ">⚡</button>`:"";
+    return `<div class="cld">
+      <div class="cldtop"><span class="cldcity">${nm} <small>${d.dest}</small></span>${tag}<span>${price}<small class="cldfrom">depuis ${d.from}</small></span>${liveBtn}</div>
+      <span class="pricelive" data-clwlivep="${d.dest}-${d.from}-${w.date}"></span>
+      ${cmpLinksHtml(d.from,d.dest,d.link,true,w.date,retDate)}
+    </div>`;
   }).join("");
 
   let why="";
@@ -2347,6 +2399,27 @@ function clWinCard(w,isTop){
     ${dests}
     <div class="clwhy">${why}</div>
   </div>`;
+}
+
+// ⚡ prix live pour une destination d'UNE fenêtre Cap Libre précise. Contrairement à
+// cmpLive/runLiveRow (qui utilisent la date globale dep/ret), on force ici la date DE
+// LA FENÊTRE trouvée — Cap Libre existe justement pour des dates différentes (souvent
+// absentes) de dep/ret.
+async function clLive(from,dest,depDate,retDate,btn){
+  btn.classList.add("busy");btn.disabled=true;
+  const el=document.querySelector(`.pricelive[data-clwlivep="${dest}-${from}-${depDate}"]`);
+  if(el)el.innerHTML='<span class="lvl">tarif réel…</span>';
+  try{
+    let u=`${API_BASE}/api/live?origin=${from}&destination=${dest}&depart=${depDate}`;
+    if(!oneWay&&retDate)u+=`&return=${retDate}`;
+    const j=await (await fetch(u)).json();
+    setQuota(j.quota);
+    const lab=liveLabel(j);
+    if(el)el.innerHTML=lab
+      ? (j.url?`<a href="${j.url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">depuis ${from} : ${lab}</a>`:`depuis ${from} : ${lab}`)
+      : `<span class="lvl">${liveFail(j)}</span>`;
+  }catch(_){ if(el)el.innerHTML='<span class="lvl">prix live indisponible</span>'; }
+  btn.classList.remove("busy");btn.disabled=!!(LIVE_Q&&LIVE_Q.exhausted);
 }
 
 async function renderCross(){
