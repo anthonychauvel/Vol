@@ -18,6 +18,11 @@
 //   month   : YYYY-MM
 //   oneway  : 1 = aller simple, 0 = A/R
 //   nights  : durée de séjour visée (pour l'estimation A/R), défaut 3
+//   dowOut  : jours de départ acceptés, ex. "4,5" (0=lun…6=dim) — vide = tous
+//   parOut  : all | even | odd — parité de semaine du DÉPART
+//   dowRet  : jours de retour acceptés (ignoré si oneway) — même format que dowOut
+//   parRet  : all | even | odd — parité de semaine du RETOUR
+//   ponts   : 1 = ne garder que les fenêtres proches d'un jour férié
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -91,6 +96,7 @@ async function monthPrices(env, origin, destination, month, oneway) {
 }
 
 function iso(d) { return d.toISOString().slice(0, 10); }
+function dowOf(dateStr) { return (new Date(dateStr + "T00:00:00Z").getUTCDay() + 6) % 7; } // lundi=0 … dimanche=6
 function weekParity(dateStr) {
   // n° ISO de semaine → paire / impaire (utilisé pour "semaines impaires sans garde")
   const d = new Date(dateStr + "T00:00:00Z");
@@ -99,6 +105,12 @@ function weekParity(dateStr) {
   const firstThu = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
   const week = 1 + Math.round(((d - firstThu) / 86400000 - 3 + ((firstThu.getUTCDay() + 6) % 7)) / 7);
   return { week, parity: week % 2 === 0 ? "paire" : "impaire" };
+}
+// parse "0,3,4" → Set([0,3,4]) ; vide/absent → null (= pas de contrainte)
+function parseDowSet(v) {
+  if (!v) return null;
+  const s = new Set(v.split(",").map(x => parseInt(x, 10)).filter(n => n >= 0 && n <= 6));
+  return s.size ? s : null;
 }
 
 export async function onRequest(context) {
@@ -111,6 +123,11 @@ export async function onRequest(context) {
   const dests   = (p.get("dests")   || "").toUpperCase().split(",").map(s => s.trim()).filter(Boolean).slice(0, 40);
   const month   = p.get("month") || "";
   const oneway  = p.get("oneway") === "1";
+  const dowOut  = parseDowSet(p.get("dowOut"));     // jours de départ acceptés, ou null = tous
+  const parOut  = p.get("parOut")  || "all";        // all | even | odd
+  const dowRet  = parseDowSet(p.get("dowRet"));      // jours de retour acceptés (ignoré si oneway)
+  const parRet  = p.get("parRet")  || "all";
+  const needPonts = p.get("ponts") === "1";
   if (!origins.length || !dests.length || !/^\d{4}-\d{2}$/.test(month))
     return json({ error: "origins, dests et month (YYYY-MM) requis" }, 400);
 
@@ -158,8 +175,14 @@ export async function onRequest(context) {
   const windows = [];
   for (const date of Object.keys(byDay)) {
     const dt = new Date(date + "T00:00:00Z");
-    const dow = (dt.getUTCDay() + 6) % 7; // lundi=0 … dimanche=6
+    const dow = dowOf(date);
     const { week, parity } = weekParity(date);
+
+    // contrainte jour de départ
+    if (dowOut && !dowOut.has(dow)) continue;
+    // contrainte semaine de départ
+    if (parOut === "even" && parity !== "paire") continue;
+    if (parOut === "odd"  && parity !== "impaire") continue;
 
     // fériés autour (fenêtre -1 / +3 jours pour repérer les ponts)
     let ferieHit = null, bridge = false;
@@ -174,6 +197,7 @@ export async function onRequest(context) {
       const fdow = (fd.getUTCDay() + 6) % 7;
       bridge = (fdow === 1 || fdow === 4 || fdow === 3 || fdow === 0 || fdow === 5); // lun/jeu/mer/dim/ven → pont plausible
     }
+    if (needPonts && !bridge && !ferieHit) continue;
 
     const tags = [];
     if (bridge) tags.push("pont");
@@ -181,8 +205,23 @@ export async function onRequest(context) {
     if (dow === 4 || dow === 5) tags.push("we"); // départ ven/sam
     tags.push(parity === "impaire" ? "impair" : "pair");
 
-    // meilleures dests ce jour-là
-    const list = byDay[date].sort((a, b) => a.price - b.price).slice(0, 4);
+    // contrainte jour/semaine de RETOUR : appliquée par destination (chaque tarif a
+    // sa propre date de retour la moins chère), pas au niveau du jour de départ.
+    let list = byDay[date];
+    if (!oneway && (dowRet || parRet !== "all")) {
+      list = list.filter(x => {
+        if (!x.return_at) return false;
+        const rd = x.return_at.slice(0, 10);
+        if (dowRet && !dowRet.has(dowOf(rd))) return false;
+        if (parRet !== "all") {
+          const rp = weekParity(rd).parity;
+          if (parRet === "even" && rp !== "paire") return false;
+          if (parRet === "odd"  && rp !== "impaire") return false;
+        }
+        return true;
+      });
+    }
+    list = list.sort((a, b) => a.price - b.price).slice(0, 4);
     if (!list.length) continue;
 
     // score : plus il y a de repos "gratuit" (pont/we) et un prix bas, mieux c'est
@@ -192,7 +231,7 @@ export async function onRequest(context) {
     if (dow === 4 || dow === 5) score += 15;
     score += Math.max(0, 40 - Math.round(list[0].price / 3)); // prix bas = bonus
     // départ le même jour possible depuis TOUS les aéroports = bonus "groupe"
-    const origSet = new Set(byDay[date].map(x => x.from));
+    const origSet = new Set(list.map(x => x.from));
     if (origins.length > 1 && origSet.size === origins.length) score += 10;
 
     windows.push({
@@ -213,6 +252,6 @@ export async function onRequest(context) {
     origins, dests,
     feriesCount: feries.size,
     windows: windows.slice(0, 12),
-    note: windows.length ? null : "Aucun prix en cache pour ces routes/ce mois. Essaie d'autres destinations ou un autre mois."
+    note: windows.length ? null : "Aucune fenêtre ne correspond à ces contraintes dans le cache ce mois-ci. Essaie un autre mois, ou élargis les jours/semaines."
   });
 }
