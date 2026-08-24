@@ -406,6 +406,7 @@
   .hint{color:var(--amber);font-size:12.5px;text-align:center;margin-top:14px;display:none}
   .hint.show{display:block}
   footer{text-align:center;color:var(--muted);font-size:11px;margin-top:30px;font-family:var(--mono);letter-spacing:.08em}
+  .quotaline{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:6px;letter-spacing:.02em}
 
   /* overlay calendrier de prix */
   .overlay{position:fixed;inset:0;background:rgba(6,14,19,.96);z-index:50;display:none;
@@ -646,6 +647,7 @@
     <p class="eyebrow">Carnet de bord · chasse au bon vol</p>
     <h1>Mettre le cap <span>— tes ports, tes dates, le prix jour par jour</span></h1>
     <p class="sub">Aéroport, type de trajet, dates (n° de semaine + paire/impaire), filtre durée. Touche une destination pour le calendrier de prix couleur.</p>
+  <p class="quotaline" id="headerQuota"></p>
     </div>
   </header>
 
@@ -1651,6 +1653,8 @@ function setQuota(q){
   if(q&&q.providers)LIVE_Q=q;
   const el=document.getElementById("ovQuota");
   if(el)el.textContent=fmtQuota();
+  const el2=document.getElementById("headerQuota");
+  if(el2)el2.textContent=fmtQuota();
   const btn=document.getElementById("ovLiveBtn");
   if(btn&&LIVE_Q&&LIVE_Q.exhausted)btn.disabled=true;
 }
