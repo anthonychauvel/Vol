@@ -867,7 +867,9 @@
   </nav>
 
   <button id="toTop" aria-label="Remonter en haut">↑</button>
-  <footer>⚓ ESCALE · « le meilleur cap, au meilleur prix »</footer>
+  <footer>⚓ ESCALE · « le meilleur cap, au meilleur prix »
+    <img src="logo-ac.png" alt="Anthony Chauvel — développeur" style="display:block;height:34px;width:auto;margin:8px auto 0;opacity:.85">
+  </footer>
 </div>
 
 <!-- OVERLAY CALENDRIER DE PRIX -->
@@ -1601,7 +1603,16 @@ function renderPriceCal(){
       <span class="dd">${dn}</span><span class="pp">${o.price}€</span></div>`;
   }
   html+="</div>";
-  if(!prices.length)html='<div class="ov-status">Pas de tarif en cache pour cette route ce mois-ci. Essaie un autre mois ou une autre destination.</div>';
+  const kURL=kayakURL(calFrom,calDest.i);
+  const kLink=kURL?` <a href="${kURL}" target="_blank" rel="noopener" style="color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c">Voir un calendrier complet sur Kayak →</a>`:"";
+  if(!prices.length){
+    html=`<div class="ov-status">Pas de tarif en cache pour cette route ce mois-ci. Essaie un autre mois ou une autre destination.${kLink}</div>`;
+  }else if(prices.length<5){
+    // Ce calendrier vient du cache Travelpayouts (recherches passées d'autres gens),
+    // pas d'un scan en direct comme Kayak — sur une route peu recherchée (petit aéroport,
+    // destination peu courante), il n'y a tout simplement pas grand-chose en cache.
+    html+=`<div class="ov-status" style="margin-top:10px;text-align:left">Peu de prix en cache pour cette route ce mois-ci (${prices.length} jour${prices.length>1?"s":""} seulement) — normal sur un trajet peu recherché : ce calendrier vient de recherches passées d'autres personnes, pas d'un scan en direct.${kLink}</div>`;
+  }
   document.getElementById("pgridWrap").innerHTML=html;
   document.getElementById("pgridWrap").querySelectorAll(".pday[data-pick]").forEach(el=>el.onclick=()=>pickFromCal(el.dataset.pick));
 }
@@ -2262,6 +2273,7 @@ function carLinksHtml(c){
   const vs=vendorSite(c.supplier);
   if(vs)items.push(`<a class="cgo" href="${vs}" target="_blank" rel="noopener">${c.supplier} · site officiel →</a>`);
   items.push(`<a class="cgo alt" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">DiscoverCars (dates à ressaisir) →</a>`);
+  items.push(`<a class="cgo alt" href="${rentalcarsURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Rentalcars →</a>`);
   return `<div class="cmplinks">${items.join("")}</div>`;
 }
 function carCard(c,nights,cur){

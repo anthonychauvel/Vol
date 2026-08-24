@@ -101,3 +101,45 @@ de départ explicite (avant : uniquement l'origine globale), donc ça fonctionne
 pour un trajet secondaire (ex. Nantes dans une carte Comparer alors que ton origine
 globale est Brest).
 
+---
+
+# Round 3 — suite à ton 2e retour de test
+
+## ➕ 9. Ajouté — Rentalcars sur chaque vignette voiture
+
+Chaque carte affiche maintenant 3 liens : loueur officiel (si reconnu) + DiscoverCars
++ Rentalcars, tous les trois pré-remplis avec la même ville/dates que la recherche.
+
+## ➕ 10. Amélioré — calendrier "dates flexibles" : transparence sur les données rares
+
+**Pas un bug à proprement parler, mais un vrai problème réel.** Ce calendrier vient du
+cache Travelpayouts (recherches passées d'autres personnes), pas d'un scan en direct
+comme Kayak. Sur une route peu recherchée (petit aéroport, destination moins courante),
+le cache est mécaniquement clairsemé — c'est une histoire de source de données, pas
+un filtre trop strict à corriger. Rien de comparable en gratuit à l'échelle de Kayak
+sans consommer massivement le quota SerpApi (250/mois pour toute l'app — remplir un
+mois entier en direct viderait le quota en une poignée de calendriers ouverts).
+
+Ce que j'ai fait à la place : quand il y a peu ou pas de prix en cache, un message
+l'explique clairement (au lieu d'une grille presque vide sans explication) + un lien
+"Voir un calendrier complet sur Kayak →" pour cette route précise, pour que tu aies
+la vue complète en un tap quand le cache ne suffit pas.
+
+## ❓ 11. Pas résolu — bouton "prix live" absent en Séjour
+
+J'ai relu le code en détail (template de carte, CSS `.dest`/`.live`/`.go`, la fonction
+`syncButtons()`, le filtre `applyStopsListDom()`, et surtout le mécanisme qui active
+`LIVE_OK`) : structurellement tout est correct, et `renderDispatch()` relance bien
+`renderStay()` dès que le statut "prix live" est confirmé disponible. Je ne trouve pas
+de défaut de code qui ferait disparaître ce bouton précisément en Séjour — et je n'ai
+touché à aucune de ces parties cette session, donc si c'est réel, ce n'est probablement
+pas quelque chose que j'ai cassé aujourd'hui.
+
+Piste la plus probable : `LIVE_OK` démarre à `false` et ne passe à `true` qu'après une
+vérification en tâche de fond au chargement de la page — si tu arrives sur Séjour très
+vite après ouverture de l'appli, ce premier rendu peut se faire avant que la vérification
+soit revenue, et ça devrait se corriger tout seul juste après. Est-ce que ça persiste
+même après un rechargement complet de la page (pas juste changer d'onglet et revenir) ?
+Et est-ce que le bouton ⚡ fonctionne au même moment sur Ma sélection/Comparer ?
+
+
