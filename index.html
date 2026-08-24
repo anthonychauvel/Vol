@@ -605,6 +605,12 @@
   body.tool-compare [data-blk="dates"], body.tool-compare [data-blk="dates2"], body.tool-compare [data-blk="butin"]{display:block !important}
   body.tool-cross   [data-blk="dates"], body.tool-cross   [data-blk="dates2"], body.tool-cross   [data-blk="butin"]{display:block !important}
   body.tool-stay    [data-blk="depart"], body.tool-stay [data-blk="dates"], body.tool-stay [data-blk="dates2"], body.tool-stay [data-blk="butin"]{display:block !important}
+  /* Cap Libre : départ (pour l'origine) + bascule aller simple/retour + panneau CL & résultats.
+     On masque le calendrier de dates précises (CL raisonne en mois + jours de semaine, pas
+     en date fixe) et la rangée de sous-onglets modeSeg (l'outil EST déjà Cap Libre). */
+  body.tool-caplibre [data-blk="depart"], body.tool-caplibre [data-blk="dates"], body.tool-caplibre [data-blk="butin"]{display:block !important}
+  body.tool-caplibre [data-blk="dates"] .cal, body.tool-caplibre #dateHint{display:none}
+  body.tool-caplibre #modeSeg{display:none}
   body.tool-hotels  [data-blk="dates"], body.tool-hotels [data-blk="surplace"]{display:block !important}
   body.tool-car     [data-blk="dates"], body.tool-car    [data-blk="surplace"]{display:block !important}
   body.tool-attr    [data-blk="surplace"]{display:block !important}
@@ -616,6 +622,29 @@
   body.tool-car    [data-sub]:not([data-sub="car"]){display:none}
   body.tool-attr   [data-sub]:not([data-sub="attr"]){display:none}
   body.tool-see    [data-sub]:not([data-sub="see"]){display:none}
+  /* ---- Radar (accueil : veille prix sans quota) ---- */
+  .radar{margin:0 0 14px;border:1px solid var(--brass-rim);border-radius:14px;background:linear-gradient(180deg,rgba(255,210,122,.05),transparent);overflow:hidden}
+  .radar[hidden]{display:none}
+  .radar-load{padding:12px 14px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .radar-head{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line)}
+  .radar-head b{color:var(--amber);font-size:14px}
+  .radar-sub{flex:1;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .radar-x{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:4px 9px;font-size:11px;cursor:pointer}
+  .radar-list{display:flex;flex-direction:column}
+  .radar-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+  .radar-row:last-child{border-bottom:0}
+  .radar-row:hover{background:var(--panel-2)}
+  .rd-city{flex:1;font-size:13.5px}
+  .rd-city small{color:var(--muted);font-family:var(--mono);font-size:10px;margin-left:5px}
+  .rd-drc{margin-left:7px;font-family:var(--mono);font-size:9px;color:var(--green);border:1px solid rgba(91,199,162,.3);border-radius:5px;padding:1px 5px}
+  .rd-mid{font-family:var(--mono);font-size:12px;min-width:66px;text-align:right}
+  .rd-delta.dn{color:var(--green)}
+  .rd-delta.up{color:#e2a04a}
+  .rd-new{color:var(--amber)}
+  .rd-price{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--amber);text-align:right;min-width:96px}
+  .rd-price small{display:block;font-weight:400;font-size:9px;color:var(--muted)}
+  .radar-more{padding:8px 14px;font-family:var(--mono);font-size:11px;color:var(--muted);border-top:1px solid var(--line)}
+  .radar-foot{padding:9px 14px;font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--panel-2)}
   /* petit rappel du contexte en haut d'un outil focalisé */
   .toolhint{font-family:var(--mono);font-size:11px;color:var(--muted);margin:2px 0 12px;
     padding:8px 11px;border:1px dashed var(--line);border-radius:10px;display:none}
@@ -679,11 +708,15 @@
     </div>
   </header>
 
+  <!-- Radar : rempli au chargement par Radar.rescan(), masqué tant qu'il n'y a rien -->
+  <section id="radarSec" class="radar" hidden></section>
+
   <nav class="tools" id="toolBar">
     <button class="toolpill on" data-tool="simple">✦ Simplifié</button>
     <button class="toolpill" data-tool="compare">Comparateur</button>
     <button class="toolpill" data-tool="cross">Croisé</button>
     <button class="toolpill" data-tool="stay">Séjour</button>
+    <button class="toolpill" data-tool="caplibre">✦ Cap Libre</button>
     <button class="toolpill" data-tool="hotels">Hôtels</button>
     <button class="toolpill" data-tool="car">Voiture</button>
     <button class="toolpill" data-tool="attr">Activités</button>
@@ -1408,6 +1441,7 @@ function renderDispatch(){
   else if(mode==="cross"){renderXChips();renderXDestChips();renderCross();}
   else if(mode==="caplibre"){ if(!CL_MONTHS_BUILT)buildClMonths(); clSyncOneWay(); }
   else renderAnywhere();
+  if(window.Radar)Radar.note(mode);   // alimente la veille Radar au fil de la navigation
 }
 
 /* ================= CALENDRIER PRINCIPAL ================= */
@@ -2828,6 +2862,124 @@ async function loadCityNames(){
 }
 loadCityNames();
 
+/* ================= RADAR — veille prix sans quota =================
+   Chaque (aéroport de départ, mois) que tu consultes devient une "voie" surveillée.
+   À l'ouverture, on rejoue l'appel cache /api/anywhere de chaque voie (coût SerpApi = 0,
+   c'est le cache gratuit Travelpayouts) et on ne met en tête que ce qui a BAISSÉ depuis
+   ta dernière visite (ou les nouvelles dessertes apparues). 100 % localStorage, zéro
+   backend, zéro permission.
+   Limites assumées : ça se déclenche à l'ouverture (pas de push téléphone endormi), et
+   la fraîcheur reste celle du cache (≤ 7 j) — le ⚡ dans l'onglet reste le juge avant de
+   réserver. Utile dès la 2ᵉ visite (la 1ʳᵉ ne fait qu'établir la référence). */
+window.Radar=(()=>{
+  const LANES_KEY="escale:radar:lanes:v1";
+  const SNAP_KEY=l=>"escale:radar:snap:v1:"+l;
+  const MAX_LANES=24;                 // éviction LRU au-delà
+  const MOVE_ABS=5, MOVE_PCT=0.03;    // seuil pour qualifier un vrai "mouvement"
+  const MAX_ROWS=14;
+  const now=()=>Date.now();
+  const jget=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(_){return d;}};
+  const jset=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(_){}};
+  const laneId=(o,m,ow)=>o+"|"+m+"|"+(ow?"1":"0");
+  const loadLanes=()=>jget(LANES_KEY,[]);
+  const saveLanes=a=>jset(LANES_KEY,a);
+
+  // Enregistre les voies du contexte courant (appelé depuis renderDispatch à chaque rendu).
+  function note(mode){
+    let origins=[], month="", ow=oneWay;
+    if(mode==="caplibre"){ origins=clOriginCodes(); month=clMonth||""; }
+    else if(mode==="compare"){ origins=(mode==="compare"&&typeof cmpOrigins!=="undefined"?cmpOrigins:[]).map(o=>o.code); month=monthForAnywhere(); }
+    else if(mode==="cross"){ origins=(mode==="cross"&&typeof xOrigins!=="undefined"?xOrigins:[]).map(o=>o.code); month=monthForAnywhere(); }
+    else { origins=origin?[origin.code]:[]; month=monthForAnywhere(); }
+    origins=origins.filter(Boolean);
+    if(!origins.length||!month) return;
+    let lanes=loadLanes(); const t=now();
+    origins.forEach(code=>{
+      const id=laneId(code,month,ow), ex=lanes.find(l=>l.id===id);
+      if(ex) ex.seen=t; else lanes.push({id,origin:code,month,oneway:!!ow,seen:t,added:t});
+    });
+    lanes.sort((a,b)=>b.seen-a.seen);
+    if(lanes.length>MAX_LANES) lanes=lanes.slice(0,MAX_LANES);
+    saveLanes(lanes);
+  }
+
+  // Rejoue le cache d'une voie, met à jour le snapshot, renvoie les mouvements détectés.
+  async function scanLane(l){
+    let results=[];
+    try{
+      const u=`${API_BASE}/api/anywhere?origin=${l.origin}&month=${l.month}&oneway=${l.oneway?1:0}`;
+      const j=await (await fetch(u)).json(); results=j.results||[];
+    }catch(_){ return null; }
+    const map={};
+    results.forEach(r=>{ if(r.destination&&r.price!=null) map[r.destination]={price:r.price,transfers:r.transfers,link:r.link}; });
+    const prev=jget(SNAP_KEY(l.id),null), movers=[];
+    if(prev&&prev.map){
+      for(const d in map){
+        const np=map[d].price, op=prev.map[d]&&prev.map[d].price;
+        if(op==null) movers.push({dest:d,price:np,delta:null,isNew:true,from:l.origin,month:l.month,link:map[d].link,transfers:map[d].transfers});
+        else{ const dl=np-op;
+          if(Math.abs(dl)>=MOVE_ABS && Math.abs(dl)>=op*MOVE_PCT)
+            movers.push({dest:d,price:np,delta:dl,isNew:false,from:l.origin,month:l.month,link:map[d].link,transfers:map[d].transfers});
+        }
+      }
+    }
+    jset(SNAP_KEY(l.id),{map,ts:now()});
+    return {count:Object.keys(map).length,movers};
+  }
+
+  let _busy=false;
+  async function rescan(){
+    if(_busy) return; _busy=true;
+    const lanes=loadLanes(), sec=document.getElementById("radarSec");
+    if(!lanes.length){ _busy=false; if(sec){sec.hidden=true;sec.innerHTML="";} return; }
+    if(sec){ sec.hidden=false; sec.innerHTML='<div class="radar-load">✦ Radar — vérification de '+lanes.length+' voie'+(lanes.length>1?"s":"")+' surveillée'+(lanes.length>1?"s":"")+'…</div>'; }
+    let allMovers=[], watched=0;
+    for(const l of lanes){ const r=await scanLane(l); if(r){ watched+=r.count; allMovers=allMovers.concat(r.movers); } }
+    render(allMovers,lanes.length,watched); _busy=false;
+  }
+
+  const fmtDelta=dl=>dl==null?'<span class="rd-new">nouveau</span>'
+    :'<span class="rd-delta '+(dl<0?"dn":"up")+'">'+(dl<0?"▼ ":"▲ +")+Math.abs(dl)+' €</span>';
+
+  function render(movers,laneCount,watched){
+    const sec=document.getElementById("radarSec"); if(!sec) return;
+    const seen={};
+    movers.forEach(m=>{ const k=m.dest+"|"+m.from+"|"+m.month, score=m.isNew?1e9:Math.abs(m.delta);
+      if(!seen[k]||score>seen[k]._s){ m._s=score; seen[k]=m; } });
+    const drops=Object.values(seen).filter(m=>m.isNew||m.delta<0)
+      .sort((a,b)=>(a.isNew?-1e9:a.delta)-(b.isNew?-1e9:b.delta));
+    const shown=drops.slice(0,MAX_ROWS);
+    if(!shown.length){
+      sec.innerHTML='<div class="radar-head"><b>✦ Radar</b><span class="radar-sub">'+laneCount+' voie'+(laneCount>1?"s":"")+' · '+watched+' liaisons surveillées · rien de neuf</span><button class="radar-x" id="radarClear">effacer</button></div>';
+      bindClear(); return;
+    }
+    const rows=shown.map(m=>{
+      const nm=NAMES[m.dest]||m.dest, sky=skyURLFrom(m.from,m.dest);
+      const badge=m.transfers===0?'<span class="rd-drc">direct</span>':'';
+      return '<a class="radar-row" href="'+(m.link||sky)+'" target="_blank" rel="noopener">'
+        +'<span class="rd-city">'+nm+' <small>'+m.dest+'</small>'+badge+'</span>'
+        +'<span class="rd-mid">'+fmtDelta(m.delta)+'</span>'
+        +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+' · '+m.month+'</small></span></a>';
+    }).join("");
+    const extra=drops.length-shown.length;
+    const more=extra>0?'<div class="radar-more">+ '+extra+' autre'+(extra>1?"s":"")+' baisse'+(extra>1?"s":"")+'</div>':'';
+    sec.hidden=false;
+    sec.innerHTML='<div class="radar-head"><b>✦ Radar</b><span class="radar-sub">ce qui a baissé depuis ta dernière visite</span><button class="radar-x" id="radarClear">effacer</button></div>'
+      +'<div class="radar-list">'+rows+'</div>'+more
+      +'<div class="radar-foot">'+laneCount+' voie'+(laneCount>1?"s":"")+' · '+watched+' liaisons · cache gratuit ≤ 7 j — touche le ⚡ dans l\'onglet pour le prix réel</div>';
+    bindClear();
+  }
+  function bindClear(){ const b=document.getElementById("radarClear"); if(b)b.onclick=clearAll; }
+  function clearAll(){
+    loadLanes().forEach(l=>{try{localStorage.removeItem(SNAP_KEY(l.id));}catch(_){}});
+    try{localStorage.removeItem(LANES_KEY);}catch(_){}
+    const sec=document.getElementById("radarSec"); if(sec){sec.hidden=true;sec.innerHTML="";}
+  }
+  return {note,rescan,clear:clearAll};
+})();
+// lance la vérification après le premier rendu (laisse le temps aux noms de villes d'arriver)
+setTimeout(()=>{try{Radar.rescan();}catch(_){}} ,900);
+
 /* ================= INIT ================= */
 drawCal();renderDests();refresh();
 
@@ -2872,6 +3024,7 @@ const TOOL_HINT={
   compare:"Comparateur — ajoute jusqu'à 5 aéroports, compare les dessertes (ou verrouille une destination).",
   cross:"Croisé — 2 à 3 voyageurs, chacun son départ : trouve un point de rendez-vous commun.",
   stay:"Séjour — vol + hôtel combinés : le coût total du voyage par destination.",
+  caplibre:"Cap Libre — dis-moi seulement l'aéroport et le mois : je balaie TOUT ce qui décolle de là (direct + correspondance) et je trie par meilleures fenêtres de départ (ponts, week-ends longs, semaines paires/impaires).",
   hotels:"Hôtels — cache gratuit, photos Booking ou ⚡ Google, filtrés par tes critères.",
   car:"Voiture — location au meilleur prix (Booking), à la destination choisie.",
   attr:"Activités — que voir et réserver à destination.",
@@ -2888,7 +3041,8 @@ function showTool(t){
   if(t==="compare")mode="compare";
   else if(t==="cross")mode="cross";
   else if(t==="stay")mode="stay";
-  else if(t==="simple"){ if(["compare","cross","stay"].includes(mode))mode="list"; }
+  else if(t==="caplibre")mode="caplibre";
+  else if(t==="simple"){ if(["compare","cross","stay","caplibre"].includes(mode))mode="list"; }
   else mode="list";                       // outils au sol : la section IV est masquée
   if(t==="simple"){ wizAllOn=false; applyWiz(); }
   renderDispatch();
