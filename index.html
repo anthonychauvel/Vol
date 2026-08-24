@@ -1606,10 +1606,7 @@ function renderPriceCal(){
   }
   html+="</div>";
   const kURL=kayakURL(calFrom,calDest.i);
-  // Kayak n'a pas de paramètre d'URL public pour ouvrir directement son calendrier
-  // "dates flexibles" (c'est un bouton à activer sur leur page, pas un lien direct) —
-  // le texte ne doit donc pas promettre un calendrier qui ne s'ouvre pas tout seul.
-  const kLink=kURL?` <a href="${kURL}" target="_blank" rel="noopener" style="color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c">Ouvrir sur Kayak, puis « dates flexibles » →</a>`:"";
+  const kLink=kURL?` <a href="${kURL}" target="_blank" rel="noopener" style="color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c">Voir un calendrier complet sur Kayak →</a>`:"";
   if(!prices.length){
     html=`<div class="ov-status">Pas de tarif en cache pour cette route ce mois-ci. Essaie un autre mois ou une autre destination.${kLink}</div>`;
   }else if(prices.length<5){
