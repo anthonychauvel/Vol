@@ -1423,17 +1423,16 @@ function skyURLFrom(from,to){
 }
 function kayakURL(from,to,noDate){
   if(!from||!to)return null;
-  if(noDate)return `https://www.kayak.fr/flights/${from}-${to}`;
-  if(!dep)return null;
+  if(noDate||!dep)return `https://www.kayak.fr/flights/${from}-${to}`;
   let u=`https://www.kayak.fr/flights/${from}-${to}/${dep}`;
   if(!oneWay&&ret)u+=`/${ret}`;
   return u;
 }
 function bookingFlightURL(from,to){
-  if(!from||!to||!dep)return null;
+  if(!from||!to)return null;
   const p=new URLSearchParams({type:oneWay?"ONEWAY":"ROUNDTRIP",
-    from:`${from}.AIRPORT`,to:`${to}.AIRPORT`,depart:dep,adults:"1",cabinClass:"ECONOMY"});
-  if(!oneWay&&ret)p.set("return",ret);
+    from:`${from}.AIRPORT`,to:`${to}.AIRPORT`,adults:"1",cabinClass:"ECONOMY"});
+  if(dep){p.set("depart",dep);if(!oneWay&&ret)p.set("return",ret);}
   return "https://www.booking.com/flights/index.html?"+p.toString();
 }
 // aviaLink = lien réel Aviasales (c.link/r.link) si connu. withSky=false quand un gros
@@ -1471,7 +1470,7 @@ function renderDests(){
           <span class="price" data-price="${d.i}"></span>
         </div>
         <span class="pricelive" data-livep="${d.i}"></span>
-        ${origin&&dep?cmpLinksHtml(origin.code,d.i,null,false):""}
+        ${origin?cmpLinksHtml(origin.code,d.i,null,false):""}
       </div>
       ${LIVE_OK?`<button class="live" data-live="${idx}" title="Prix réel pour tes dates" ${(!origin||!dep)?'disabled':''}>⚡</button>`:''}
       <button class="go" data-i="${idx}" ${(!origin||!dep)?'disabled':''}>Chercher</button>
@@ -1776,10 +1775,10 @@ hCityClr.onclick=()=>{hCityEl.value="";hCityClr.classList.remove("show");};
 /* cible : ville tapée, sinon destination sélectionnée, sinon rien */
 function hotelTarget(){
   const typed=hCityEl.value.trim();
-  if(typed)return {q:typed,lat:null,lng:null,label:typed};
-  if(calDest)return {q:calDest.n,lat:calDest.lat??null,lng:calDest.lng??null,label:calDest.n};
+  if(typed)return {q:typed,lat:null,lng:null,label:typed,code:null};
+  if(calDest)return {q:calDest.n,lat:calDest.lat??null,lng:calDest.lng??null,label:calDest.n,code:calDest.i||null};
   const l=currentList();
-  if(l.length===1)return {q:l[0].n,lat:l[0].lat,lng:l[0].lng,label:l[0].n};
+  if(l.length===1)return {q:l[0].n,lat:l[0].lat,lng:l[0].lng,label:l[0].n,code:l[0].i||null};
   return null;
 }
 /* dates : celles du voyage, sinon check-in demain + 2 nuits */
@@ -2352,7 +2351,7 @@ async function searchAttractions(){
   if(!dst){document.getElementById("attractions").innerHTML='<div class="empty">Choisis une destination plus haut.</div>';return;}
   const btn=document.getElementById("attrSearch");btn.disabled=true;
   document.getElementById("attractions").innerHTML='<div class="empty">recherche des activités…</div>';
-  try{const j=await (await fetch(`${API_BASE}/api/attractions?q=${encodeURIComponent(dst.q)}`)).json();
+  try{const j=await (await fetch(`${API_BASE}/api/attractions?q=${encodeURIComponent(dst.q)}${dst.code?`&code=${encodeURIComponent(dst.code)}`:""}`)).json();
     const box=document.getElementById("attractions");
     if(j.attractions&&j.attractions.length)box.innerHTML=j.attractions.map(a=>attrCard(a,j.currency)).join("");
     else box.innerHTML=`<div class="empty">${j.note||"Aucune activité trouvée."}</div>`;
