@@ -104,7 +104,6 @@ globale est Brest).
 ---
 
 # Round 3 — suite à ton 2e retour de test
-
 ## ➕ 9. Ajouté — Rentalcars sur chaque vignette voiture
 
 Chaque carte affiche maintenant 3 liens : loueur officiel (si reconnu) + DiscoverCars
@@ -143,3 +142,49 @@ même après un rechargement complet de la page (pas juste changer d'onglet et r
 Et est-ce que le bouton ⚡ fonctionne au même moment sur Ma sélection/Comparer ?
 
 
+
+---
+
+# ✦ CAP LIBRE — nouvelle fonction (moteur de disponibilité inversé)
+
+## L'idée
+Au lieu de « je veux aller à X, quand est-ce moins cher ? », Cap Libre part de
+« voici QUAND je peux partir » et trouve les destinations les moins chères qui rentrent
+dans ces fenêtres. Personne (à ma connaissance) ne croise contraintes-calendrier + prix
+comme ça, et surtout ça exploite ce que toi seul as : parité de semaine + multi-départs.
+
+## Fichiers
+- **NOUVEAU `functions/api/caplibre.js`** : balaie (origines × destinations) sur un mois
+  via le MÊME cache Travelpayouts que le calendrier (10 req/s, PAS de quota mensuel),
+  croise avec les jours fériés officiels, calcule des « fenêtres » de départ scorées
+  (pont / week-end long / semaine impaire) et renvoie le top 12.
+- **`index.html`** : bouton de mode « ✦ Cap Libre », panneau de contraintes (Ponts &
+  fériés / Sem. impaires / Week-ends longs) + sélecteur de mois (6 mois glissants),
+  et rendu des fenêtres en cartes (badge pont/férié + semaine/parité, top 4 destinations
+  par fenêtre avec lien direct, + un « pourquoi » explicatif).
+
+## Sources de données
+- **Prix** : `aviasales/v3/grouped_prices` (déjà utilisé par `/api/calendar`). Zéro appel
+  SerpApi ou Booking. Ceux-là ne servent qu'à confirmer un prix une fois une fenêtre
+  choisie (via les liens/⚡ existants).
+- **Jours fériés** : `calendrier.api.gouv.fr` (gouvernement, gratuit, sans clé), format
+  `{ "2026-05-01": "Fête du Travail", ... }`, mis en cache 24 h côté serveur. L'année N
+  ET N+1 sont chargées (pour les ponts de fin/début d'année).
+
+## Détails d'implémentation
+- Destinations balayées = ta liste visible actuelle (déjà filtrée durée/budget), bornée
+  à 30 pour rester dans les 10 req/s de Travelpayouts. Requêtes envoyées par lots de 8.
+- Multi-départs : réutilise les origines du mode Croisé (`xOrigins`) si définies, sinon
+  l'origine simple. Bonus de score si une destination est atteignable le même jour depuis
+  TOUS les aéroports (utile pour partir à plusieurs).
+- Calcul jour-de-semaine et n° de semaine ISO vérifiés sur dates connues 2026
+  (1er mai = ven S18 paire, 8 mai = ven S19 impaire, 1er janv = jeu S1 impaire).
+- Cap Libre reste visible même en mode « Simplifié » (fonction phare).
+
+## À vérifier en conditions réelles
+- Le domaine `calendrier.api.gouv.fr` doit être joignable depuis les Pages Functions
+  (normalement oui, `fetch` sort librement côté Cloudflare — rien à configurer).
+- Comme tout le reste de l'app, la richesse dépend du cache Travelpayouts : sur des
+  routes peu recherchées, certaines fenêtres auront peu de destinations. C'est attendu.
+- Le scoring « pont » est volontairement généreux (repère un férié à ±1–3 jours) ; à
+  ajuster si tu trouves qu'il propose des ponts trop tirés par les cheveux.

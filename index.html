@@ -407,6 +407,29 @@
   .hint.show{display:block}
   footer{text-align:center;color:var(--muted);font-size:11px;margin-top:30px;font-family:var(--mono);letter-spacing:.08em}
   .quotaline{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:6px;letter-spacing:.02em}
+  /* ---- Cap Libre ---- */
+  .clfld{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .clseg{display:flex;flex-wrap:wrap;gap:6px}
+  .clseg button{background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:22px;padding:9px 14px;font-size:13px;cursor:pointer;font-family:var(--sans)}
+  .clseg button.on{background:var(--brass-face);border-color:var(--brass-rim);color:#2c1d06;font-weight:600}
+  .clgo{display:block;width:100%;background:var(--brass-face);border:1px solid var(--brass-rim);color:#2c1d06;font-weight:700;font-size:15px;border-radius:12px;padding:14px;margin-top:16px;cursor:pointer;font-family:var(--sans)}
+  .clwin{border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:12px;background:var(--panel);margin-bottom:14px;overflow:hidden}
+  .clwin.top{border-left-color:var(--green)}
+  .clwin-head{padding:13px 15px 11px}
+  .clwin-when{font-family:var(--serif);font-size:17px;font-weight:600;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .clbadge{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;background:var(--amber-dim);color:var(--amber);padding:3px 8px;border-radius:20px;font-weight:400}
+  .clwin.top .clbadge{background:rgba(91,199,162,.14);color:var(--green)}
+  .clwin-cost{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:5px}
+  .clwin-cost b{color:var(--green)}
+  .cld{display:flex;align-items:center;gap:12px;padding:11px 15px;border-top:1px solid var(--line)}
+  .cld .cldcity{flex:1;font-size:14px}
+  .cld .cldcity small{color:var(--muted);font-family:var(--mono);font-size:11px;margin-left:5px}
+  .cld .cldtag{font-family:var(--mono);font-size:10px;color:var(--green);border:1px solid rgba(91,199,162,.3);border-radius:6px;padding:2px 6px}
+  .cld .cldprice{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--amber)}
+  .cld .cldfrom{font-family:var(--mono);font-size:10px;color:var(--muted);display:block;text-align:right}
+  .cld a.cldprice{text-decoration:none}
+  .clwhy{padding:10px 15px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);background:var(--panel-2)}
+  .clwhy b{color:var(--ink)}
 
   /* overlay calendrier de prix */
   .overlay{position:fixed;inset:0;background:rgba(6,14,19,.96);z-index:50;display:none;
@@ -741,6 +764,7 @@
       <button data-mode="compare">Comparateur</button>
       <button data-mode="cross">Croisé</button>
       <button data-mode="stay">Séjour</button>
+      <button data-mode="caplibre">✦ Cap Libre</button>
     </div>
 
     <div id="cmpPanel" style="display:none">
@@ -784,6 +808,18 @@
       </div>
     </div>
 
+    <div id="clPanel" style="display:none">
+      <p class="sub" style="margin:0 0 12px">Tu ne choisis pas où aller. Tu dis <b>quand tu peux partir</b> — Escale trouve les fenêtres et les destinations les moins chères qui y rentrent. Balaie le cache Travelpayouts + les jours fériés officiels : <b>zéro quota consommé</b>.</p>
+      <label class="clfld">Tes contraintes</label>
+      <div class="seg clseg" id="clConstraints">
+        <button data-clc="ponts" class="on">🇫🇷 Ponts &amp; fériés</button>
+        <button data-clc="impair">Sem. impaires</button>
+        <button data-clc="we">Week-ends longs</button>
+      </div>
+      <label class="clfld" style="margin-top:14px">Mois à explorer</label>
+      <div class="seg clseg" id="clMonths"></div>
+      <button class="clgo" id="clGo">⚓ Trouver mes fenêtres</button>
+    </div>
     <div class="destsearch" id="destSearchWrap">
       <input id="destSearch" type="search" inputmode="search" autocomplete="off"
              placeholder="Filtrer, ou chercher une ville dans le monde (Pékin, Miami…)">
@@ -791,7 +827,7 @@
     </div>
     <div id="destAc"></div>
     <div class="dests" id="dests"></div>
-    <div class="note">
+    <div class="note" id="calNote">
       <b>Touche une destination</b> pour ouvrir son <b>calendrier de prix</b> : chaque jour est coloré du moins cher (vert) au plus cher (rouge), et les jours <b>en vert entouré = vol direct</b> (le plus court). Le champ de recherche accepte <b>n'importe quelle ville du monde</b> : elle s'ajoute à ta liste et y reste. Idem pour le <b>départ</b>. <b>Durées</b> estimées à vol d'oiseau ; <b>prix</b> indicatifs (cache ≤ 7 j). Le bouton <b>Chercher</b> ouvre la recherche de vols. Le bouton <b>⚡</b> va chercher le <b>tarif réel du moment</b> pour tes dates — quota limité, donc uniquement sur appui.
     </div>
   </section>
@@ -1330,9 +1366,12 @@ function renderDispatch(){
   const dsw=document.getElementById("destSearchWrap");
   if(dsw)dsw.style.display=(mode==="list")?"block":"none";
   if(mode!=="list")document.getElementById("destAc").innerHTML="";
-  const cp=document.getElementById("cmpPanel"),xp=document.getElementById("xPanel");
+  const cp=document.getElementById("cmpPanel"),xp=document.getElementById("xPanel"),clp=document.getElementById("clPanel");
   if(cp)cp.style.display=(mode==="compare")?"block":"none";
   if(xp)xp.style.display=(mode==="cross")?"block":"none";
+  if(clp)clp.style.display=(mode==="caplibre")?"block":"none";
+  const cn=document.getElementById("calNote");
+  if(cn)cn.style.display=(mode==="caplibre")?"none":"block";
   const stEl=document.getElementById("stops");
   if(stEl)stEl.style.display=(mode==="list"||mode==="anywhere"||mode==="compare")?"flex":"none";
   refreshCarLink();
@@ -1340,6 +1379,7 @@ function renderDispatch(){
   else if(mode==="stay") renderStay();
   else if(mode==="compare"){renderCmpChips();renderCmpDestChip();renderCompare();}
   else if(mode==="cross"){renderXChips();renderXDestChips();renderCross();}
+  else if(mode==="caplibre"){ if(!CL_MONTHS_BUILT)buildClMonths(); }
   else renderAnywhere();
 }
 
@@ -2144,6 +2184,114 @@ async function cmpLive(from,dest,btn){
   }catch(_){ if(el)el.innerHTML='<span class="lvl">prix live indisponible</span>'; }
   btn.classList.remove("busy");btn.disabled=!!(LIVE_Q&&LIVE_Q.exhausted);
 }
+
+/* ================= CAP LIBRE (disponibilité inversée) ================= */
+let CL_MONTHS_BUILT=false, clMonth=null;
+const CL_CONS={ponts:true,impair:false,we:false};
+const JOURS=["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+
+function buildClMonths(){
+  const seg=document.getElementById("clMonths");
+  if(!seg)return;
+  const now=new Date(); seg.innerHTML="";
+  for(let k=0;k<6;k++){
+    const d=new Date(now.getFullYear(),now.getMonth()+k,1);
+    const ym=d.getFullYear()+"-"+pad(d.getMonth()+1);
+    const b=document.createElement("button");
+    b.textContent=MOIS[d.getMonth()]+" "+String(d.getFullYear()).slice(2);
+    b.dataset.clm=ym;
+    if(k===1){b.classList.add("on");clMonth=ym;}   // mois prochain par défaut
+    b.onclick=()=>{seg.querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");clMonth=ym;};
+    seg.appendChild(b);
+  }
+  document.querySelectorAll("#clConstraints button").forEach(b=>{
+    b.onclick=()=>{b.classList.toggle("on");CL_CONS[b.dataset.clc]=b.classList.contains("on");};
+  });
+  document.getElementById("clGo").onclick=runCapLibre;
+  CL_MONTHS_BUILT=true;
+}
+
+// destinations à balayer : la liste visible de l'app (déjà filtrée durée/budget par l'utilisateur)
+function clDestCodes(){
+  const l=currentList();
+  const codes=l.map(d=>d.i).filter(Boolean);
+  // dédoublonne, borne à 30 pour rester dans les clous (10 req/s TP)
+  return [...new Set(codes)].slice(0,30);
+}
+function clOriginCodes(){
+  // Cap Libre est multi-départs : on réutilise les origines du mode Croisé si définies,
+  // sinon l'origine simple. (xOrigins existe déjà pour le mode Croisé.)
+  if(typeof xOrigins!=="undefined" && xOrigins && xOrigins.length)
+    return xOrigins.map(o=>o.code).filter(Boolean).slice(0,5);
+  return origin?[origin.code]:[];
+}
+
+async function runCapLibre(){
+  const box=document.getElementById("dests");
+  const origins=clOriginCodes(), dests=clDestCodes();
+  if(!origins.length){box.innerHTML='<div class="empty">Choisis d\'abord un aéroport de départ (étape I).</div>';return;}
+  if(!dests.length){box.innerHTML='<div class="empty">Ta liste de destinations est vide — ajoute des villes dans « Ma sélection » ou élargis le filtre de durée.</div>';return;}
+  if(!clMonth){box.innerHTML='<div class="empty">Choisis un mois à explorer.</div>';return;}
+
+  box.innerHTML='<div class="empty">Balayage des fenêtres de départ… ('+dests.length+' destinations × '+origins.length+' départ'+(origins.length>1?"s":"")+')</div>';
+  try{
+    const u=`${API_BASE}/api/caplibre?origins=${origins.join(",")}&dests=${dests.join(",")}&month=${clMonth}&oneway=${oneWay?1:0}&nights=3`;
+    const j=await (await fetch(u)).json();
+    if(j.error){box.innerHTML=`<div class="empty">${j.error}</div>`;return;}
+    let wins=j.windows||[];
+    // filtre selon les contraintes cochées
+    wins=wins.filter(w=>{
+      if(CL_CONS.ponts && (w.tags.includes("pont")||w.tags.includes("ferie")))return true;
+      if(CL_CONS.impair && w.tags.includes("impair"))return true;
+      if(CL_CONS.we && w.tags.includes("we"))return true;
+      // si aucune contrainte cochée, tout passe
+      return !CL_CONS.ponts && !CL_CONS.impair && !CL_CONS.we;
+    });
+    if(!wins.length){
+      box.innerHTML=`<div class="empty">Aucune fenêtre ne colle à tes contraintes ce mois-ci${j.note?` — ${j.note}`:""}. Essaie un autre mois, ou décoche une contrainte.</div>`;
+      return;
+    }
+    box.innerHTML=wins.map((w,i)=>clWinCard(w,i===0)).join("");
+  }catch(e){
+    box.innerHTML='<div class="empty">Cap Libre indisponible pour le moment. Réessaie dans un instant.</div>';
+  }
+}
+
+function clWinCard(w,isTop){
+  const dt=new Date(w.date+"T00:00:00Z");
+  const jour=JOURS[(dt.getUTCDay()+6)%7];
+  const dnum=dt.getUTCDate(), mnom=MOIS[dt.getUTCMonth()];
+  const badges=[];
+  if(w.bridge)badges.push(`<span class="clbadge">pont · ${w.ferie?w.ferie.name:"férié"}</span>`);
+  else if(w.tags.includes("ferie"))badges.push(`<span class="clbadge">férié proche</span>`);
+  if(w.tags.includes("we"))badges.push(`<span class="clbadge">week-end long</span>`);
+  badges.push(`<span class="clbadge">sem. ${w.week} · ${w.parity}</span>`);
+
+  const dests=w.best.map(d=>{
+    const nm=NAMES[d.dest]||d.dest;
+    const tag=d.transfers===0?`<span class="cldtag">direct</span>`:(d.transfers>0?`<span class="cldtag" style="color:var(--muted);border-color:var(--line)">${d.transfers} esc</span>`:"");
+    const price=d.link
+      ? `<a class="cldprice" href="${d.link}" target="_blank" rel="noopener">${d.price} €</a>`
+      : `<span class="cldprice">${d.price} €</span>`;
+    return `<div class="cld"><span class="cldcity">${nm} <small>${d.dest}</small></span>${tag}<span>${price}<small class="cldfrom">depuis ${d.from}</small></span></div>`;
+  }).join("");
+
+  let why="";
+  if(w.bridge)why=`💡 <b>Le meilleur rapport</b> : le ${w.ferie?w.ferie.name.toLowerCase():"férié"} tombe à côté — quelques jours de repos pour peu (voire zéro) congé posé.`;
+  else if(w.tags.includes("we"))why=`💡 Départ ${jour} : week-end étiré, <b>0 congé à poser</b>.`;
+  else if(w.parity==="impaire")why=`💡 Semaine impaire — pratique si tes gardes tombent les semaines paires.`;
+  else why=`💡 Prix bas repéré dans le cache pour ce jour de départ.`;
+
+  return `<div class="clwin${isTop?" top":""}">
+    <div class="clwin-head">
+      <div class="clwin-when">${jour.charAt(0).toUpperCase()+jour.slice(1)} ${dnum} ${mnom} ${badges.join(" ")}</div>
+      <div class="clwin-cost">à partir de <b>${w.minPrice} €</b> · ${w.best.length} destination${w.best.length>1?"s":""}</div>
+    </div>
+    ${dests}
+    <div class="clwhy">${why}</div>
+  </div>`;
+}
+
 async function renderCross(){
   const box=document.getElementById("dests");
   document.getElementById("destCount").textContent=xOrigins.length+" voyageur"+(xOrigins.length>1?"s":"");
