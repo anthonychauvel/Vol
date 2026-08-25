@@ -1789,11 +1789,16 @@ function renderPriceCal(){
   const kLink=kURL?` <a href="${kURL}" target="_blank" rel="noopener" style="color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c">Ouvrir sur Kayak, puis « dates flexibles » →</a>`:"";
   if(!prices.length){
     html=`<div class="ov-status">Pas de tarif en cache pour cette route ce mois-ci. Essaie un autre mois ou une autre destination.${kLink}</div>`;
-  }else if(prices.length<5){
-    // Ce calendrier vient du cache Travelpayouts (recherches passées d'autres gens),
-    // pas d'un scan en direct comme Kayak — sur une route peu recherchée (petit aéroport,
-    // destination peu courante), il n'y a tout simplement pas grand-chose en cache.
-    html+=`<div class="ov-status" style="margin-top:10px;text-align:left">Peu de prix en cache pour cette route ce mois-ci (${prices.length} jour${prices.length>1?"s":""} seulement) — normal sur un trajet peu recherché : ce calendrier vient de recherches passées d'autres personnes, pas d'un scan en direct.${kLink}</div>`;
+  }else{
+    if(prices.length<5){
+      // Ce calendrier vient du cache Travelpayouts (recherches passées d'autres gens),
+      // pas d'un scan en direct comme Kayak — sur une route peu recherchée (petit aéroport,
+      // destination peu courante), il n'y a tout simplement pas grand-chose en cache.
+      html+=`<div class="ov-status" style="margin-top:10px;text-align:left">Peu de prix en cache pour cette route ce mois-ci (${prices.length} jour${prices.length>1?"s":""} seulement) — normal sur un trajet peu recherché : ce calendrier vient de recherches passées d'autres personnes, pas d'un scan en direct.</div>`;
+    }
+    // Lien toujours proposé (route + date pré-remplies) : l'utilisateur active ensuite
+    // « dates flexibles » directement sur la page Kayak.
+    if(kLink)html+=`<div class="ov-status" style="margin-top:12px;text-align:center">${kLink}</div>`;
   }
   document.getElementById("pgridWrap").innerHTML=html;
   document.getElementById("pgridWrap").querySelectorAll(".pday[data-pick]").forEach(el=>el.onclick=()=>pickFromCal(el.dataset.pick));
