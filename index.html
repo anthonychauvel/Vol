@@ -1775,10 +1775,17 @@ function renderPriceCal(){
       <span class="dd">${dn}</span><span class="pp">${o.price}€</span></div>`;
   }
   html+="</div>";
-  const kURL=kayakURL(calFrom,calDest.i,true);
-  // Kayak n'a pas de paramètre d'URL public pour ouvrir directement son calendrier
-  // "dates flexibles" (c'est un bouton à activer sur leur page, pas un lien direct) —
-  // le texte ne doit donc pas promettre un calendrier qui ne s'ouvre pas tout seul.
+  // Sans date dans l'URL, Kayak ignore la route et affiche un exemple par défaut
+  // (le fameux « Paris → Milan »). On force donc une date pour pré-remplir la vraie
+  // route : celle choisie si elle existe, sinon un jour futur du mois affiché.
+  // L'utilisateur active ensuite « dates flexibles » sur la page Kayak (bouton maison).
+  let kDep=dep, kRet;
+  if(!kDep){ const t=new Date(); t.setHours(0,0,0,0);
+    const d=new Date(pView.getFullYear(),pView.getMonth(),15);
+    kDep=iso(d<t?new Date(t.getTime()+7*864e5):d); }
+  if(!oneWay){ if(ret){kRet=ret;} else { const p=kDep.split("-"),
+    d=new Date(+p[0],+p[1]-1,+p[2]); d.setDate(d.getDate()+7); kRet=iso(d); } }
+  const kURL=kayakURL(calFrom,calDest.i,false,kDep,kRet);
   const kLink=kURL?` <a href="${kURL}" target="_blank" rel="noopener" style="color:var(--amber);text-decoration:none;border-bottom:1px solid #4d3d1c">Ouvrir sur Kayak, puis « dates flexibles » →</a>`:"";
   if(!prices.length){
     html=`<div class="ov-status">Pas de tarif en cache pour cette route ce mois-ci. Essaie un autre mois ou une autre destination.${kLink}</div>`;
