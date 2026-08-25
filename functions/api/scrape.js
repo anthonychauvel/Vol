@@ -33,8 +33,8 @@ export async function onRequest(context) {
   const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: cors });
   if (request.method === "OPTIONS") return new Response(null, { headers: cors });
 
-  const token = env.SCRAPEDO_TOKEN;
-  if (!token)  return json({ error: "SCRAPEDO_TOKEN non configuré (dashboard Cloudflare Pages → Settings → Environment variables)" }, 500);
+  const token = env.SCRAPEDO_TOKEN || env.SCAPEDO_TOKEN;
+  if (!token)  return json({ error: "token scrape.do absent — ajoute SCRAPEDO_TOKEN (ou SCAPEDO_TOKEN) dans Cloudflare Pages → Settings → Environment variables, puis redéploie" }, 500);
   if (!target) return json({ error: "paramètre url requis" }, 400);
 
   // Liste blanche de domaines autorisés — ajoute/retire selon les sites que tu veux scraper.

@@ -548,8 +548,8 @@ async function status(env, ctx) {
 
   // scrape.do (secours Kayak) : quota suivi localement, budget = crédits du forfait (~1000).
   // "used" est une ESTIMATION (~5 crédits/appel render) ; le décompte réel est sur scrape.do.
-  if (env.SCRAPEDO_TOKEN) {
-    const budget = parseInt(env.SCRAPEDO_BUDGET || "1000", 10);
+  if (env.SCRAPEDO_TOKEN || env.SCAPEDO_TOKEN) {
+    const budget = parseInt(env.SCRAPEDO_BUDGET || env.SCAPEDO_BUDGET || "1000", 10);
     const l = await led.read("scrapedo");
     const left = Math.max(0, budget - (l.used || 0));
     out.scrapedo = {
@@ -573,7 +573,7 @@ async function status(env, ctx) {
 // principal est épuisé (voir onRequest), et le résultat est mis en cache (LIVE_TTL) pour
 // ne pas re-scraper la même route/dates. Extraction heuristique du montant € le plus bas.
 async function kayakScrape(env, origin, destination, depart, ret) {
-  const token = env.SCRAPEDO_TOKEN;
+  const token = env.SCRAPEDO_TOKEN || env.SCAPEDO_TOKEN;
   const none = { price: null, url: null, requested: false };
   if (!token || !origin || !destination || !depart) return none;
   const path = `${origin}-${destination}/${depart}` + (ret ? `/${ret}` : "");
@@ -720,7 +720,7 @@ export async function onRequest(context) {
     // décompte des crédits scrape.do (~5/appel render) dès qu'une requête part, puis
     // on recalcule le quota pour que l'app affiche le bon reste sur 1000.
     const st2 = ky.requested
-      ? (await led0.bump("scrapedo", parseInt(env.SCRAPEDO_CREDITS_PER_CALL || "5", 10)), await status(env, context))
+      ? (await led0.bump("scrapedo", parseInt(env.SCRAPEDO_CREDITS_PER_CALL || env.SCAPEDO_CREDITS_PER_CALL || "5", 10)), await status(env, context))
       : await status(env, context);
     if (ky.price != null) {
       const out = { configured: true, price: ky.price, stops: null, duration: null,
