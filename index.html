@@ -699,6 +699,14 @@
   .rd-deal .rd-price small{display:block;font-weight:400;font-size:9px;color:var(--muted)}
   .rd-deal .cmplinks{margin-top:7px}
   .rdz-empty{padding:9px 14px 12px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5}
+  .rd-pricebar{display:flex;align-items:center;gap:8px;margin:12px 2px 6px;flex-wrap:wrap}
+  .rd-pricebar .rd-plabel{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .rd-pricebar input{width:78px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:8px 10px;font-size:14px;font-family:var(--mono)}
+  .rd-pricebar .rd-pdash{color:var(--muted)}
+  .rd-pricebar .rd-pcount{font-size:11.5px;color:var(--muted);margin-left:auto;font-family:var(--mono)}
+  .rd-ppresets{display:flex;gap:6px;flex-wrap:wrap;margin:0 2px 10px}
+  .rd-ppresets button{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer;font-family:var(--mono)}
+  .rd-ppresets button:hover{border-color:var(--brass-rim);color:var(--ink)}
   .rdz-links{padding:8px 14px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
   .rd-winbtn{background:var(--panel-2);border:1px solid var(--brass-rim);color:var(--amber);border-radius:10px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:var(--sans)}
   .rd-winbtn:disabled{opacity:.5;cursor:default}
@@ -1221,6 +1229,25 @@ const _transfers={};       // code destination -> nb escales (Ma sélection, cha
 const API_BASE="";
 // noms lisibles pour les codes IATA renvoyés par « n'importe où » (le reste s'affiche en code)
 const NAMES={};
+// noms des compagnies aériennes par code IATA (les plus courantes) ; sinon on montre le code brut
+const AIRLINES={
+  AF:"Air France", TO:"Transavia", HV:"Transavia", FR:"Ryanair", U2:"easyJet",
+  VY:"Vueling", V7:"Volotea", W6:"Wizz Air", W9:"Wizz Air", W4:"Wizz Air",
+  PC:"Pegasus", EW:"Eurowings", DE:"Condor", LS:"Jet2", BY:"TUI", X3:"TUI fly",
+  KL:"KLM", LH:"Lufthansa", BA:"British Airways", IB:"Iberia", I2:"Iberia Express",
+  LX:"Swiss", OS:"Austrian", SN:"Brussels Airlines", TP:"TAP Portugal", AZ:"ITA Airways",
+  AY:"Finnair", SK:"SAS", LO:"LOT", A3:"Aegean", TK:"Turkish Airlines", DY:"Norwegian",
+  SU:"Aeroflot", XK:"Air Corsica", SS:"Corsair", BF:"French Bee", UU:"Air Austral",
+  TX:"Air Caraïbes", AT:"Royal Air Maroc", TU:"Tunisair", BJ:"Nouvelair", AH:"Air Algérie",
+  MS:"EgyptAir", EK:"Emirates", QR:"Qatar Airways", EY:"Etihad", SV:"Saudia",
+  WY:"Oman Air", GF:"Gulf Air", RJ:"Royal Jordanian", ME:"MEA", LY:"El Al", XY:"flynas",
+  DL:"Delta", UA:"United", AA:"American", AC:"Air Canada", ET:"Ethiopian",
+  KQ:"Kenya Airways", SA:"South African", DT:"TAAG", AI:"Air India", SQ:"Singapore Airlines",
+  CX:"Cathay Pacific", QF:"Qantas", NH:"ANA", JL:"JAL", CA:"Air China", MU:"China Eastern",
+  CZ:"China Southern", KE:"Korean Air", OZ:"Asiana", TG:"Thai Airways", MH:"Malaysia Airlines",
+  VN:"Vietnam Airlines", AV:"Avianca", LA:"LATAM", CM:"Copa", AM:"Aeroméxico", G3:"Gol", AD:"Azul"
+};
+function airlineName(code){ if(!code)return ""; code=String(code).toUpperCase(); return AIRLINES[code]||code; }
 DESTS.forEach(d=>NAMES[d.i]=d.n);
 Object.assign(NAMES,{PAR:"Paris",LON:"Londres",BCN:"Barcelone",MAD:"Madrid",OPO:"Porto",LIS:"Lisbonne",
   DUB:"Dublin",AMS:"Amsterdam",BRU:"Bruxelles",CPH:"Copenhague",OSL:"Oslo",STO:"Stockholm",HEL:"Helsinki",
@@ -1601,6 +1628,13 @@ function bookingFlightURL(from,to,depOv,retOv){
   if(d){p.set("depart",d);if(!oneWay&&r)p.set("return",r);}
   return "https://www.booking.com/flights/index.html?"+p.toString();
 }
+// Cdiscount Voyages : pas d'URL de recherche datée publique → page-route SEO (départ France).
+// Best-effort (peut ne pas exister pour une route rare), sans date — à vérifier, comme Booking.
+function cdiscountFlightURL(from,to){
+  if(!from||!to)return "";
+  const o=from.toLowerCase(), d=to.toLowerCase();
+  return `https://www.cdiscount.com/voyages/vol/fl-dep-fr/dep-${o}/${o}-${d}.html`;
+}
 // aviaLink = lien réel Aviasales (c.link/r.link) si connu. withSky=false quand un gros
 // bouton "Chercher" Skyscanner dédié existe déjà juste à côté (évite le doublon).
 // depOv/retOv optionnels (voir plus haut) : passés par Cap Libre pour la date de la fenêtre.
@@ -1610,6 +1644,7 @@ function cmpLinksHtml(from,to,aviaLink,withSky,depOv,retOv){
   const k=kayakURL(from,to,false,depOv,retOv);if(k)items.push(`<a class="cgo" href="${k}" target="_blank" rel="noopener">Kayak</a>`);
   if(aviaLink)items.push(`<a class="cgo" href="${aviaLink}" target="_blank" rel="noopener">Aviasales</a>`);
   const bk=bookingFlightURL(from,to,depOv,retOv);if(bk)items.push(`<a class="cgo alt" href="${bk}" target="_blank" rel="noopener">Booking</a>`);
+  const cd=cdiscountFlightURL(from,to);if(cd)items.push(`<a class="cgo alt" href="${cd}" target="_blank" rel="noopener">Cdiscount</a>`);
   if(from&&to)items.push(`<span class="cgo alt calpick" data-calfrom="${from}" data-calto="${to}">📅 dates flexibles</span>`);
   return items.length?`<div class="cmplinks">${items.join("")}</div>`:"";
 }
@@ -1863,7 +1898,7 @@ function liveLabel(j){
   if(!j||j.price==null)return null;
   const lvl={low:"prix bas",typical:"prix normal",high:"prix élevé"}[j.insights&&j.insights.level]||"";
   // Prix principal = Google Flights LIVE (réservable). Si quota épuisé, prix Aviasales marqué indicatif.
-  const src=j.cached?"en cache":(j.indicative?"indicatif (cache, à confirmer)":"prix réel · tes dates");
+  const src=j.cached?"en cache":(j.scraped?"Kayak, en direct (estimation, à confirmer)":(j.indicative?"indicatif (cache, à confirmer)":"prix réel · tes dates"));
   const aside=(!j.indicative&&j.tp_price!=null)
     ? ` <span class="lvl">· cache : ~${j.tp_price} € (autre date)${j.tp_cheaper_by?`, à vérifier`:""}</span>`
     : "";
@@ -2268,7 +2303,7 @@ async function renderCompare(){
     cmpOrigins.forEach((o,i)=>{
       const m=dmaps[i];
       const dl=Object.keys(m).map(d=>({dest:d,from:o.code,fromCity:o.city,price:m[d].price,dur:m[d].dur,transfers:0,link:m[d].link}))
-        .sort((a,b)=>a.price-b.price).slice(0,15);
+        .sort((a,b)=>a.price-b.price).slice(0,60);
       html+=`<div class="cmphead">${o.code} · ${o.city} — ${dl.length} direct${dl.length>1?"s":""}</div>`;
       html+= dl.length? dl.map(r=>cmpCard(r,r.dest,null,`direct depuis ${o.code}`,"")).join("")
                       : `<div class="empty">aucun vol direct en cache</div>`;
@@ -2306,7 +2341,7 @@ async function renderCompare(){
   const pN=normVals(rows,r=>r.price),dN=normVals(rows,r=>r.dur);
   rows.forEach(r=>r.score=(1-cmpWeight)*pN(r.price)+cmpWeight*dN(r.dur));
   rows.sort((a,b)=>stopRank(a.transfers)-stopRank(b.transfers)||a.score-b.score);
-  box.innerHTML=rows.slice(0,40).map(r=>cmpCard(r,r.dest,null,`meilleur départ : ${r.from} · ${r.fromCity}`,`score ${(100-Math.round(r.score*100))}/100`)).join("");
+  box.innerHTML=rows.slice(0,150).map(r=>cmpCard(r,r.dest,null,`meilleur départ : ${r.from} · ${r.fromCity}`,`score ${(100-Math.round(r.score*100))}/100`)).join("");
   box.querySelectorAll(".clive").forEach(b=>b.onclick=()=>cmpLive(b.dataset.cfrom,b.dataset.clive,b));
   bindCalPick(box);
 }
@@ -2878,12 +2913,13 @@ function renderAnywhere(){
   list=list.filter(o=>passStops(o.transfers));
   list.sort((a,b)=>stopRank(a.transfers)-stopRank(b.transfers));   // directs en tête, prix conservé sinon
   if(!list.length){box.innerHTML=`<div class="empty">Aucun vol ${stops==="direct"?"direct ":""}en cache depuis ${origin.city} pour ${monthForAnywhere()} (essaie un autre mois/filtre).</div>`;return;}
-  list=list.slice(0,60);
+  list=list.slice(0,300);
   box.innerHTML=list.map((o,idx)=>{
     const name=NAMES[o.destination]||o.destination;
     const tr=o.transfers===0?'<span class="drc">direct</span>':(o.transfers!=null?o.transfers+" esc":"");
     const durTxt=o.duration_to!=null?fmtDur(o.duration_to):"";
-    const price="≈ "+o.price+" €"+(tr?" · "+tr:"");
+    const aln=airlineName(o.airline);
+    const price="≈ "+o.price+" €"+(aln?" · "+aln:"")+(tr?" · "+tr:"");
     const priceHtml=o.link?`<a href="${o.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${price}</a>`:price;
     return `<div class="dest">
       <div class="info" data-any="${idx}">
@@ -2960,7 +2996,7 @@ window.Radar=(()=>{
   const MAX_LANES=24;                 // éviction LRU au-delà (voies auto)
   const MOVE_ABS=5, MOVE_PCT=0.03;    // seuil pour qualifier un vrai « mouvement »
   const MAX_ROWS=14;                  // baisses affichées en tête
-  const MAX_MATCH=6;                  // bonnes affaires affichées par zone
+  const MAX_MATCH=100;                // vols affichés par zone (globalité, filtrés par tes dispos)
   const AUTO_MONTHS=3;                // mois scannés par zone à l'ouverture (le reste à la demande)
   const now=()=>Date.now();
   const jget=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(_){return d;}};
@@ -3069,6 +3105,7 @@ window.Radar=(()=>{
     const bp=new URLSearchParams({type:ow?"ONEWAY":"ROUNDTRIP",from:`${from}.AIRPORT`,to:`${to}.AIRPORT`,adults:"1",cabinClass:"ECONOMY"});
     if(depDate){bp.set("depart",depDate);if(!ow&&retDate)bp.set("return",retDate);}
     items.push(`<a class="cgo alt" href="https://www.booking.com/flights/index.html?${bp.toString()}" target="_blank" rel="noopener">Booking</a>`);
+    const cd=cdiscountFlightURL(from,to);if(cd)items.push(`<a class="cgo alt" href="${cd}" target="_blank" rel="noopener">Cdiscount</a>`);
     return `<div class="cmplinks">${items.join("")}</div>`;
   }
   // fenêtres ponts & fériés (à la demande, par zone) — calcul via /api/caplibre
@@ -3124,7 +3161,7 @@ window.Radar=(()=>{
     origins.forEach((o,idx)=>per[idx].forEach(r=>{
       if(!r.destination||r.price==null) return;
       const cur=best[r.destination];
-      if(!cur||r.price<cur.price) best[r.destination]={price:r.price,transfers:r.transfers,link:r.link,
+      if(!cur||r.price<cur.price) best[r.destination]={price:r.price,transfers:r.transfers,link:r.link,airline:r.airline||null,
         from:o,dep:(r.departure_at||"").slice(0,10),ret:(r.return_at||"").slice(0,10)};
     }));
     // baisses vs snapshot propre à la zone+mois
@@ -3134,14 +3171,15 @@ window.Radar=(()=>{
       snap[d]=best[d].price;
       const op=prev&&prev.map?prev.map[d]:undefined;
       if(prev&&prev.map){
-        if(op==null) movers.push({dest:d,price:best[d].price,delta:null,isNew:true,from:best[d].from,month,link:best[d].link,transfers:best[d].transfers,ow:zone.oneway});
+        if(op==null) movers.push({dest:d,price:best[d].price,delta:null,isNew:true,from:best[d].from,month,link:best[d].link,transfers:best[d].transfers,airline:best[d].airline,ow:zone.oneway});
         else{ const dl=best[d].price-op;
           if(Math.abs(dl)>=MOVE_ABS && Math.abs(dl)>=op*MOVE_PCT)
-            movers.push({dest:d,price:best[d].price,delta:dl,isNew:false,from:best[d].from,month,link:best[d].link,transfers:best[d].transfers,ow:zone.oneway}); }
+            movers.push({dest:d,price:best[d].price,delta:dl,isNew:false,from:best[d].from,month,link:best[d].link,transfers:best[d].transfers,airline:best[d].airline,ow:zone.oneway}); }
       }
     }
     jset(sk,{map:snap,ts:now()});
-    // bonnes affaires : filtrées par escales + jour/semaine/pont de la zone
+    // globalité filtrée par TES dispos : direct/escale + jours + semaines paires/impaires + ponts
+    // (par défaut aucun de ces critères n'est coché → toute la liste ; on coche pour restreindre)
     const matches=Object.keys(best).map(d=>({dest:d,...best[d],month}))
       .filter(x=>zonePass(zone,x.dep,x.transfers))
       .sort((a,b)=>a.price-b.price);
@@ -3149,15 +3187,47 @@ window.Radar=(()=>{
   }
   async function scanZone(zone){
     const months=(zone.months||[]).slice(0,AUTO_MONTHS);
-    let watched=0, movers=[], matches=[];
-    for(const m of months){ const r=await scanZoneMonth(zone,m); watched+=r.watched; movers=movers.concat(r.movers); matches=matches.concat(r.matches); }
-    matches.sort((a,b)=>a.price-b.price);
-    return {watched,movers,matches:matches.slice(0,MAX_MATCH),monthsScanned:months.length,monthsTotal:(zone.months||[]).length};
+    let watched=0, movers=[], all=[];
+    for(const m of months){ const r=await scanZoneMonth(zone,m); watched+=r.watched; movers=movers.concat(r.movers); all=all.concat(r.matches); }
+    // une ligne par destination (le mois/date le moins cher), triée par prix → vue « tous les vols »
+    const byDest={};
+    all.forEach(x=>{ const c=byDest[x.dest]; if(!c||x.price<c.price) byDest[x.dest]=x; });
+    const matches=Object.values(byDest).sort((a,b)=>a.price-b.price).slice(0,MAX_MATCH);
+    return {watched,movers,matches,monthsScanned:months.length,monthsTotal:(zone.months||[]).length};
   }
 
   /* ---------- état d'affichage ---------- */
   let _busy=false, view="results", editing=null;   // editing = id de zone en cours d'édition (ou "new")
   let _lastResults=null;
+  let _pmin="", _pmax="";   // filtre tranche de prix (€) appliqué à l'affichage (non persisté)
+  function priceBarHTML(){
+    return '<div class="rd-pricebar"><span class="rd-plabel">Prix €</span>'
+      +'<input id="rdPMin" type="number" inputmode="numeric" placeholder="min" value="'+_pmin+'">'
+      +'<span class="rd-pdash">–</span>'
+      +'<input id="rdPMax" type="number" inputmode="numeric" placeholder="max" value="'+_pmax+'">'
+      +'<span class="rd-pcount" id="rdPCount"></span></div>'
+      +'<div class="rd-ppresets">'
+      +'<button data-pmin="" data-pmax="">Tout</button>'
+      +'<button data-pmin="" data-pmax="50">≤ 50</button>'
+      +'<button data-pmin="50" data-pmax="100">50–100</button>'
+      +'<button data-pmin="100" data-pmax="200">100–200</button>'
+      +'<button data-pmin="200" data-pmax="">200+</button></div>';
+  }
+  function applyPriceFilter(){
+    const sec=document.getElementById("radarSec"); if(!sec)return;
+    const lo=_pmin!==""&&!isNaN(+_pmin)?+_pmin:null, hi=_pmax!==""&&!isNaN(+_pmax)?+_pmax:null;
+    let shown=0;
+    sec.querySelectorAll("[data-price]").forEach(el=>{
+      const p=+el.getAttribute("data-price");
+      const ok=(lo==null||p>=lo)&&(hi==null||p<=hi);
+      el.style.display=ok?"":"none"; if(ok)shown++;
+    });
+    const c=document.getElementById("rdPCount"); if(c)c.textContent=shown+" vol"+(shown>1?"s":"");
+    sec.querySelectorAll(".rdz-deals").forEach(box=>{
+      const any=[...box.querySelectorAll("[data-price]")].some(el=>el.style.display!=="none");
+      box.style.display=any?"":"none";
+    });
+  }
 
   async function rescan(){
     if(_busy) return; _busy=true;
@@ -3218,17 +3288,17 @@ window.Radar=(()=>{
     const zoneCount=R.zones.length;
     const sub=zoneCount?(zoneCount+" zone"+(zoneCount>1?"s":"")+" · "+R.watched+" liaisons surveillées")
       :(R.laneCount+" voie"+(R.laneCount>1?"s":"")+" · "+R.watched+" liaisons surveillées");
-    let html=headHTML(sub);
+    let html=headHTML(sub)+priceBarHTML();
     // 1) baisses transverses
     if(drops.length){
       const rows=drops.map(m=>{
         const nm=NAMES[m.dest]||m.dest;
         let sky=`https://www.skyscanner.fr/transport/vols/${m.from.toLowerCase()}/${m.dest.toLowerCase()}/`;
         const badge=m.transfers===0?'<span class="rd-drc">direct</span>':'';
-        return '<a class="radar-row" href="'+(m.link||sky)+'" target="_blank" rel="noopener">'
+        return '<a class="radar-row" data-price="'+m.price+'" href="'+(m.link||sky)+'" target="_blank" rel="noopener">'
           +'<span class="rd-city">'+nm+' <small>'+m.dest+'</small>'+badge+'</span>'
           +'<span class="rd-mid">'+fmtDelta(m.delta)+'</span>'
-          +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+' · '+m.month+'</small></span></a>';
+          +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+' · '+m.month+(airlineName(m.airline)?' · '+airlineName(m.airline):'')+'</small></span></a>';
       }).join("");
       html+='<div class="radar-sub2">Ce qui a baissé depuis ta dernière visite</div><div class="radar-list">'+rows+'</div>';
     }else if(!zoneCount){
@@ -3246,15 +3316,15 @@ window.Radar=(()=>{
           const tag=m.transfers===0?'<span class="rd-drc">direct</span>':(m.transfers>0?'<span class="rd-esc">'+m.transfers+' esc</span>':'');
           const bdg=meta?(meta.pont?'<span class="rd-bdg">pont</span>':(meta.we?'<span class="rd-bdg">week-end</span>':'')):'';
           const live=LIVE_OK?'<button class="live rd-live" data-from="'+m.from+'" data-dest="'+m.dest+'" data-dep="'+(m.dep||"")+'" data-ret="'+(m.ret||"")+'" data-ow="'+(z.oneway?1:0)+'" title="Prix réel">⚡</button>':'';
-          return '<div class="rd-deal"><div class="rd-drow">'
+          return '<div class="rd-deal" data-price="'+m.price+'"><div class="rd-drow">'
             +'<span class="rd-city">'+nm+' <small>'+m.dest+'</small>'+tag+bdg+'</span>'
-            +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+(m.dep?' · '+m.dep:'')+'</small></span>'+live+'</div>'
+            +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+(m.dep?' · '+m.dep:'')+(airlineName(m.airline)?' · '+airlineName(m.airline):'')+'</small></span>'+live+'</div>'
             +'<span class="pricelive" data-rdlive="'+m.dest+'-'+m.from+'-'+(m.dep||"")+'"></span>'
             +radarCmpLinks(m.from,m.dest,m.dep,m.ret,m.link,!!z.oneway)+'</div>';
         }).join("");
         html+='<div class="rdz-deals">'+rows+'</div>';
       }else{
-        html+='<div class="rdz-empty">Aucune affaire ne colle à tes fenêtres dans le cache pour l\'instant — élargis les jours/semaines ou change de mois.</div>';
+        html+='<div class="rdz-empty">Aucun vol dans le cache pour cette zone pour l\'instant — reviens plus tard ou change de mois.</div>';
       }
       // fenêtres ponts à la demande
       html+='<div class="rdz-links">';
@@ -3263,7 +3333,7 @@ window.Radar=(()=>{
     });
     html+='<div class="radar-foot">Cache gratuit ≤ 7 j · touche le ⚡ pour le prix réel avant de réserver.</div>';
     sec.innerHTML=html;
-    bindHead(); bindResults();
+    bindHead(); bindResults(); applyPriceFilter();
   }
 
   function bindHead(){
@@ -3273,6 +3343,10 @@ window.Radar=(()=>{
   function bindResults(){
     document.querySelectorAll(".rd-live").forEach(b=>b.onclick=()=>radarLive(b.dataset.from,b.dataset.dest,b.dataset.dep,b.dataset.ret,b.dataset.ow==="1",b));
     document.querySelectorAll(".rd-winbtn").forEach(b=>b.onclick=()=>runZoneWindows(b.dataset.win,b));
+    const pmin=document.getElementById("rdPMin"), pmax=document.getElementById("rdPMax");
+    if(pmin)pmin.oninput=()=>{ _pmin=pmin.value; applyPriceFilter(); };
+    if(pmax)pmax.oninput=()=>{ _pmax=pmax.value; applyPriceFilter(); };
+    document.querySelectorAll(".rd-ppresets button").forEach(b=>b.onclick=()=>{ _pmin=b.dataset.pmin; _pmax=b.dataset.pmax; if(pmin)pmin.value=_pmin; if(pmax)pmax.value=_pmax; applyPriceFilter(); });
   }
 
   // ⚡ prix réel pour une affaire précise (force la date de l'affaire, pas la date globale).
