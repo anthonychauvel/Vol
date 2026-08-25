@@ -3585,9 +3585,13 @@ function applyWiz(){
   const prev=document.getElementById("wizPrev"),next=document.getElementById("wizNext");
   if(prev)prev.disabled=wizStep<=1;
   if(next)next.textContent=wizStep>=STEP_COUNT?"Terminer ↺":"Suivant →";
-  if(!wizAllOn)window.scrollTo({top:0,behavior:"smooth"});
 }
-function wizGo(n){wizStep=Math.max(1,Math.min(STEP_COUNT,n));wizAllOn=false;applyWiz();}
+function wizGo(n){
+  wizStep=Math.max(1,Math.min(STEP_COUNT,n));wizAllOn=false;applyWiz();
+  // se placer en haut de la NOUVELLE étape, juste sous la barre d'onglets collante
+  const nav=document.querySelector(".wiz"), sec=document.querySelector(".wizsec.active");
+  if(sec){ const off=(nav?nav.offsetHeight:0)+10; const y=sec.getBoundingClientRect().top+window.scrollY-off; window.scrollTo({top:Math.max(0,y),behavior:"smooth"}); }
+}
 document.querySelectorAll(".wstep").forEach(b=>b.onclick=()=>wizGo(+b.dataset.go));
 document.getElementById("wizPrev").onclick=()=>wizGo(wizStep-1);
 document.getElementById("wizNext").onclick=()=>{ if(wizStep>=STEP_COUNT){wizGo(1);} else wizGo(wizStep+1); };
