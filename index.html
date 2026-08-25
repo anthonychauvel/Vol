@@ -1865,7 +1865,10 @@ function fmtQuota(){
   const sky=(LIVE_Q.sky&&LIVE_Q.sky.configured)
     ? " · combinaisons "+LIVE_Q.sky.left+"/"+LIVE_Q.sky.budget+(LIVE_Q.sky.available?"":" ✕")
     : "";
-  return main+sky;
+  const scr=(LIVE_Q.scrapedo&&LIVE_Q.scrapedo.configured)
+    ? " · secours Kayak "+LIVE_Q.scrapedo.left+"/"+LIVE_Q.scrapedo.budget+(LIVE_Q.scrapedo.available?"":" ✕")
+    : "";
+  return main+sky+scr;
 }
 function setQuota(q){
   if(q&&q.providers)LIVE_Q=q;
