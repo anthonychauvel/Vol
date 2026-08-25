@@ -3460,10 +3460,17 @@ window.Radar=(()=>{
   function bindEditor(){
     if(!_edit) _edit = editing==="new"?zoneDefault():JSON.parse(JSON.stringify(loadZones().find(z=>z.id===editing)||zoneDefault()));
     const lab=document.getElementById("rdLabel"); if(lab)lab.oninput=()=>{_edit.label=lab.value;};
-    const addCur=document.getElementById("rdAddCur"); if(addCur)addCur.onclick=()=>{ if(origin&&!_edit.origins.includes(origin.code)){_edit.origins.push(origin.code);} redrawEditor(); };
     const inp=document.getElementById("rdOrigInput"), ac=document.getElementById("rdOrigAc");
     let _acTok=0,_acTimer=null;
+    // met à jour seulement les puces (pas de re-rendu complet → pas de saut de scroll, le clavier reste ouvert)
+    function refreshChips(){
+      const box=document.getElementById("rdOrigins"); if(!box)return;
+      box.innerHTML=(_edit.origins||[]).map(c=>'<span class="rd-chip"><b>'+c+'</b>'+(origName(c)?' '+esc(origName(c)):'')+' <button data-rmorig="'+c+'">✕</button></span>').join("")
+        +((_edit.origins&&_edit.origins.length)?"":'<span class="rdz-meta">aucun aéroport</span>');
+      box.querySelectorAll("[data-rmorig]").forEach(b=>b.onclick=()=>{ _edit.origins=_edit.origins.filter(c=>c!==b.dataset.rmorig); refreshChips(); });
+    }
     const addCode=(code,name)=>{ code=(code||"").toUpperCase(); if(code&&!_edit.origins.includes(code)&&_edit.origins.length<5){ _edit.origins.push(code); if(name)_origNames[code]=name; } };
+    const addCur=document.getElementById("rdAddCur"); if(addCur)addCur.onclick=()=>{ if(origin&&!_edit.origins.includes(origin.code)&&_edit.origins.length<5){_edit.origins.push(origin.code);} refreshChips(); if(inp)inp.focus(); };
     if(inp)inp.oninput=()=>{
       const q=(inp.value||"").trim(); clearTimeout(_acTimer);
       if(q.length<2){ if(ac)ac.innerHTML=""; return; }
@@ -3473,11 +3480,11 @@ window.Radar=(()=>{
         const have=new Set(_edit.origins); const list=res.filter(p=>!have.has(p.code)).slice(0,6);
         if(!list.length){ ac.innerHTML='<div class="acsug"><div class="acbusy">aucun résultat pour « '+esc(q)+' »</div></div>'; return; }
         ac.innerHTML='<div class="acsug"><div class="achd">Ajouter à la zone (monde entier)</div>'+list.map(p=>acRow(p,"aéroport de départ")).join("")+'</div>';
-        ac.querySelectorAll(".acrow").forEach(el=>{ const p=list.find(x=>x.code===el.dataset.code); el.onclick=()=>{ addCode(el.dataset.code,p&&p.city); redrawEditor(); }; });
+        ac.querySelectorAll(".acrow").forEach(el=>{ const p=list.find(x=>x.code===el.dataset.code); el.onclick=()=>{ addCode(el.dataset.code,p&&p.city); if(inp)inp.value=""; ac.innerHTML=""; refreshChips(); if(inp)inp.focus(); }; });
       },220);
     };
-    if(inp)inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); const v=(inp.value||"").toUpperCase().replace(/[^A-Z]/g,"").slice(0,3); if(v.length===3)addCode(v); inp.value=""; if(ac)ac.innerHTML=""; redrawEditor(); } };
-    document.querySelectorAll("[data-rmorig]").forEach(b=>b.onclick=()=>{ _edit.origins=_edit.origins.filter(c=>c!==b.dataset.rmorig); redrawEditor(); });
+    if(inp)inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); const v=(inp.value||"").toUpperCase().replace(/[^A-Z]/g,"").slice(0,3); if(v.length===3)addCode(v); inp.value=""; if(ac)ac.innerHTML=""; refreshChips(); inp.focus(); } };
+    document.querySelectorAll("[data-rmorig]").forEach(b=>b.onclick=()=>{ _edit.origins=_edit.origins.filter(c=>c!==b.dataset.rmorig); refreshChips(); });
     // segments à sélection unique
     document.querySelectorAll('[data-seg]').forEach(box=>{
       const attr=box.dataset.seg;
@@ -3511,7 +3518,7 @@ window.Radar=(()=>{
     const del=document.getElementById("rdDeleteZone"); if(del)del.onclick=()=>{ const zs=loadZones().filter(z=>z.id!==del.dataset.delz); saveZones(zs); try{localStorage.removeItem(SNAP_KEY("z:"+del.dataset.delz));}catch(_){} editing=null;_edit=null; renderSettings(); };
   }
   // re-render de l'éditeur en gardant le buffer _edit (préserve type de trajet/mois cochés)
-  function redrawEditor(){ renderSettingsWithEdit(); }
+  function redrawEditor(){ const y=window.scrollY; renderSettingsWithEdit(); window.scrollTo(0,y); }
   function renderSettingsWithEdit(){
     const sec=document.getElementById("radarSec"); if(!sec||!_edit) return;
     // reconstruit tout le panneau réglages mais l'éditeur lit _edit
