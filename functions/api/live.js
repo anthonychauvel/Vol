@@ -550,6 +550,38 @@ async function status(env, ctx) {
 }
 
 /* -------------------------------------------------------------- handler */
+// SECOURS via scrape.do : récupère le prix Kayak le moins cher en scrapant la page.
+// ⚠️ Contraire aux CGU de Kayak, FRAGILE (leur HTML change, anti-bot actif → scrape.do
+// peut renvoyer une page de défi sans prix) et nécessite render=true (plusieurs crédits
+// scrape.do par appel). Renvoie {price,url} ou null. N'est appelé QUE lorsque le quota
+// principal est épuisé (voir onRequest), et le résultat est mis en cache (LIVE_TTL) pour
+// ne pas re-scraper la même route/dates. Extraction heuristique du montant € le plus bas.
+async function kayakScrape(env, origin, destination, depart, ret) {
+  const token = env.SCRAPEDO_TOKEN;
+  if (!token || !origin || !destination || !depart) return null;
+  const path = `${origin}-${destination}/${depart}` + (ret ? `/${ret}` : "");
+  const kayakUrl = `https://www.kayak.fr/flights/${path}?sort=price_a`;
+  const api = "https://api.scrape.do/?token=" + encodeURIComponent(token)
+            + "&url=" + encodeURIComponent(kayakUrl) + "&render=true";
+  try {
+    const r = await fetch(api, { headers: { Accept: "text/html" } });
+    if (!r.ok) return null;
+    const html = await r.text();
+    // Tous les montants "N €" plausibles pour un vol → on garde le plus petit.
+    // Gère les séparateurs de milliers (espace normal/insécable/fine, point, virgule).
+    const prices = [];
+    const re = /(\d[\d \u00a0\u202f.,]{0,8}\d|\d)\s*€/g;
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      const n = parseInt(m[1].replace(/[ \u00a0\u202f.,]/g, ""), 10);
+      if (Number.isFinite(n) && n >= 20 && n <= 5000) prices.push(n);
+    }
+    if (!prices.length) return null;
+    prices.sort((a, b) => a - b);
+    return { price: prices[0], url: kayakUrl };
+  } catch (_) { return null; }
+}
+
 export async function onRequest(context) {
   const { request, env } = context;
   const p = new URL(request.url).searchParams;
@@ -640,6 +672,20 @@ export async function onRequest(context) {
   }
 
   if (st.exhausted) {
+    // secours 1 : Kayak en direct via scrape.do (crédits scrape.do, ~1000/mois) — prix estimé.
+    // Souvent bloqué par l'anti-bot de Kayak → renvoie null et on bascule sur Aviasales.
+    const ky = await kayakScrape(env, origin, destination, depart, ret);
+    if (ky && ky.price != null) {
+      const out = { configured: true, price: ky.price, stops: null, duration: null,
+                    url: ky.url, cheapest_source: "kayak", scraped: true, indicative: true,
+                    live_price: null, tp_price: null, exhausted: true, quota: st,
+                    note: "quota Google épuisé — prix Kayak récupéré en direct (estimation, à confirmer)" };
+      context.waitUntil(caches.default.put(ck, new Response(JSON.stringify(out), {
+        headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${ttl}` }
+      })));
+      return json(out);
+    }
+    // secours 2 : Aviasales indicatif (cache gratuit)
     const tp = await tpPrice(env, origin, destination, depart, ret);
     if (tp && tp.price != null)
       return json({ configured: true, price: tp.price, stops: tp.transfers, duration: tp.duration,

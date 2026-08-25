@@ -55,6 +55,7 @@ export async function onRequest(context) {
       destination: o.destination,
       price: o.price,
       transfers: o.transfers ?? null,
+      airline: o.airline || null,           // code IATA compagnie (ex. TO, FR, AF)
       duration_to: o.duration_to ?? null,   // durée aller (min) — pour le filtre durée
       departure_at: o.departure_at || null,
       return_at: o.return_at || null,
