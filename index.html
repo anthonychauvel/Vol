@@ -645,6 +645,67 @@
   .rd-price small{display:block;font-weight:400;font-size:9px;color:var(--muted)}
   .radar-more{padding:8px 14px;font-family:var(--mono);font-size:11px;color:var(--muted);border-top:1px solid var(--line)}
   .radar-foot{padding:9px 14px;font-family:var(--mono);font-size:10px;color:var(--muted);background:var(--panel-2)}
+  /* ---- Radar : sous-titres, réglages, zones de surveillance ---- */
+  .radar-sub2{padding:9px 14px 2px;font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .rd-gear{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:4px 9px;font-size:13px;cursor:pointer;margin-left:6px}
+  .rd-gear.on{color:var(--amber);border-color:var(--brass-rim)}
+  .rd-esc{margin-left:7px;font-family:var(--mono);font-size:9px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+  .rd-bdg{margin-left:6px;font-family:var(--mono);font-size:9px;color:var(--amber);border:1px solid var(--brass-rim);border-radius:5px;padding:1px 5px}
+  /* réglages */
+  .rdset{padding:12px 14px;border-top:1px solid var(--line)}
+  .rd-note{font-family:var(--mono);font-size:10.5px;line-height:1.5;color:var(--muted);background:var(--panel-2);border:1px dashed var(--line);border-radius:9px;padding:9px 11px;margin:0 0 12px}
+  .rd-note b{color:var(--ink)}
+  .rd-switch{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--panel);cursor:pointer;font-size:13px;color:var(--ink);margin:0 0 12px}
+  .rd-switch .dot{width:36px;height:21px;border-radius:20px;background:var(--panel-2);border:1px solid var(--line);position:relative;flex:none;transition:.15s}
+  .rd-switch .dot::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:var(--muted);transition:.15s}
+  .rd-switch.on .dot{background:var(--brass-face);border-color:var(--brass-rim)}
+  .rd-switch.on .dot::after{left:17px;background:#2c1d06}
+  /* carte zone (résumé + éditeur) */
+  .rdzone{border:1px solid var(--line);border-radius:12px;background:var(--panel);margin:0 0 12px;overflow:hidden}
+  .rdzone.off{opacity:.5}
+  .rdzone-head{display:flex;align-items:center;gap:8px;padding:9px 11px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+  .rdzone-head .rd-label{flex:1;min-width:0;background:transparent;border:0;border-bottom:1px solid transparent;color:var(--ink);font-size:14px;font-family:var(--sans);font-weight:600;padding:3px 0}
+  .rdzone-head .rd-label:focus{outline:0;border-bottom-color:var(--brass-rim)}
+  .rdzone-sum{padding:9px 12px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.55}
+  .rdzone-body{padding:12px}
+  .rd-fld{display:block;font-family:var(--mono);font-size:11px;color:var(--muted);margin:14px 0 6px}
+  .rd-fld:first-child{margin-top:0}
+  .rd-chiprow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .rd-chip{display:inline-flex;align-items:center;gap:6px;background:var(--panel-2);border:1px solid var(--brass-rim);color:var(--ink);border-radius:20px;padding:5px 6px 5px 11px;font-family:var(--mono);font-size:12px}
+  .rd-chip b{color:var(--amber);letter-spacing:.5px}
+  .rd-chip button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:0 3px}
+  .rd-chip button:hover{color:var(--oxblood)}
+  .rd-add{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .rd-add input{flex:1;min-width:130px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:9px 11px;font-family:var(--mono);font-size:12px;text-transform:uppercase}
+  .rd-add input::placeholder{text-transform:none;color:var(--muted)}
+  .rd-add input:focus{outline:0;border-color:var(--brass-rim)}
+  .rd-mini{background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:8px 12px;font-size:12.5px;cursor:pointer;font-family:var(--sans)}
+  .rd-mini:hover{border-color:var(--brass-rim)}
+  .rd-mini.acc{background:var(--brass-face);border-color:var(--brass-rim);color:#2c1d06;font-weight:600}
+  .rd-mini.rd-del{color:var(--oxblood);border-color:rgba(198,80,72,.4)}
+  .rd-rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+  .rdset-foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  /* blocs zones dans les résultats */
+  .rdz-block{border-top:1px solid var(--line)}
+  .rdz-btitle{display:flex;align-items:baseline;gap:8px;padding:11px 14px 2px;font-size:13px;color:var(--amber);font-weight:600}
+  .rdz-btitle .rdz-meta{flex:1;font-family:var(--mono);font-size:10px;color:var(--muted);font-weight:400}
+  .rdz-meta{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .rdz-deals{display:flex;flex-direction:column}
+  .rd-deal{padding:9px 14px;border-bottom:1px solid var(--line)}
+  .rd-deal:last-child{border-bottom:0}
+  .rd-drow{display:flex;align-items:center;gap:10px}
+  .rd-deal .rd-city{flex:1;font-size:13.5px}
+  .rd-deal .rd-price{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--amber);text-align:right;min-width:96px}
+  .rd-deal .rd-price small{display:block;font-weight:400;font-size:9px;color:var(--muted)}
+  .rd-deal .cmplinks{margin-top:7px}
+  .rdz-empty{padding:9px 14px 12px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5}
+  .rdz-links{padding:8px 14px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .rd-cruise{display:inline-flex;align-items:center;gap:5px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:7px 11px;font-size:12px;text-decoration:none}
+  .rd-cruise:hover{border-color:var(--brass-rim)}
+  .rd-winbtn{background:var(--panel-2);border:1px solid var(--brass-rim);color:var(--amber);border-radius:10px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:var(--sans)}
+  .rd-winbtn:disabled{opacity:.5;cursor:default}
+  .rd-wins{padding:0 14px}
+  .rd-wins-in{display:flex;flex-direction:column;gap:8px;padding-bottom:12px}
   /* petit rappel du contexte en haut d'un outil focalisé */
   .toolhint{font-family:var(--mono);font-size:11px;color:var(--muted);margin:2px 0 12px;
     padding:8px 11px;border:1px dashed var(--line);border-radius:10px;display:none}
@@ -2862,34 +2923,49 @@ async function loadCityNames(){
 }
 loadCityNames();
 
-/* ================= RADAR — veille prix sans quota =================
-   Chaque (aéroport de départ, mois) que tu consultes devient une "voie" surveillée.
-   À l'ouverture, on rejoue l'appel cache /api/anywhere de chaque voie (coût SerpApi = 0,
-   c'est le cache gratuit Travelpayouts) et on ne met en tête que ce qui a BAISSÉ depuis
-   ta dernière visite (ou les nouvelles dessertes apparues). 100 % localStorage, zéro
-   backend, zéro permission.
-   Limites assumées : ça se déclenche à l'ouverture (pas de push téléphone endormi), et
-   la fraîcheur reste celle du cache (≤ 7 j) — le ⚡ dans l'onglet reste le juge avant de
-   réserver. Utile dès la 2ᵉ visite (la 1ʳᵉ ne fait qu'établir la référence). */
+/* ================= RADAR — veille prix sans quota + zones de surveillance =================
+   Deux couches complémentaires, toutes deux sur le cache gratuit Travelpayouts (coût
+   SerpApi = 0, aucune permission requise) :
+
+   1) Voies automatiques (héritées) — chaque (aéroport de départ, mois) que tu CONSULTES
+      devient une « voie » suivie. À l'ouverture on rejoue /api/anywhere et on remonte ce
+      qui a BAISSÉ depuis ta dernière visite. Zéro config.
+
+   2) Zones de surveillance (Réglages ⚙) — tu définis toi-même des zones persistantes :
+      un ou plusieurs aéroports de départ, les MOIS de l'année à surveiller, les JOURS de
+      départ/retour et les SEMAINES (paires/impaires), les ponts & fériés, direct et/ou
+      avec escale. Pour chaque zone le Radar remonte les baisses ET les « bonnes affaires »
+      qui rentrent dans tes fenêtres, avec les liens Skyscanner / Kayak / Booking /
+      Aviasales, le prix réel ⚡ et une recherche croisières. Option notifications.
+
+   Limites assumées : ça se déclenche à l'OUVERTURE de l'app (pas de push serveur : ce
+   projet n'a volontairement aucun backend payant). La fraîcheur reste celle du cache
+   (≤ 7 j) — le ⚡ dans chaque ligne reste le juge avant de réserver. Les croisières n'ont
+   pas d'API prix gratuite : on ouvre une recherche pré-remplie, pas un suivi de prix. */
 window.Radar=(()=>{
   const LANES_KEY="escale:radar:lanes:v1";
+  const ZONES_KEY="escale:radar:zones:v1";
+  const SET_KEY  ="escale:radar:settings:v1";
+  const SIG_KEY  ="escale:radar:lastsig:v1";
   const SNAP_KEY=l=>"escale:radar:snap:v1:"+l;
-  const MAX_LANES=24;                 // éviction LRU au-delà
-  const MOVE_ABS=5, MOVE_PCT=0.03;    // seuil pour qualifier un vrai "mouvement"
-  const MAX_ROWS=14;
+  const MAX_LANES=24;                 // éviction LRU au-delà (voies auto)
+  const MOVE_ABS=5, MOVE_PCT=0.03;    // seuil pour qualifier un vrai « mouvement »
+  const MAX_ROWS=14;                  // baisses affichées en tête
+  const MAX_MATCH=6;                  // bonnes affaires affichées par zone
+  const AUTO_MONTHS=3;                // mois scannés par zone à l'ouverture (le reste à la demande)
   const now=()=>Date.now();
   const jget=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(_){return d;}};
   const jset=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(_){}};
+
+  /* ---------- voies automatiques (inchangé) ---------- */
   const laneId=(o,m,ow)=>o+"|"+m+"|"+(ow?"1":"0");
   const loadLanes=()=>jget(LANES_KEY,[]);
   const saveLanes=a=>jset(LANES_KEY,a);
-
-  // Enregistre les voies du contexte courant (appelé depuis renderDispatch à chaque rendu).
   function note(mode){
     let origins=[], month="", ow=oneWay;
     if(mode==="caplibre"){ origins=clOriginCodes(); month=clMonth||""; }
-    else if(mode==="compare"){ origins=(mode==="compare"&&typeof cmpOrigins!=="undefined"?cmpOrigins:[]).map(o=>o.code); month=monthForAnywhere(); }
-    else if(mode==="cross"){ origins=(mode==="cross"&&typeof xOrigins!=="undefined"?xOrigins:[]).map(o=>o.code); month=monthForAnywhere(); }
+    else if(mode==="compare"){ origins=(typeof cmpOrigins!=="undefined"?cmpOrigins:[]).map(o=>o.code); month=monthForAnywhere(); }
+    else if(mode==="cross"){ origins=(typeof xOrigins!=="undefined"?xOrigins:[]).map(o=>o.code); month=monthForAnywhere(); }
     else { origins=origin?[origin.code]:[]; month=monthForAnywhere(); }
     origins=origins.filter(Boolean);
     if(!origins.length||!month) return;
@@ -2903,79 +2979,570 @@ window.Radar=(()=>{
     saveLanes(lanes);
   }
 
-  // Rejoue le cache d'une voie, met à jour le snapshot, renvoie les mouvements détectés.
-  async function scanLane(l){
-    let results=[];
+  /* ---------- zones de surveillance ---------- */
+  const loadZones=()=>jget(ZONES_KEY,[]);
+  const saveZones=z=>jset(ZONES_KEY,z);
+  const loadSet=()=>Object.assign({notify:false},jget(SET_KEY,{}));
+  const saveSet=s=>jset(SET_KEY,s);
+  function newId(){return "z"+Math.random().toString(36).slice(2,8);}
+  function zoneDefault(){
+    const first=monthsList()[1]||monthsList()[0];  // mois prochain par défaut
+    return {id:newId(),label:"Nouvelle zone",origins:(origin?[origin.code]:[]),
+      oneway:!!oneWay,months:first?[first.ym]:[],dowOut:[],parOut:"all",
+      dowRet:[],parRet:"all",ponts:false,stops:"all",cruise:false,enabled:true};
+  }
+
+  /* ---------- dates : jours fériés France (client, sans réseau), parité, ponts ---------- */
+  const pad2=n=>String(n).padStart(2,"0");
+  const isoUTC=dt=>dt.getUTCFullYear()+"-"+pad2(dt.getUTCMonth()+1)+"-"+pad2(dt.getUTCDate());
+  const _feries={};
+  function frenchHolidays(year){
+    if(_feries[year])return _feries[year];
+    const set=new Set(), names={};
+    const add=(m,d,name)=>{const s=year+"-"+pad2(m)+"-"+pad2(d);set.add(s);names[s]=name;};
+    add(1,1,"Jour de l'an");add(5,1,"Fête du Travail");add(5,8,"Victoire 1945");
+    add(7,14,"Fête nationale");add(8,15,"Assomption");add(11,1,"Toussaint");
+    add(11,11,"Armistice");add(12,25,"Noël");
+    // Pâques — algorithme de Meeus/Jones/Butcher (grégorien)
+    const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4,
+      f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,
+      i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,mm=Math.floor((a+11*h+22*l)/451),
+      mo=Math.floor((h+l-7*mm+114)/31),da=((h+l-7*mm+114)%31)+1;
+    const easter=new Date(Date.UTC(year,mo-1,da));
+    const off=(days,name)=>{const dt=new Date(easter);dt.setUTCDate(dt.getUTCDate()+days);
+      const s=isoUTC(dt);set.add(s);names[s]=name;};
+    off(1,"Lundi de Pâques");off(39,"Ascension");off(50,"Lundi de Pentecôte");
+    const out={set,names};_feries[year]=out;return out;
+  }
+  function dateMeta(ds){
+    const dt=new Date(ds+"T00:00:00Z");
+    const dow=(dt.getUTCDay()+6)%7;                 // 0 = lundi
+    const week=isoWeek(new Date(dt.getUTCFullYear(),dt.getUTCMonth(),dt.getUTCDate()));
+    const parity=week%2===0?"paire":"impaire";
+    const we=(dow===4||dow===5);                    // départ vendredi/samedi
+    const y=dt.getUTCFullYear(), fY=frenchHolidays(y), fN=frenchHolidays(y+1);
+    let ferieName=null;
+    for(let o=-1;o<=3;o++){const nd=new Date(dt);nd.setUTCDate(nd.getUTCDate()+o);
+      const s=isoUTC(nd); if(fY.set.has(s)||fN.set.has(s)){ferieName=fY.names[s]||fN.names[s];break;}}
+    return {dow,week,parity,we,pont:!!ferieName,ferieName};
+  }
+  function zonePass(zone,ds,transfers){
+    // escales
+    if(transfers!=null){
+      if(zone.stops==="direct" && transfers!==0) return false;
+      if(zone.stops==="escale" && transfers<1)   return false;
+    }
+    if(!ds) return true;                             // pas de date connue : on n'exclut pas sur les critères date
+    const m=dateMeta(ds);
+    if(zone.dowOut&&zone.dowOut.length && !zone.dowOut.includes(m.dow)) return false;
+    if(zone.parOut==="even" && m.parity!=="paire")   return false;
+    if(zone.parOut==="odd"  && m.parity!=="impaire") return false;
+    if(zone.ponts && !m.pont) return false;
+    return true;
+  }
+
+  /* ---------- helpers date/mois/liens ---------- */
+  function monthsList(){const a=[],n=new Date();for(let k=0;k<12;k++){
+    const d=new Date(n.getFullYear(),n.getMonth()+k,1);
+    a.push({ym:d.getFullYear()+"-"+pad2(d.getMonth()+1),label:MOIS[d.getMonth()].slice(0,4)+". "+String(d.getFullYear()).slice(2)});}return a;}
+  const DOW_LABELS=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
+  const yymm=s=>s.slice(2,4)+s.slice(5,7)+s.slice(8,10);
+  // liens comparateurs pré-remplis pour UNE bonne affaire (respecte l'aller simple de la zone)
+  function radarCmpLinks(from,to,depDate,retDate,aviaLink,ow){
+    const items=[];
+    let sky=`https://www.skyscanner.fr/transport/vols/${from.toLowerCase()}/${to.toLowerCase()}/`;
+    if(depDate){sky+=yymm(depDate)+"/";if(!ow&&retDate)sky+=yymm(retDate)+"/";}
+    items.push(`<a class="cgo" href="${sky}" target="_blank" rel="noopener">Skyscanner</a>`);
+    let kay=`https://www.kayak.fr/flights/${from}-${to}`;
+    if(depDate){kay+=`/${depDate}`;if(!ow&&retDate)kay+=`/${retDate}`;}
+    items.push(`<a class="cgo" href="${kay}" target="_blank" rel="noopener">Kayak</a>`);
+    if(aviaLink)items.push(`<a class="cgo" href="${aviaLink}" target="_blank" rel="noopener">Aviasales</a>`);
+    const bp=new URLSearchParams({type:ow?"ONEWAY":"ROUNDTRIP",from:`${from}.AIRPORT`,to:`${to}.AIRPORT`,adults:"1",cabinClass:"ECONOMY"});
+    if(depDate){bp.set("depart",depDate);if(!ow&&retDate)bp.set("return",retDate);}
+    items.push(`<a class="cgo alt" href="https://www.booking.com/flights/index.html?${bp.toString()}" target="_blank" rel="noopener">Booking</a>`);
+    return `<div class="cmplinks">${items.join("")}</div>`;
+  }
+  // croisières : pas d'API prix gratuite → recherche pré-remplie (fiable) plutôt que des
+  // liens profonds de comparateurs non documentés.
+  function cruiseLinks(zone){
+    const ports=zone.origins.map(o=>NAMES[o]||o).join(" ");
+    const mois=(zone.months||[]).slice(0,2).map(ym=>{const p=ym.split("-");return MOIS[(+p[1])-1]+" "+p[0];}).join(" ");
+    const q=encodeURIComponent(("croisière "+mois+(ports?" au départ de "+ports:"")).trim());
+    return `<a class="rd-cruise" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">🚢 Chercher des croisières</a>`;
+  }
+
+  /* ---------- notifications (locales, premier plan / réouverture) ---------- */
+  async function notifyPermission(){
+    if(!("Notification" in window)) return "unsupported";
+    try{ return await Notification.requestPermission(); }catch(_){ return Notification.permission; }
+  }
+  async function fireNotif(title,body){
+    if(!("Notification" in window)||Notification.permission!=="granted") return;
+    const opts={body,icon:"icon-192.png",badge:"icon-192.png",tag:"escale-radar",renotify:true,data:{url:"./"}};
+    try{ if("serviceWorker" in navigator){const reg=await navigator.serviceWorker.ready; if(reg&&reg.showNotification){reg.showNotification(title,opts);return;}} }catch(_){}
+    try{ new Notification(title,opts); }catch(_){}
+  }
+
+  /* ---------- scan ---------- */
+  const _anyCache={};
+  async function anyFetch(o,month,ow){
+    const k=o+"|"+month+"|"+(ow?1:0);
+    if(_anyCache[k])return _anyCache[k];
     try{
-      const u=`${API_BASE}/api/anywhere?origin=${l.origin}&month=${l.month}&oneway=${l.oneway?1:0}`;
-      const j=await (await fetch(u)).json(); results=j.results||[];
-    }catch(_){ return null; }
+      const u=`${API_BASE}/api/anywhere?origin=${o}&month=${month}&oneway=${ow?1:0}`;
+      const j=await (await fetch(u)).json();
+      const r=j.results||[]; _anyCache[k]=r; return r;
+    }catch(_){ return []; }
+  }
+  // Rejoue une voie AUTO (héritée) : renvoie les mouvements + nb de liaisons surveillées.
+  async function scanLane(l){
+    const results=await anyFetch(l.origin,l.month,l.oneway?1:0);
     const map={};
     results.forEach(r=>{ if(r.destination&&r.price!=null) map[r.destination]={price:r.price,transfers:r.transfers,link:r.link}; });
     const prev=jget(SNAP_KEY(l.id),null), movers=[];
     if(prev&&prev.map){
       for(const d in map){
         const np=map[d].price, op=prev.map[d]&&prev.map[d].price;
-        if(op==null) movers.push({dest:d,price:np,delta:null,isNew:true,from:l.origin,month:l.month,link:map[d].link,transfers:map[d].transfers});
+        if(op==null) movers.push({dest:d,price:np,delta:null,isNew:true,from:l.origin,month:l.month,link:map[d].link,transfers:map[d].transfers,ow:l.oneway});
         else{ const dl=np-op;
           if(Math.abs(dl)>=MOVE_ABS && Math.abs(dl)>=op*MOVE_PCT)
-            movers.push({dest:d,price:np,delta:dl,isNew:false,from:l.origin,month:l.month,link:map[d].link,transfers:map[d].transfers});
-        }
+            movers.push({dest:d,price:np,delta:dl,isNew:false,from:l.origin,month:l.month,link:map[d].link,transfers:map[d].transfers,ow:l.oneway}); }
       }
     }
     jset(SNAP_KEY(l.id),{map,ts:now()});
     return {count:Object.keys(map).length,movers};
   }
+  // Scanne UN mois d'une zone : meilleur prix par destination (toutes origines), baisses,
+  // et « bonnes affaires » qui rentrent dans les fenêtres de la zone.
+  async function scanZoneMonth(zone,month){
+    const ow=zone.oneway?1:0, origins=(zone.origins||[]).slice(0,5).filter(Boolean);
+    if(!origins.length) return {watched:0,movers:[],matches:[]};
+    const per=await Promise.all(origins.map(o=>anyFetch(o,month,ow)));
+    const best={};
+    origins.forEach((o,idx)=>per[idx].forEach(r=>{
+      if(!r.destination||r.price==null) return;
+      const cur=best[r.destination];
+      if(!cur||r.price<cur.price) best[r.destination]={price:r.price,transfers:r.transfers,link:r.link,
+        from:o,dep:(r.departure_at||"").slice(0,10),ret:(r.return_at||"").slice(0,10)};
+    }));
+    // baisses vs snapshot propre à la zone+mois
+    const sk=SNAP_KEY("z:"+zone.id+":"+month), prev=jget(sk,null), movers=[];
+    const snap={};
+    for(const d in best){
+      snap[d]=best[d].price;
+      const op=prev&&prev.map?prev.map[d]:undefined;
+      if(prev&&prev.map){
+        if(op==null) movers.push({dest:d,price:best[d].price,delta:null,isNew:true,from:best[d].from,month,link:best[d].link,transfers:best[d].transfers,ow:zone.oneway});
+        else{ const dl=best[d].price-op;
+          if(Math.abs(dl)>=MOVE_ABS && Math.abs(dl)>=op*MOVE_PCT)
+            movers.push({dest:d,price:best[d].price,delta:dl,isNew:false,from:best[d].from,month,link:best[d].link,transfers:best[d].transfers,ow:zone.oneway}); }
+      }
+    }
+    jset(sk,{map:snap,ts:now()});
+    // bonnes affaires : filtrées par escales + jour/semaine/pont de la zone
+    const matches=Object.keys(best).map(d=>({dest:d,...best[d],month}))
+      .filter(x=>zonePass(zone,x.dep,x.transfers))
+      .sort((a,b)=>a.price-b.price);
+    return {watched:Object.keys(best).length,movers,matches};
+  }
+  async function scanZone(zone){
+    const months=(zone.months||[]).slice(0,AUTO_MONTHS);
+    let watched=0, movers=[], matches=[];
+    for(const m of months){ const r=await scanZoneMonth(zone,m); watched+=r.watched; movers=movers.concat(r.movers); matches=matches.concat(r.matches); }
+    matches.sort((a,b)=>a.price-b.price);
+    return {watched,movers,matches:matches.slice(0,MAX_MATCH),monthsScanned:months.length,monthsTotal:(zone.months||[]).length};
+  }
 
-  let _busy=false;
+  /* ---------- état d'affichage ---------- */
+  let _busy=false, view="results", editing=null;   // editing = id de zone en cours d'édition (ou "new")
+  let _lastResults=null;
+
   async function rescan(){
     if(_busy) return; _busy=true;
-    const lanes=loadLanes(), sec=document.getElementById("radarSec");
-    if(!lanes.length){ _busy=false; if(sec){sec.hidden=true;sec.innerHTML="";} return; }
-    if(sec){ sec.hidden=false; sec.innerHTML='<div class="radar-load">✦ Radar — vérification de '+lanes.length+' voie'+(lanes.length>1?"s":"")+' surveillée'+(lanes.length>1?"s":"")+'…</div>'; }
-    let allMovers=[], watched=0;
+    const lanes=loadLanes(), zones=loadZones().filter(z=>z.enabled), set=loadSet();
+    const sec=document.getElementById("radarSec"); if(!sec){_busy=false;return;}
+    if(!lanes.length && !zones.length && view==="results"){ renderIdle(); _busy=false; return; }
+    if(view==="results")
+      sec.innerHTML='<div class="radar-load">✦ Radar — vérification en cours…</div>';
+    let allMovers=[], watched=0, zoneOut=[];
     for(const l of lanes){ const r=await scanLane(l); if(r){ watched+=r.count; allMovers=allMovers.concat(r.movers); } }
-    render(allMovers,lanes.length,watched); _busy=false;
+    for(const z of zones){ const r=await scanZone(z); watched+=r.watched; allMovers=allMovers.concat(r.movers); zoneOut.push({zone:z,...r}); }
+    _lastResults={movers:allMovers,watched,laneCount:lanes.length,zones:zoneOut};
+    // notifications : ne signale que du NEUF par rapport au dernier envoi
+    if(set.notify){
+      const drops=dedupeDrops(allMovers);
+      const sig=drops.slice(0,8).map(m=>m.dest+m.from+(m.delta==null?"N":m.delta)).join(",");
+      const last=jget(SIG_KEY,"");
+      if(sig && sig!==last && drops.length){
+        const top=drops[0], nm=NAMES[top.dest]||top.dest;
+        fireNotif("✦ Escale — "+drops.length+" baisse"+(drops.length>1?"s":""),
+          nm+" "+top.price+" € depuis "+top.from+(top.delta!=null?" ("+(top.delta<0?"▼ ":"▲ +")+Math.abs(top.delta)+" €)":" · nouveau"));
+        jset(SIG_KEY,sig);
+      }
+    }
+    if(view==="results") renderResults();
+    _busy=false;
   }
 
   const fmtDelta=dl=>dl==null?'<span class="rd-new">nouveau</span>'
     :'<span class="rd-delta '+(dl<0?"dn":"up")+'">'+(dl<0?"▼ ":"▲ +")+Math.abs(dl)+' €</span>';
-
-  function render(movers,laneCount,watched){
-    const sec=document.getElementById("radarSec"); if(!sec) return;
+  function dedupeDrops(movers){
     const seen={};
     movers.forEach(m=>{ const k=m.dest+"|"+m.from+"|"+m.month, score=m.isNew?1e9:Math.abs(m.delta);
       if(!seen[k]||score>seen[k]._s){ m._s=score; seen[k]=m; } });
-    const drops=Object.values(seen).filter(m=>m.isNew||m.delta<0)
+    return Object.values(seen).filter(m=>m.isNew||m.delta<0)
       .sort((a,b)=>(a.isNew?-1e9:a.delta)-(b.isNew?-1e9:b.delta));
-    const shown=drops.slice(0,MAX_ROWS);
-    if(!shown.length){
-      sec.innerHTML='<div class="radar-head"><b>✦ Radar</b><span class="radar-sub">'+laneCount+' voie'+(laneCount>1?"s":"")+' · '+watched+' liaisons surveillées · rien de neuf</span><button class="radar-x" id="radarClear">effacer</button></div>';
-      bindClear(); return;
-    }
-    const rows=shown.map(m=>{
-      const nm=NAMES[m.dest]||m.dest, sky=skyURLFrom(m.from,m.dest);
-      const badge=m.transfers===0?'<span class="rd-drc">direct</span>':'';
-      return '<a class="radar-row" href="'+(m.link||sky)+'" target="_blank" rel="noopener">'
-        +'<span class="rd-city">'+nm+' <small>'+m.dest+'</small>'+badge+'</span>'
-        +'<span class="rd-mid">'+fmtDelta(m.delta)+'</span>'
-        +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+' · '+m.month+'</small></span></a>';
-    }).join("");
-    const extra=drops.length-shown.length;
-    const more=extra>0?'<div class="radar-more">+ '+extra+' autre'+(extra>1?"s":"")+' baisse'+(extra>1?"s":"")+'</div>':'';
-    sec.hidden=false;
-    sec.innerHTML='<div class="radar-head"><b>✦ Radar</b><span class="radar-sub">ce qui a baissé depuis ta dernière visite</span><button class="radar-x" id="radarClear">effacer</button></div>'
-      +'<div class="radar-list">'+rows+'</div>'+more
-      +'<div class="radar-foot">'+laneCount+' voie'+(laneCount>1?"s":"")+' · '+watched+' liaisons · cache gratuit ≤ 7 j — touche le ⚡ dans l\'onglet pour le prix réel</div>';
-    bindClear();
   }
-  function bindClear(){ const b=document.getElementById("radarClear"); if(b)b.onclick=clearAll; }
+
+  function headHTML(subtitle){
+    return '<div class="radar-head"><b>✦ Radar</b><span class="radar-sub">'+subtitle+'</span>'
+      +'<button class="rd-gear'+(view==="settings"?" on":"")+'" id="radarGear" title="Réglages">⚙</button>'
+      +'<button class="radar-x" id="radarClear">effacer</button></div>';
+  }
+  // Section repliée quand il n'y a encore rien : garde un point d'entrée vers les Réglages.
+  function renderIdle(){
+    const sec=document.getElementById("radarSec"); if(!sec) return;
+    sec.hidden=false;
+    sec.innerHTML=headHTML("aucune zone — appuie sur ⚙ pour surveiller tes bons plans")
+      +'<div class="radar-foot">Définis des zones (aéroports, mois, jours/semaines, ponts, direct/escale) et Escale te remonte les baisses à chaque ouverture.</div>';
+    bindHead();
+  }
+
+  function renderResults(){
+    const sec=document.getElementById("radarSec"); if(!sec) return;
+    const R=_lastResults||{movers:[],watched:0,laneCount:0,zones:[]};
+    sec.hidden=false;
+    const drops=dedupeDrops(R.movers).slice(0,MAX_ROWS);
+    const zoneCount=R.zones.length;
+    const sub=zoneCount?(zoneCount+" zone"+(zoneCount>1?"s":"")+" · "+R.watched+" liaisons surveillées")
+      :(R.laneCount+" voie"+(R.laneCount>1?"s":"")+" · "+R.watched+" liaisons surveillées");
+    let html=headHTML(sub);
+    // 1) baisses transverses
+    if(drops.length){
+      const rows=drops.map(m=>{
+        const nm=NAMES[m.dest]||m.dest;
+        let sky=`https://www.skyscanner.fr/transport/vols/${m.from.toLowerCase()}/${m.dest.toLowerCase()}/`;
+        const badge=m.transfers===0?'<span class="rd-drc">direct</span>':'';
+        return '<a class="radar-row" href="'+(m.link||sky)+'" target="_blank" rel="noopener">'
+          +'<span class="rd-city">'+nm+' <small>'+m.dest+'</small>'+badge+'</span>'
+          +'<span class="rd-mid">'+fmtDelta(m.delta)+'</span>'
+          +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+' · '+m.month+'</small></span></a>';
+      }).join("");
+      html+='<div class="radar-sub2">Ce qui a baissé depuis ta dernière visite</div><div class="radar-list">'+rows+'</div>';
+    }else if(!zoneCount){
+      html+='<div class="radar-foot">Rien de neuf pour l\'instant. Reviens plus tard : la 1ʳᵉ visite ne fait qu\'établir la référence.</div>';
+    }
+    // 2) blocs par zone (bonnes affaires qui rentrent dans les fenêtres)
+    R.zones.forEach(zr=>{
+      const z=zr.zone;
+      const mscan=zr.monthsScanned<zr.monthsTotal?(" · "+zr.monthsScanned+"/"+zr.monthsTotal+" mois auto"):"";
+      html+='<div class="rdz-block"><div class="rdz-btitle">'+esc(z.label||"Zone")
+        +'<span class="rdz-meta">'+z.origins.join(", ")+" · "+(z.oneway?"aller simple":"A/R")+mscan+'</span></div>';
+      if(zr.matches.length){
+        const rows=zr.matches.map(m=>{
+          const nm=NAMES[m.dest]||m.dest, meta=m.dep?dateMeta(m.dep):null;
+          const tag=m.transfers===0?'<span class="rd-drc">direct</span>':(m.transfers>0?'<span class="rd-esc">'+m.transfers+' esc</span>':'');
+          const bdg=meta?(meta.pont?'<span class="rd-bdg">pont</span>':(meta.we?'<span class="rd-bdg">week-end</span>':'')):'';
+          const live=LIVE_OK?'<button class="live rd-live" data-from="'+m.from+'" data-dest="'+m.dest+'" data-dep="'+(m.dep||"")+'" data-ret="'+(m.ret||"")+'" data-ow="'+(z.oneway?1:0)+'" title="Prix réel">⚡</button>':'';
+          return '<div class="rd-deal"><div class="rd-drow">'
+            +'<span class="rd-city">'+nm+' <small>'+m.dest+'</small>'+tag+bdg+'</span>'
+            +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+(m.dep?' · '+m.dep:'')+'</small></span>'+live+'</div>'
+            +'<span class="pricelive" data-rdlive="'+m.dest+'-'+m.from+'-'+(m.dep||"")+'"></span>'
+            +radarCmpLinks(m.from,m.dest,m.dep,m.ret,m.link,!!z.oneway)+'</div>';
+        }).join("");
+        html+='<div class="rdz-deals">'+rows+'</div>';
+      }else{
+        html+='<div class="rdz-empty">Aucune affaire ne colle à tes fenêtres dans le cache pour l\'instant — élargis les jours/semaines ou change de mois.</div>';
+      }
+      // liens croisières (option) + fenêtres ponts à la demande
+      html+='<div class="rdz-links">';
+      if(z.cruise) html+=cruiseLinks(z);
+      html+='<button class="rd-winbtn" data-win="'+z.id+'">🇫🇷 Fenêtres : ponts &amp; week-ends longs</button></div>';
+      html+='<div class="rd-wins" data-wins="'+z.id+'"></div></div>';
+    });
+    html+='<div class="radar-foot">Cache gratuit ≤ 7 j · touche le ⚡ pour le prix réel avant de réserver. Croisières : recherche pré-remplie (pas de suivi de prix).</div>';
+    sec.innerHTML=html;
+    bindHead(); bindResults();
+  }
+
+  function bindHead(){
+    const g=document.getElementById("radarGear"); if(g)g.onclick=()=>{ view=view==="settings"?"results":"settings"; if(view==="settings")renderSettings(); else renderResults(); };
+    const b=document.getElementById("radarClear"); if(b)b.onclick=clearAll;
+  }
+  function bindResults(){
+    document.querySelectorAll(".rd-live").forEach(b=>b.onclick=()=>radarLive(b.dataset.from,b.dataset.dest,b.dataset.dep,b.dataset.ret,b.dataset.ow==="1",b));
+    document.querySelectorAll(".rd-winbtn").forEach(b=>b.onclick=()=>runZoneWindows(b.dataset.win,b));
+  }
+
+  // ⚡ prix réel pour une affaire précise (force la date de l'affaire, pas la date globale).
+  async function radarLive(from,dest,depDate,retDate,ow,btn){
+    btn.classList.add("busy");btn.disabled=true;
+    const el=document.querySelector('.pricelive[data-rdlive="'+dest+'-'+from+'-'+(depDate||"")+'"]');
+    if(el)el.innerHTML='<span class="lvl">tarif réel…</span>';
+    try{
+      let u=`${API_BASE}/api/live?origin=${from}&destination=${dest}`;
+      if(depDate)u+=`&depart=${depDate}`;
+      if(!ow&&retDate)u+=`&return=${retDate}`;
+      const j=await (await fetch(u)).json();
+      setQuota(j.quota);
+      const lab=liveLabel(j);
+      if(el)el.innerHTML=lab
+        ? (j.url?`<a href="${j.url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${lab}</a>`:lab)
+        : '<span class="lvl">'+liveFail(j)+'</span>';
+    }catch(_){ if(el)el.innerHTML='<span class="lvl">prix live indisponible</span>'; }
+    btn.classList.remove("busy");btn.disabled=!!(LIVE_Q&&LIVE_Q.exhausted);
+  }
+
+  // Fenêtres ponts/week-ends à la demande : réutilise /api/caplibre (zéro quota) sur les
+  // destinations déjà repérées pour la zone, sur son 1ᵉʳ mois surveillé.
+  async function runZoneWindows(zid,btn){
+    const zone=loadZones().find(z=>z.id===zid); if(!zone)return;
+    const box=document.querySelector('.rd-wins[data-wins="'+zid+'"]'); if(!box)return;
+    const month=(zone.months||[])[0];
+    const origins=(zone.origins||[]).filter(Boolean);
+    if(!month||!origins.length){box.innerHTML='<div class="rdz-empty">Ajoute au moins un aéroport et un mois à cette zone.</div>';return;}
+    btn.disabled=true;box.innerHTML='<div class="rdz-empty">Balayage des fenêtres pour '+MOIS[(+month.split("-")[1])-1]+'…</div>';
+    // destinations : celles déjà repérées ce mois (sinon repli sur le réseau /api/anywhere)
+    let dests=[];
+    try{
+      const per=await Promise.all(origins.map(o=>anyFetch(o,month,zone.oneway?1:0)));
+      const s=new Set(); per.forEach(a=>a.forEach(r=>{if(r.destination)s.add(r.destination);}));
+      dests=[...s].slice(0,40);
+    }catch(_){}
+    if(!dests.length){box.innerHTML='<div class="rdz-empty">Aucune destination desservie trouvée pour ce mois.</div>';btn.disabled=false;return;}
+    try{
+      const q=new URLSearchParams({origins:origins.join(","),dests:dests.join(","),month,oneway:zone.oneway?"1":"0",nights:"3"});
+      if(zone.dowOut&&zone.dowOut.length)q.set("dowOut",zone.dowOut.join(","));
+      if(zone.parOut!=="all")q.set("parOut",zone.parOut==="even"?"even":zone.parOut==="odd"?"odd":zone.parOut);
+      if(!zone.oneway){ if(zone.dowRet&&zone.dowRet.length)q.set("dowRet",zone.dowRet.join(",")); if(zone.parRet!=="all")q.set("parRet",zone.parRet); }
+      if(zone.ponts)q.set("ponts","1");
+      const j=await (await fetch(`${API_BASE}/api/caplibre?`+q.toString())).json();
+      const wins=(j.windows||[]).slice(0,6);
+      if(!wins.length){box.innerHTML='<div class="rdz-empty">'+(j.note||"Aucune fenêtre ne colle à tes contraintes ce mois-ci.")+'</div>';btn.disabled=false;return;}
+      box.innerHTML='<div class="rd-wins-in">'+wins.map(w=>winCard(w,zone)).join("")+'</div>';
+      box.querySelectorAll(".rd-live").forEach(b=>b.onclick=()=>radarLive(b.dataset.from,b.dataset.dest,b.dataset.dep,b.dataset.ret,b.dataset.ow==="1",b));
+    }catch(_){ box.innerHTML='<div class="rdz-empty">Fenêtres indisponibles pour le moment.</div>'; }
+    btn.disabled=false;
+  }
+  function winCard(w,zone){
+    const dt=new Date(w.date+"T00:00:00Z");
+    const jour=JOURS[(dt.getUTCDay()+6)%7], dnum=dt.getUTCDate(), mnom=MOIS[dt.getUTCMonth()];
+    const badges=[];
+    if(w.bridge)badges.push('<span class="clbadge">pont · '+(w.ferie?w.ferie.name:"férié")+'</span>');
+    else if(w.tags&&w.tags.includes("ferie"))badges.push('<span class="clbadge">férié proche</span>');
+    if(w.tags&&w.tags.includes("we"))badges.push('<span class="clbadge">week-end long</span>');
+    badges.push('<span class="clbadge">sem. '+w.week+' · '+w.parity+'</span>');
+    const dests=(w.best||[]).map(d=>{
+      const nm=NAMES[d.dest]||d.dest;
+      const tag=d.transfers===0?'<span class="cldtag">direct</span>':(d.transfers>0?'<span class="cldtag" style="color:var(--muted);border-color:var(--line)">'+d.transfers+' esc</span>':"");
+      const retDate=(!zone.oneway&&d.return_at)?d.return_at.slice(0,10):null;
+      const price=d.link?'<a class="cldprice" href="'+d.link+'" target="_blank" rel="noopener">'+d.price+' €</a>':'<span class="cldprice">'+d.price+' €</span>';
+      const live=LIVE_OK?'<button class="live rd-live" data-from="'+d.from+'" data-dest="'+d.dest+'" data-dep="'+w.date+'" data-ret="'+(retDate||"")+'" data-ow="'+(zone.oneway?1:0)+'" title="Prix réel">⚡</button>':'';
+      return '<div class="cld"><div class="cldtop"><span class="cldcity">'+nm+' <small>'+d.dest+'</small></span>'+tag
+        +'<span>'+price+'<small class="cldfrom">depuis '+d.from+'</small></span>'+live+'</div>'
+        +'<span class="pricelive" data-rdlive="'+d.dest+'-'+d.from+'-'+w.date+'"></span>'
+        +radarCmpLinks(d.from,d.dest,w.date,retDate,d.link,!!zone.oneway)+'</div>';
+    }).join("");
+    return '<div class="clwin"><div class="clwin-head"><div class="clwin-when">'
+      +jour.charAt(0).toUpperCase()+jour.slice(1)+' '+dnum+' '+mnom+' '+badges.join(" ")+'</div>'
+      +'<div class="clwin-cost">à partir de <b>'+w.minPrice+' €</b></div></div>'+dests+'</div>';
+  }
+
+  /* ---------- réglages (zones) ---------- */
+  function renderSettings(){
+    const sec=document.getElementById("radarSec"); if(!sec) return;
+    sec.hidden=false;
+    const zones=loadZones(), set=loadSet();
+    let html=headHTML("réglages — zones de surveillance")+'<div class="rdset">';
+    html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app (pas de notification quand le téléphone dort : ce projet n\'a aucun serveur payant). Les prix viennent du cache gratuit — le ⚡ confirme le tarif réel. Les croisières ouvrent une recherche pré-remplie (pas de suivi de prix).</div>';
+    // interrupteur notifications
+    const nOn=set.notify && (!("Notification" in window)||Notification.permission==="granted");
+    html+='<div class="rd-switch'+(nOn?" on":"")+'" id="rdNotify"><span class="dot"></span><span>Notifications à l\'ouverture quand une affaire baisse</span></div>';
+    if("Notification" in window && Notification.permission==="denied")
+      html+='<div class="rd-note">Les notifications sont bloquées au niveau du navigateur/système. Autorise Escale dans les réglages du téléphone (l\'app doit être ajoutée à l\'écran d\'accueil sur iPhone).</div>';
+    // zones
+    if(!zones.length && editing!=="new")
+      html+='<div class="rdz-empty" style="margin:12px 0">Aucune zone pour l\'instant.</div>';
+    zones.forEach(z=>{ html+= (editing===z.id) ? zoneEditor(_edit||z) : zoneSummary(z); });
+    if(editing==="new") html+=zoneEditor(_edit||zoneDefault());
+    html+='<div class="rdset-foot">';
+    if(editing!=="new") html+='<button class="rd-mini acc" id="rdAddZone">+ Nouvelle zone</button>';
+    html+='<button class="rd-mini" id="rdBackRes">← Retour au radar</button></div>';
+    html+='</div>';
+    sec.innerHTML=html;
+    bindHead(); bindSettings();
+  }
+  function zoneSummary(z){
+    const mm=(z.months||[]).map(ym=>{const p=ym.split("-");return MOIS[(+p[1])-1].slice(0,4)+".";}).join(" ");
+    const dd=(z.dowOut&&z.dowOut.length)?z.dowOut.map(d=>DOW_LABELS[d]).join("/"):"tous jours";
+    const par=z.parOut==="even"?"sem. paires":z.parOut==="odd"?"sem. impaires":"";
+    const st=z.stops==="direct"?"direct":z.stops==="escale"?"avec escale":"direct+escale";
+    const bits=[z.origins.join(", ")||"—",(z.oneway?"aller simple":"A/R"),mm||"aucun mois",dd,par,st];
+    if(z.ponts)bits.push("ponts");
+    if(z.cruise)bits.push("🚢");
+    return '<div class="rdzone'+(z.enabled?"":" off")+'"><div class="rdzone-head">'
+      +'<b style="flex:1;color:var(--ink);font-size:13.5px">'+esc(z.label||"Zone")+'</b>'
+      +'<button class="rd-mini" data-editz="'+z.id+'">Modifier</button>'
+      +'<button class="rd-mini" data-togglez="'+z.id+'">'+(z.enabled?"On":"Off")+'</button></div>'
+      +'<div class="rdzone-sum">'+bits.filter(Boolean).join(" · ")+'</div></div>';
+  }
+  function seg(items,cur,attr){ // items:[{v,label}] — boutons .clseg à sélection unique
+    return '<div class="clseg" data-seg="'+attr+'">'+items.map(it=>
+      '<button data-v="'+it.v+'"'+(String(cur)===String(it.v)?' class="on"':'')+'>'+it.label+'</button>').join("")+'</div>';
+  }
+  function dowSeg(sel,attr){ // multi-sélection Lun..Dim
+    return '<div class="clseg cldow" data-dow="'+attr+'">'+DOW_LABELS.map((l,i)=>
+      '<button data-day="'+i+'"'+(sel&&sel.includes(i)?' class="on"':'')+'>'+l+'</button>').join("")+'</div>';
+  }
+  function monthSeg(sel){ // multi-sélection des 12 prochains mois
+    return '<div class="clseg" data-months="1">'+monthsList().map(m=>
+      '<button data-m="'+m.ym+'"'+(sel&&sel.includes(m.ym)?' class="on"':'')+'>'+m.label+'</button>').join("")+'</div>';
+  }
+  function zoneEditor(z){
+    const isNew=editing==="new";
+    let h='<div class="rdzone"><div class="rdzone-head">'
+      +'<input class="rd-label" id="rdLabel" value="'+esc(z.label||"")+'" placeholder="Nom de la zone (ex. Ponts de printemps)">'
+      +'</div><div class="rdzone-body">';
+    // aéroports
+    h+='<label class="rd-fld">Aéroports de départ</label><div class="rd-chiprow" id="rdOrigins">'
+      +(z.origins||[]).map(c=>'<span class="rd-chip"><b>'+c+'</b> <button data-rmorig="'+c+'">✕</button></span>').join("")
+      +(z.origins&&z.origins.length?"":'<span class="rdz-meta">aucun aéroport</span>')+'</div>'
+      +'<div class="rd-add">'
+      +(origin?'<button class="rd-mini" id="rdAddCur">+ '+origin.code+' (actuel)</button>':'')
+      +'<input id="rdOrigInput" maxlength="3" placeholder="Code IATA (BES, NTE…)">'
+      +'<button class="rd-mini" id="rdAddOrig">Ajouter</button></div>';
+    // type de trajet
+    h+='<label class="rd-fld">Type de trajet</label>'
+      +seg([{v:"0",label:"Aller-retour"},{v:"1",label:"Aller simple"}],z.oneway?"1":"0","oneway");
+    // mois
+    h+='<label class="rd-fld">Mois à surveiller (sur l\'année)</label>'+monthSeg(z.months);
+    // escales
+    h+='<label class="rd-fld">Vols</label>'
+      +seg([{v:"all",label:"Direct + escale"},{v:"direct",label:"Direct"},{v:"escale",label:"Avec escale"}],z.stops,"stops");
+    // jour + semaine de départ
+    h+='<label class="rd-fld">Jour de départ (touche pour restreindre — sinon tous)</label>'+dowSeg(z.dowOut,"dowOut")
+      +seg([{v:"all",label:"Semaines : toutes"},{v:"even",label:"Paires"},{v:"odd",label:"Impaires"}],z.parOut,"parOut");
+    // jour + semaine de retour (si A/R)
+    if(!z.oneway){
+      h+='<label class="rd-fld">Jour de retour (idem)</label>'+dowSeg(z.dowRet,"dowRet")
+        +seg([{v:"all",label:"Semaines : toutes"},{v:"even",label:"Paires"},{v:"odd",label:"Impaires"}],z.parRet,"parRet");
+    }
+    // ponts + croisières
+    h+='<label class="rd-fld">Et aussi</label><div class="rd-chiprow">'
+      +'<button class="rd-mini'+(z.ponts?" acc":"")+'" id="rdPonts">🇫🇷 Ponts &amp; fériés</button>'
+      +'<button class="rd-mini'+(z.cruise?" acc":"")+'" id="rdCruise">🚢 Croisières</button></div>';
+    // actions
+    h+='<div class="rd-rowbtns"><button class="rd-mini acc" id="rdSaveZone">'+(isNew?"Créer la zone":"Enregistrer")+'</button>'
+      +'<button class="rd-mini" id="rdCancelZone">Annuler</button>'
+      +(isNew?"":'<button class="rd-mini rd-del" id="rdDeleteZone" data-delz="'+z.id+'">Supprimer</button>')+'</div>';
+    h+='</div></div>';
+    return h;
+  }
+
+  // buffer d'édition : on modifie une copie locale, on écrit au clic « Enregistrer »
+  let _edit=null;
+  function bindSettings(){
+    const notify=document.getElementById("rdNotify");
+    if(notify)notify.onclick=async()=>{
+      const set=loadSet();
+      if(!set.notify){ const p=await notifyPermission(); if(p==="granted"){set.notify=true;} else {set.notify=false;} }
+      else set.notify=false;
+      saveSet(set); renderSettings();
+    };
+    const add=document.getElementById("rdAddZone"); if(add)add.onclick=()=>{ editing="new"; _edit=zoneDefault(); renderSettings(); };
+    const back=document.getElementById("rdBackRes"); if(back)back.onclick=()=>{ editing=null;_edit=null; view="results"; renderResults(); rescan(); };
+    document.querySelectorAll("[data-editz]").forEach(b=>b.onclick=()=>{ editing=b.dataset.editz; _edit=JSON.parse(JSON.stringify(loadZones().find(z=>z.id===editing)||zoneDefault())); renderSettings(); });
+    document.querySelectorAll("[data-togglez]").forEach(b=>b.onclick=()=>{ const zs=loadZones(); const z=zs.find(x=>x.id===b.dataset.togglez); if(z){z.enabled=!z.enabled;saveZones(zs);} renderSettings(); });
+    if(editing!=null) bindEditor();
+  }
+  function bindEditor(){
+    if(!_edit) _edit = editing==="new"?zoneDefault():JSON.parse(JSON.stringify(loadZones().find(z=>z.id===editing)||zoneDefault()));
+    const lab=document.getElementById("rdLabel"); if(lab)lab.oninput=()=>{_edit.label=lab.value;};
+    const addCur=document.getElementById("rdAddCur"); if(addCur)addCur.onclick=()=>{ if(origin&&!_edit.origins.includes(origin.code)){_edit.origins.push(origin.code);} redrawEditor(); };
+    const inp=document.getElementById("rdOrigInput"), addO=document.getElementById("rdAddOrig");
+    const doAdd=()=>{ if(!inp)return; const v=(inp.value||"").toUpperCase().replace(/[^A-Z]/g,"").slice(0,3); if(v.length===3&&!_edit.origins.includes(v)){_edit.origins.push(v);} inp.value=""; redrawEditor(); };
+    if(addO)addO.onclick=doAdd;
+    if(inp)inp.onkeydown=e=>{ if(e.key==="Enter"){e.preventDefault();doAdd();} };
+    document.querySelectorAll("[data-rmorig]").forEach(b=>b.onclick=()=>{ _edit.origins=_edit.origins.filter(c=>c!==b.dataset.rmorig); redrawEditor(); });
+    // segments à sélection unique
+    document.querySelectorAll('[data-seg]').forEach(box=>{
+      const attr=box.dataset.seg;
+      box.querySelectorAll("button").forEach(btn=>btn.onclick=()=>{
+        box.querySelectorAll("button").forEach(x=>x.classList.remove("on"));btn.classList.add("on");
+        const v=btn.dataset.v;
+        if(attr==="oneway"){ _edit.oneway=v==="1"; redrawEditor(); }   // masque/affiche le retour
+        else _edit[attr]=v;
+      });
+    });
+    // jours (multi)
+    document.querySelectorAll('[data-dow]').forEach(box=>{
+      const attr=box.dataset.dow;
+      box.querySelectorAll("button[data-day]").forEach(btn=>btn.onclick=()=>{
+        const d=+btn.dataset.day; btn.classList.toggle("on");
+        _edit[attr]=_edit[attr]||[];
+        if(btn.classList.contains("on")){if(!_edit[attr].includes(d))_edit[attr].push(d);}
+        else _edit[attr]=_edit[attr].filter(x=>x!==d);
+      });
+    });
+    // mois (multi)
+    const mbox=document.querySelector('[data-months]');
+    if(mbox)mbox.querySelectorAll("button[data-m]").forEach(btn=>btn.onclick=()=>{
+      const ym=btn.dataset.m; btn.classList.toggle("on"); _edit.months=_edit.months||[];
+      if(btn.classList.contains("on")){if(!_edit.months.includes(ym))_edit.months.push(ym);}
+      else _edit.months=_edit.months.filter(x=>x!==ym);
+    });
+    const ponts=document.getElementById("rdPonts"); if(ponts)ponts.onclick=()=>{ _edit.ponts=!_edit.ponts; ponts.classList.toggle("acc",_edit.ponts); };
+    const cruise=document.getElementById("rdCruise"); if(cruise)cruise.onclick=()=>{ _edit.cruise=!_edit.cruise; cruise.classList.toggle("acc",_edit.cruise); };
+    const save=document.getElementById("rdSaveZone"); if(save)save.onclick=saveEditor;
+    const cancel=document.getElementById("rdCancelZone"); if(cancel)cancel.onclick=()=>{ editing=null;_edit=null; renderSettings(); };
+    const del=document.getElementById("rdDeleteZone"); if(del)del.onclick=()=>{ const zs=loadZones().filter(z=>z.id!==del.dataset.delz); saveZones(zs); try{localStorage.removeItem(SNAP_KEY("z:"+del.dataset.delz));}catch(_){} editing=null;_edit=null; renderSettings(); };
+  }
+  // re-render de l'éditeur en gardant le buffer _edit (préserve type de trajet/mois cochés)
+  function redrawEditor(){ renderSettingsWithEdit(); }
+  function renderSettingsWithEdit(){
+    const sec=document.getElementById("radarSec"); if(!sec||!_edit) return;
+    // reconstruit tout le panneau réglages mais l'éditeur lit _edit
+    const zones=loadZones(), set=loadSet();
+    let html=headHTML("réglages — zones de surveillance")+'<div class="rdset">';
+    html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app (pas de notification quand le téléphone dort). Le ⚡ confirme le tarif réel. Croisières : recherche pré-remplie.</div>';
+    const nOn=set.notify && (!("Notification" in window)||Notification.permission==="granted");
+    html+='<div class="rd-switch'+(nOn?" on":"")+'" id="rdNotify"><span class="dot"></span><span>Notifications à l\'ouverture quand une affaire baisse</span></div>';
+    zones.forEach(z=>{ html+=(editing===z.id)?zoneEditor(_edit):zoneSummary(z); });
+    if(editing==="new") html+=zoneEditor(_edit);
+    html+='<div class="rdset-foot"><button class="rd-mini" id="rdBackRes">← Retour au radar</button></div></div>';
+    sec.innerHTML=html;
+    bindHead();
+    const notify=document.getElementById("rdNotify");
+    if(notify)notify.onclick=async()=>{ const s=loadSet(); if(!s.notify){const p=await notifyPermission();s.notify=p==="granted";}else s.notify=false; saveSet(s); renderSettingsWithEdit(); };
+    const back=document.getElementById("rdBackRes"); if(back)back.onclick=()=>{ editing=null;_edit=null; view="results"; renderResults(); rescan(); };
+    bindEditor();
+  }
+  function saveEditor(){
+    if(!_edit)return;
+    _edit.origins=[...new Set((_edit.origins||[]).filter(Boolean))].slice(0,5);
+    _edit.months=[...new Set((_edit.months||[]).filter(Boolean))];
+    if(!_edit.label)_edit.label="Zone "+(_edit.origins[0]||"");
+    const zones=loadZones();
+    if(editing==="new"){ zones.push(_edit); }
+    else{ const i=zones.findIndex(z=>z.id===editing); if(i>=0)zones[i]=_edit; else zones.push(_edit); }
+    saveZones(zones);
+    editing=null; _edit=null;
+    renderSettings();
+  }
+
   function clearAll(){
+    // efface voies auto + snapshots (voies ET zones) — conserve la DÉFINITION des zones
     loadLanes().forEach(l=>{try{localStorage.removeItem(SNAP_KEY(l.id));}catch(_){}});
     try{localStorage.removeItem(LANES_KEY);}catch(_){}
-    const sec=document.getElementById("radarSec"); if(sec){sec.hidden=true;sec.innerHTML="";}
+    loadZones().forEach(z=>(z.months||[]).forEach(m=>{try{localStorage.removeItem(SNAP_KEY("z:"+z.id+":"+m));}catch(_){}}));
+    try{localStorage.removeItem(SIG_KEY);}catch(_){}
+    _lastResults=null; view="results";
+    if(loadZones().length){ rescan(); } else { const sec=document.getElementById("radarSec"); if(sec){renderIdle();} }
   }
-  return {note,rescan,clear:clearAll};
+
+  const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+  return {note,rescan,clear:clearAll,openSettings:()=>{view="settings";renderSettings();}};
 })();
 // lance la vérification après le premier rendu (laisse le temps aux noms de villes d'arriver)
 setTimeout(()=>{try{Radar.rescan();}catch(_){}} ,900);
