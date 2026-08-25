@@ -546,6 +546,22 @@ async function status(env, ctx) {
     out.sky = { id: "skyscrapper", configured: false };
   }
 
+  // scrape.do (secours Kayak) : quota suivi localement, budget = crédits du forfait (~1000).
+  // "used" est une ESTIMATION (~5 crédits/appel render) ; le décompte réel est sur scrape.do.
+  if (env.SCRAPEDO_TOKEN) {
+    const budget = parseInt(env.SCRAPEDO_BUDGET || "1000", 10);
+    const l = await led.read("scrapedo");
+    const left = Math.max(0, budget - (l.used || 0));
+    out.scrapedo = {
+      id: "scrapedo", label: "scrape.do · secours Kayak (crédits estimés)",
+      configured: true, used: l.used || 0, budget, left,
+      counter: "local (" + led.backend + ", ~5 crédits/appel estimés)",
+      available: left > 0 && !l.tripped
+    };
+  } else {
+    out.scrapedo = { id: "scrapedo", configured: false };
+  }
+
   return out;
 }
 
@@ -558,14 +574,16 @@ async function status(env, ctx) {
 // ne pas re-scraper la même route/dates. Extraction heuristique du montant € le plus bas.
 async function kayakScrape(env, origin, destination, depart, ret) {
   const token = env.SCRAPEDO_TOKEN;
-  if (!token || !origin || !destination || !depart) return null;
+  const none = { price: null, url: null, requested: false };
+  if (!token || !origin || !destination || !depart) return none;
   const path = `${origin}-${destination}/${depart}` + (ret ? `/${ret}` : "");
   const kayakUrl = `https://www.kayak.fr/flights/${path}?sort=price_a`;
   const api = "https://api.scrape.do/?token=" + encodeURIComponent(token)
             + "&url=" + encodeURIComponent(kayakUrl) + "&render=true";
   try {
     const r = await fetch(api, { headers: { Accept: "text/html" } });
-    if (!r.ok) return null;
+    // requête envoyée = crédits scrape.do consommés (facturés même sans prix exploitable)
+    if (!r.ok) return { price: null, url: kayakUrl, requested: true };
     const html = await r.text();
     // Tous les montants "N €" plausibles pour un vol → on garde le plus petit.
     // Gère les séparateurs de milliers (espace normal/insécable/fine, point, virgule).
@@ -576,10 +594,10 @@ async function kayakScrape(env, origin, destination, depart, ret) {
       const n = parseInt(m[1].replace(/[ \u00a0\u202f.,]/g, ""), 10);
       if (Number.isFinite(n) && n >= 20 && n <= 5000) prices.push(n);
     }
-    if (!prices.length) return null;
+    if (!prices.length) return { price: null, url: kayakUrl, requested: true };
     prices.sort((a, b) => a - b);
-    return { price: prices[0], url: kayakUrl };
-  } catch (_) { return null; }
+    return { price: prices[0], url: kayakUrl, requested: true };
+  } catch (_) { return { price: null, url: kayakUrl, requested: false }; }
 }
 
 export async function onRequest(context) {
@@ -672,28 +690,57 @@ export async function onRequest(context) {
   }
 
   if (st.exhausted) {
-    // secours 1 : Kayak en direct via scrape.do (crédits scrape.do, ~1000/mois) — prix estimé.
-    // Souvent bloqué par l'anti-bot de Kayak → renvoie null et on bascule sur Aviasales.
+    const led0 = ledger(env);
+
+    // secours 1 : Sky Scrapper (3ᵉ fournisseur) s'il reste du budget — prix réel réservable.
+    // Essayé AVANT scrape.do : scrape.do ne doit passer qu'APRÈS les trois fournisseurs.
+    const skyNeed = ret ? 2 : 1;
+    if (st.sky?.configured && st.sky.available && st.sky.left >= skyNeed) {
+      try {
+        const sky = await callSkyScrapper(env, origin, destination, depart, ret);
+        if (sky.calls) await led0.bump("skyscrapper", sky.calls);
+        if (sky.offers && sky.offers.length) {
+          const b = [...sky.offers].sort((a, c) => a.price - c.price)[0];
+          const out = { configured: true, origin, destination, depart, return: ret || null,
+                        price: Math.round(b.price), stops: b.stops ?? null, duration: b.duration ?? null,
+                        airlines: b.airlines || [], url: null, cheapest_source: "sky",
+                        exhausted: true, quota: await status(env, context),
+                        note: "quotas Google épuisés — prix via Sky Scrapper (réservable)" };
+          context.waitUntil(caches.default.put(ck, new Response(JSON.stringify(out), {
+            headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${ttl}` }
+          })));
+          return json(out);
+        }
+      } catch (_) { /* Sky échoue → on tente scrape.do */ }
+    }
+
+    // secours 2 : Kayak en direct via scrape.do (crédits scrape.do) — prix estimé.
+    // Souvent bloqué par l'anti-bot de Kayak → pas de prix, on bascule sur Aviasales.
     const ky = await kayakScrape(env, origin, destination, depart, ret);
-    if (ky && ky.price != null) {
+    // décompte des crédits scrape.do (~5/appel render) dès qu'une requête part, puis
+    // on recalcule le quota pour que l'app affiche le bon reste sur 1000.
+    const st2 = ky.requested
+      ? (await led0.bump("scrapedo", parseInt(env.SCRAPEDO_CREDITS_PER_CALL || "5", 10)), await status(env, context))
+      : await status(env, context);
+    if (ky.price != null) {
       const out = { configured: true, price: ky.price, stops: null, duration: null,
                     url: ky.url, cheapest_source: "kayak", scraped: true, indicative: true,
-                    live_price: null, tp_price: null, exhausted: true, quota: st,
-                    note: "quota Google épuisé — prix Kayak récupéré en direct (estimation, à confirmer)" };
+                    live_price: null, tp_price: null, exhausted: true, quota: st2,
+                    note: "quotas Google et Sky épuisés — prix Kayak récupéré en direct (estimation, à confirmer)" };
       context.waitUntil(caches.default.put(ck, new Response(JSON.stringify(out), {
         headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${ttl}` }
       })));
       return json(out);
     }
-    // secours 2 : Aviasales indicatif (cache gratuit)
+    // secours 3 : Aviasales indicatif (cache gratuit) — dernier recours
     const tp = await tpPrice(env, origin, destination, depart, ret);
     if (tp && tp.price != null)
       return json({ configured: true, price: tp.price, stops: tp.transfers, duration: tp.duration,
                     url: tp.url, cheapest_source: "aviasales", indicative: true,
                     tp_price: tp.price, live_price: null,
-                    exhausted: true, quota: st,
-                    note: "quota Google épuisé — prix Aviasales indicatif (cache, à confirmer)" });
-    return json({ configured: true, price: null, exhausted: true, quota: st,
+                    exhausted: true, quota: st2,
+                    note: "tous les fournisseurs épuisés — prix Aviasales indicatif (cache, à confirmer)" });
+    return json({ configured: true, price: null, exhausted: true, quota: st2,
                   note: "quota live épuisé pour ce mois — les prix affichés restent ceux du cache Aviasales" });
   }
 
