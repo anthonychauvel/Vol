@@ -700,8 +700,6 @@
   .rd-deal .cmplinks{margin-top:7px}
   .rdz-empty{padding:9px 14px 12px;font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5}
   .rdz-links{padding:8px 14px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .rd-cruise{display:inline-flex;align-items:center;gap:5px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:7px 11px;font-size:12px;text-decoration:none}
-  .rd-cruise:hover{border-color:var(--brass-rim)}
   .rd-winbtn{background:var(--panel-2);border:1px solid var(--brass-rim);color:var(--amber);border-radius:10px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:var(--sans)}
   .rd-winbtn:disabled{opacity:.5;cursor:default}
   .rd-wins{padding:0 14px}
@@ -2948,12 +2946,11 @@ loadCityNames();
       départ/retour et les SEMAINES (paires/impaires), les ponts & fériés, direct et/ou
       avec escale. Pour chaque zone le Radar remonte les baisses ET les « bonnes affaires »
       qui rentrent dans tes fenêtres, avec les liens Skyscanner / Kayak / Booking /
-      Aviasales, le prix réel ⚡ et une recherche croisières. Option notifications.
+      Aviasales, le prix réel ⚡. Option notifications.
 
    Limites assumées : ça se déclenche à l'OUVERTURE de l'app (pas de push serveur : ce
    projet n'a volontairement aucun backend payant). La fraîcheur reste celle du cache
-   (≤ 7 j) — le ⚡ dans chaque ligne reste le juge avant de réserver. Les croisières n'ont
-   pas d'API prix gratuite : on ouvre une recherche pré-remplie, pas un suivi de prix. */
+   (≤ 7 j) — le ⚡ dans chaque ligne reste le juge avant de réserver. */
 window.Radar=(()=>{
   const LANES_KEY="escale:radar:lanes:v1";
   const ZONES_KEY="escale:radar:zones:v1";
@@ -3001,7 +2998,7 @@ window.Radar=(()=>{
     const first=monthsList()[1]||monthsList()[0];  // mois prochain par défaut
     return {id:newId(),label:"Nouvelle zone",origins:(origin?[origin.code]:[]),
       oneway:!!oneWay,months:first?[first.ym]:[],dowOut:[],parOut:"all",
-      dowRet:[],parRet:"all",ponts:false,stops:"all",cruise:false,enabled:true};
+      dowRet:[],parRet:"all",ponts:false,stops:"all",enabled:true};
   }
 
   /* ---------- dates : jours fériés France (client, sans réseau), parité, ponts ---------- */
@@ -3074,14 +3071,7 @@ window.Radar=(()=>{
     items.push(`<a class="cgo alt" href="https://www.booking.com/flights/index.html?${bp.toString()}" target="_blank" rel="noopener">Booking</a>`);
     return `<div class="cmplinks">${items.join("")}</div>`;
   }
-  // croisières : pas d'API prix gratuite → recherche pré-remplie (fiable) plutôt que des
-  // liens profonds de comparateurs non documentés.
-  function cruiseLinks(zone){
-    const ports=zone.origins.map(o=>NAMES[o]||o).join(" ");
-    const mois=(zone.months||[]).slice(0,2).map(ym=>{const p=ym.split("-");return MOIS[(+p[1])-1]+" "+p[0];}).join(" ");
-    const q=encodeURIComponent(("croisière "+mois+(ports?" au départ de "+ports:"")).trim());
-    return `<a class="rd-cruise" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">🚢 Chercher des croisières</a>`;
-  }
+  // fenêtres ponts & fériés (à la demande, par zone) — calcul via /api/caplibre
 
   /* ---------- notifications (locales, premier plan / réouverture) ---------- */
   async function notifyPermission(){
@@ -3266,13 +3256,12 @@ window.Radar=(()=>{
       }else{
         html+='<div class="rdz-empty">Aucune affaire ne colle à tes fenêtres dans le cache pour l\'instant — élargis les jours/semaines ou change de mois.</div>';
       }
-      // liens croisières (option) + fenêtres ponts à la demande
+      // fenêtres ponts à la demande
       html+='<div class="rdz-links">';
-      if(z.cruise) html+=cruiseLinks(z);
       html+='<button class="rd-winbtn" data-win="'+z.id+'">🇫🇷 Fenêtres : ponts &amp; week-ends longs</button></div>';
       html+='<div class="rd-wins" data-wins="'+z.id+'"></div></div>';
     });
-    html+='<div class="radar-foot">Cache gratuit ≤ 7 j · touche le ⚡ pour le prix réel avant de réserver. Croisières : recherche pré-remplie (pas de suivi de prix).</div>';
+    html+='<div class="radar-foot">Cache gratuit ≤ 7 j · touche le ⚡ pour le prix réel avant de réserver.</div>';
     sec.innerHTML=html;
     bindHead(); bindResults();
   }
@@ -3366,7 +3355,7 @@ window.Radar=(()=>{
     sec.hidden=false;
     const zones=loadZones(), set=loadSet();
     let html=headHTML("réglages — zones de surveillance")+'<div class="rdset">';
-    html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app (pas de notification quand le téléphone dort : ce projet n\'a aucun serveur payant). Les prix viennent du cache gratuit — le ⚡ confirme le tarif réel. Les croisières ouvrent une recherche pré-remplie (pas de suivi de prix).</div>';
+    html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app (pas de notification quand le téléphone dort : ce projet n\'a aucun serveur payant). Les prix viennent du cache gratuit — le ⚡ confirme le tarif réel.</div>';
     // interrupteur notifications
     const nOn=set.notify && (!("Notification" in window)||Notification.permission==="granted");
     html+='<div class="rd-switch'+(nOn?" on":"")+'" id="rdNotify"><span class="dot"></span><span>Notifications à l\'ouverture quand une affaire baisse</span></div>';
@@ -3391,7 +3380,6 @@ window.Radar=(()=>{
     const st=z.stops==="direct"?"direct":z.stops==="escale"?"avec escale":"direct+escale";
     const bits=[z.origins.join(", ")||"—",(z.oneway?"aller simple":"A/R"),mm||"aucun mois",dd,par,st];
     if(z.ponts)bits.push("ponts");
-    if(z.cruise)bits.push("🚢");
     return '<div class="rdzone'+(z.enabled?"":" off")+'"><div class="rdzone-head">'
       +'<b style="flex:1;color:var(--ink);font-size:13.5px">'+esc(z.label||"Zone")+'</b>'
       +'<button class="rd-mini" data-editz="'+z.id+'">Modifier</button>'
@@ -3417,12 +3405,12 @@ window.Radar=(()=>{
       +'</div><div class="rdzone-body">';
     // aéroports
     h+='<label class="rd-fld">Aéroports de départ</label><div class="rd-chiprow" id="rdOrigins">'
-      +(z.origins||[]).map(c=>'<span class="rd-chip"><b>'+c+'</b> <button data-rmorig="'+c+'">✕</button></span>').join("")
+      +(z.origins||[]).map(c=>'<span class="rd-chip"><b>'+c+'</b>'+(origName(c)?' '+esc(origName(c)):'')+' <button data-rmorig="'+c+'">✕</button></span>').join("")
       +(z.origins&&z.origins.length?"":'<span class="rdz-meta">aucun aéroport</span>')+'</div>'
       +'<div class="rd-add">'
       +(origin?'<button class="rd-mini" id="rdAddCur">+ '+origin.code+' (actuel)</button>':'')
-      +'<input id="rdOrigInput" maxlength="3" placeholder="Code IATA (BES, NTE…)">'
-      +'<button class="rd-mini" id="rdAddOrig">Ajouter</button></div>';
+      +'<input id="rdOrigInput" type="search" autocomplete="off" placeholder="Ville ou aéroport (ex. Nantes, Marrakech…)"></div>'
+      +'<div id="rdOrigAc"></div>';
     // type de trajet
     h+='<label class="rd-fld">Type de trajet</label>'
       +seg([{v:"0",label:"Aller-retour"},{v:"1",label:"Aller simple"}],z.oneway?"1":"0","oneway");
@@ -3439,10 +3427,9 @@ window.Radar=(()=>{
       h+='<label class="rd-fld">Jour de retour (idem)</label>'+dowSeg(z.dowRet,"dowRet")
         +seg([{v:"all",label:"Semaines : toutes"},{v:"even",label:"Paires"},{v:"odd",label:"Impaires"}],z.parRet,"parRet");
     }
-    // ponts + croisières
+    // ponts
     h+='<label class="rd-fld">Et aussi</label><div class="rd-chiprow">'
-      +'<button class="rd-mini'+(z.ponts?" acc":"")+'" id="rdPonts">🇫🇷 Ponts &amp; fériés</button>'
-      +'<button class="rd-mini'+(z.cruise?" acc":"")+'" id="rdCruise">🚢 Croisières</button></div>';
+      +'<button class="rd-mini'+(z.ponts?" acc":"")+'" id="rdPonts">🇫🇷 Ponts &amp; fériés</button></div>';
     // actions
     h+='<div class="rd-rowbtns"><button class="rd-mini acc" id="rdSaveZone">'+(isNew?"Créer la zone":"Enregistrer")+'</button>'
       +'<button class="rd-mini" id="rdCancelZone">Annuler</button>'
@@ -3453,6 +3440,9 @@ window.Radar=(()=>{
 
   // buffer d'édition : on modifie une copie locale, on écrit au clic « Enregistrer »
   let _edit=null;
+  // noms lisibles des aéroports/villes ajoutés par recherche (affichage des puces)
+  let _origNames={};
+  function origName(c){ return NAMES[c]||_origNames[c]||""; }
   function bindSettings(){
     const notify=document.getElementById("rdNotify");
     if(notify)notify.onclick=async()=>{
@@ -3471,10 +3461,22 @@ window.Radar=(()=>{
     if(!_edit) _edit = editing==="new"?zoneDefault():JSON.parse(JSON.stringify(loadZones().find(z=>z.id===editing)||zoneDefault()));
     const lab=document.getElementById("rdLabel"); if(lab)lab.oninput=()=>{_edit.label=lab.value;};
     const addCur=document.getElementById("rdAddCur"); if(addCur)addCur.onclick=()=>{ if(origin&&!_edit.origins.includes(origin.code)){_edit.origins.push(origin.code);} redrawEditor(); };
-    const inp=document.getElementById("rdOrigInput"), addO=document.getElementById("rdAddOrig");
-    const doAdd=()=>{ if(!inp)return; const v=(inp.value||"").toUpperCase().replace(/[^A-Z]/g,"").slice(0,3); if(v.length===3&&!_edit.origins.includes(v)){_edit.origins.push(v);} inp.value=""; redrawEditor(); };
-    if(addO)addO.onclick=doAdd;
-    if(inp)inp.onkeydown=e=>{ if(e.key==="Enter"){e.preventDefault();doAdd();} };
+    const inp=document.getElementById("rdOrigInput"), ac=document.getElementById("rdOrigAc");
+    let _acTok=0,_acTimer=null;
+    const addCode=(code,name)=>{ code=(code||"").toUpperCase(); if(code&&!_edit.origins.includes(code)&&_edit.origins.length<5){ _edit.origins.push(code); if(name)_origNames[code]=name; } };
+    if(inp)inp.oninput=()=>{
+      const q=(inp.value||"").trim(); clearTimeout(_acTimer);
+      if(q.length<2){ if(ac)ac.innerHTML=""; return; }
+      const tok=++_acTok; if(ac)ac.innerHTML='<div class="acsug"><div class="acbusy">recherche dans le monde…</div></div>';
+      _acTimer=setTimeout(async()=>{
+        const res=await acSearch(q); if(tok!==_acTok||!ac)return;
+        const have=new Set(_edit.origins); const list=res.filter(p=>!have.has(p.code)).slice(0,6);
+        if(!list.length){ ac.innerHTML='<div class="acsug"><div class="acbusy">aucun résultat pour « '+esc(q)+' »</div></div>'; return; }
+        ac.innerHTML='<div class="acsug"><div class="achd">Ajouter à la zone (monde entier)</div>'+list.map(p=>acRow(p,"aéroport de départ")).join("")+'</div>';
+        ac.querySelectorAll(".acrow").forEach(el=>{ const p=list.find(x=>x.code===el.dataset.code); el.onclick=()=>{ addCode(el.dataset.code,p&&p.city); redrawEditor(); }; });
+      },220);
+    };
+    if(inp)inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); const v=(inp.value||"").toUpperCase().replace(/[^A-Z]/g,"").slice(0,3); if(v.length===3)addCode(v); inp.value=""; if(ac)ac.innerHTML=""; redrawEditor(); } };
     document.querySelectorAll("[data-rmorig]").forEach(b=>b.onclick=()=>{ _edit.origins=_edit.origins.filter(c=>c!==b.dataset.rmorig); redrawEditor(); });
     // segments à sélection unique
     document.querySelectorAll('[data-seg]').forEach(box=>{
@@ -3504,7 +3506,6 @@ window.Radar=(()=>{
       else _edit.months=_edit.months.filter(x=>x!==ym);
     });
     const ponts=document.getElementById("rdPonts"); if(ponts)ponts.onclick=()=>{ _edit.ponts=!_edit.ponts; ponts.classList.toggle("acc",_edit.ponts); };
-    const cruise=document.getElementById("rdCruise"); if(cruise)cruise.onclick=()=>{ _edit.cruise=!_edit.cruise; cruise.classList.toggle("acc",_edit.cruise); };
     const save=document.getElementById("rdSaveZone"); if(save)save.onclick=saveEditor;
     const cancel=document.getElementById("rdCancelZone"); if(cancel)cancel.onclick=()=>{ editing=null;_edit=null; renderSettings(); };
     const del=document.getElementById("rdDeleteZone"); if(del)del.onclick=()=>{ const zs=loadZones().filter(z=>z.id!==del.dataset.delz); saveZones(zs); try{localStorage.removeItem(SNAP_KEY("z:"+del.dataset.delz));}catch(_){} editing=null;_edit=null; renderSettings(); };
@@ -3516,7 +3517,7 @@ window.Radar=(()=>{
     // reconstruit tout le panneau réglages mais l'éditeur lit _edit
     const zones=loadZones(), set=loadSet();
     let html=headHTML("réglages — zones de surveillance")+'<div class="rdset">';
-    html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app (pas de notification quand le téléphone dort). Le ⚡ confirme le tarif réel. Croisières : recherche pré-remplie.</div>';
+    html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app (pas de notification quand le téléphone dort). Le ⚡ confirme le tarif réel.</div>';
     const nOn=set.notify && (!("Notification" in window)||Notification.permission==="granted");
     html+='<div class="rd-switch'+(nOn?" on":"")+'" id="rdNotify"><span class="dot"></span><span>Notifications à l\'ouverture quand une affaire baisse</span></div>';
     zones.forEach(z=>{ html+=(editing===z.id)?zoneEditor(_edit):zoneSummary(z); });
