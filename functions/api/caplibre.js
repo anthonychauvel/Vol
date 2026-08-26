@@ -82,6 +82,7 @@ async function monthPrices(env, origin, destination, month, oneway) {
           price: o.price,
           transfers: o.transfers ?? null,
           duration: o.duration ?? null,
+          airline: o.airline || null,
           return_at: o.return_at || null,
           link: o.link ? "https://www.aviasales.com" + o.link : null
         };
@@ -163,7 +164,7 @@ export async function onRequest(context) {
       const x = days[date];
       (byDay[date] = byDay[date] || []).push({
         dest: d, from: o, price: x.price, transfers: x.transfers,
-        duration: x.duration, link: x.link, return_at: x.return_at
+        duration: x.duration, link: x.link, return_at: x.return_at, airline: x.airline
       });
     }
   }
