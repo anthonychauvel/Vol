@@ -707,7 +707,7 @@
   .rd-ppresets{display:flex;gap:6px;flex-wrap:wrap;margin:0 2px 10px}
   .rd-ppresets button{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer;font-family:var(--mono)}
   .rd-ppresets button:hover{border-color:var(--brass-rim);color:var(--ink)}
-  .rd-watch{background:none;border:none;color:var(--muted);font-size:15px;cursor:pointer;padding:0 3px 0 0;line-height:1;vertical-align:middle}
+  .rd-watch{background:none;border:none;color:var(--muted);font-size:19px;cursor:pointer;padding:2px 8px 2px 0;line-height:1;vertical-align:middle}
   .rd-watch.on{color:var(--amber)}
   .rdz-filters{font-family:var(--mono);font-size:10.5px;color:var(--muted);padding:1px 2px 9px;line-height:1.55}
   .rdz-links{padding:8px 14px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -1631,13 +1631,6 @@ function bookingFlightURL(from,to,depOv,retOv){
   if(d){p.set("depart",d);if(!oneWay&&r)p.set("return",r);}
   return "https://www.booking.com/flights/index.html?"+p.toString();
 }
-// Cdiscount Voyages : pas d'URL de recherche datée publique → page-route SEO (départ France).
-// Best-effort (peut ne pas exister pour une route rare), sans date — à vérifier, comme Booking.
-function cdiscountFlightURL(from,to){
-  if(!from||!to)return "";
-  const o=from.toLowerCase(), d=to.toLowerCase();
-  return `https://www.cdiscount.com/voyages/vol/fl-dep-fr/dep-${o}/${o}-${d}.html`;
-}
 // aviaLink = lien réel Aviasales (c.link/r.link) si connu. withSky=false quand un gros
 // bouton "Chercher" Skyscanner dédié existe déjà juste à côté (évite le doublon).
 // depOv/retOv optionnels (voir plus haut) : passés par Cap Libre pour la date de la fenêtre.
@@ -1647,7 +1640,6 @@ function cmpLinksHtml(from,to,aviaLink,withSky,depOv,retOv){
   const k=kayakURL(from,to,false,depOv,retOv);if(k)items.push(`<a class="cgo" href="${k}" target="_blank" rel="noopener">Kayak</a>`);
   if(aviaLink)items.push(`<a class="cgo" href="${aviaLink}" target="_blank" rel="noopener">Aviasales</a>`);
   const bk=bookingFlightURL(from,to,depOv,retOv);if(bk)items.push(`<a class="cgo alt" href="${bk}" target="_blank" rel="noopener">Booking</a>`);
-  const cd=cdiscountFlightURL(from,to);if(cd)items.push(`<a class="cgo alt" href="${cd}" target="_blank" rel="noopener">Cdiscount</a>`);
   if(from&&to)items.push(`<span class="cgo alt calpick" data-calfrom="${from}" data-calto="${to}">📅 dates flexibles</span>`);
   return items.length?`<div class="cmplinks">${items.join("")}</div>`:"";
 }
@@ -3122,7 +3114,6 @@ window.Radar=(()=>{
     const bp=new URLSearchParams({type:ow?"ONEWAY":"ROUNDTRIP",from:`${from}.AIRPORT`,to:`${to}.AIRPORT`,adults:"1",cabinClass:"ECONOMY"});
     if(depDate){bp.set("depart",depDate);if(!ow&&retDate)bp.set("return",retDate);}
     items.push(`<a class="cgo alt" href="https://www.booking.com/flights/index.html?${bp.toString()}" target="_blank" rel="noopener">Booking</a>`);
-    const cd=cdiscountFlightURL(from,to);if(cd)items.push(`<a class="cgo alt" href="${cd}" target="_blank" rel="noopener">Cdiscount</a>`);
     return `<div class="cmplinks">${items.join("")}</div>`;
   }
   // fenêtres ponts & fériés (à la demande, par zone) — calcul via /api/caplibre
@@ -3459,6 +3450,13 @@ window.Radar=(()=>{
     html+='<div class="rd-switch'+(nOn?" on":"")+'" id="rdNotify"><span class="dot"></span><span>Notifications à l\'ouverture quand une affaire baisse</span></div>';
     if("Notification" in window && Notification.permission==="denied")
       html+='<div class="rd-note">Les notifications sont bloquées au niveau du navigateur/système. Autorise Escale dans les réglages du téléphone (l\'app doit être ajoutée à l\'écran d\'accueil sur iPhone).</div>';
+    // destinations surveillées (globales) : ajout rapide par recherche + puces à retirer
+    const watch=loadWatch();
+    html+='<label class="rd-fld" style="margin-top:4px">★ Destinations surveillées <span style="font-weight:400;color:var(--muted)">— épinglées en tête des résultats</span></label>';
+    html+='<div class="rd-chiprow" id="rdWatchChips">'
+      +(watch.length?watch.map(c=>'<span class="rd-chip"><b>'+c+'</b>'+(NAMES[c]?' '+esc(NAMES[c]):'')+' <button data-rmwatch="'+c+'">✕</button></span>').join(""):'<span class="rdz-meta">aucune — ajoute-en ci-dessous ou touche l\'étoile ☆ d\'un résultat</span>')
+      +'</div>';
+    html+='<div class="rd-add"><input id="rdWatchInput" type="search" autocomplete="off" placeholder="Ville ou aéroport à surveiller (ex. Porto, Athènes…)"></div><div id="rdWatchAc"></div>';
     // zones
     if(!zones.length && editing!=="new")
       html+='<div class="rdz-empty" style="margin:12px 0">Aucune zone pour l\'instant.</div>';
@@ -3567,6 +3565,22 @@ window.Radar=(()=>{
     };
     const add=document.getElementById("rdAddZone"); if(add)add.onclick=()=>{ editing="new"; _edit=zoneDefault(); renderSettings(); };
     const back=document.getElementById("rdBackRes"); if(back)back.onclick=()=>{ editing=null;_edit=null; view="results"; renderResults(); rescan(); };
+    // destinations surveillées : recherche mondiale (même moteur que les aéroports) + retrait
+    const wInp=document.getElementById("rdWatchInput"), wAc=document.getElementById("rdWatchAc");
+    let _wTok=0,_wTimer=null;
+    if(wInp)wInp.oninput=()=>{
+      const q=(wInp.value||"").trim(); clearTimeout(_wTimer);
+      if(q.length<2){ if(wAc)wAc.innerHTML=""; return; }
+      const tok=++_wTok; if(wAc)wAc.innerHTML='<div class="acsug"><div class="acbusy">recherche dans le monde…</div></div>';
+      _wTimer=setTimeout(async()=>{
+        const res=await acSearch(q); if(tok!==_wTok||!wAc)return;
+        const have=new Set(loadWatch()); const list=res.filter(p=>!have.has(p.code)).slice(0,6);
+        if(!list.length){ wAc.innerHTML='<div class="acsug"><div class="acbusy">aucun résultat</div></div>'; return; }
+        wAc.innerHTML='<div class="acsug"><div class="achd">Ajouter à surveiller</div>'+list.map(p=>acRow(p,"destination surveillée")).join("")+'</div>';
+        wAc.querySelectorAll(".acrow").forEach(el=>{ const p=list.find(x=>x.code===el.dataset.code); el.onclick=()=>{ const w=loadWatch(); if(!w.includes(el.dataset.code)){ w.push(el.dataset.code); if(p&&p.city&&!NAMES[el.dataset.code])NAMES[el.dataset.code]=p.city; jset(WATCH_KEY,w); } renderSettings(); }; });
+      },220);
+    };
+    document.querySelectorAll("[data-rmwatch]").forEach(b=>b.onclick=()=>{ toggleWatch(b.dataset.rmwatch); renderSettings(); });
     document.querySelectorAll("[data-editz]").forEach(b=>b.onclick=()=>{ editing=b.dataset.editz; _edit=JSON.parse(JSON.stringify(loadZones().find(z=>z.id===editing)||zoneDefault())); renderSettings(); });
     document.querySelectorAll("[data-togglez]").forEach(b=>b.onclick=()=>{ const zs=loadZones(); const z=zs.find(x=>x.id===b.dataset.togglez); if(z){z.enabled=!z.enabled;saveZones(zs);} renderSettings(); });
     if(editing!=null) bindEditor();
