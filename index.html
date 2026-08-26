@@ -3037,7 +3037,7 @@ window.Radar=(()=>{
     const first=monthsList()[1]||monthsList()[0];  // mois prochain par défaut
     return {id:newId(),label:"Nouvelle zone",origins:(origin?[origin.code]:[]),
       oneway:!!oneWay,months:first?[first.ym]:[],dowOut:[],parOut:"all",
-      dowRet:[],parRet:"all",ponts:false,stops:"all",enabled:true};
+      dowRet:[],parRet:"all",ponts:false,stops:"all",sameWeek:false,enabled:true};
   }
 
   /* ---------- dates : jours fériés France (client, sans réseau), parité, ponts ---------- */
@@ -3392,7 +3392,7 @@ window.Radar=(()=>{
       const q=new URLSearchParams({origins:origins.join(","),dests:dests.join(","),month,oneway:zone.oneway?"1":"0",nights:"3"});
       if(zone.dowOut&&zone.dowOut.length)q.set("dowOut",zone.dowOut.join(","));
       if(zone.parOut!=="all")q.set("parOut",zone.parOut==="even"?"even":zone.parOut==="odd"?"odd":zone.parOut);
-      if(!zone.oneway){ if(zone.dowRet&&zone.dowRet.length)q.set("dowRet",zone.dowRet.join(",")); if(zone.parRet!=="all")q.set("parRet",zone.parRet); }
+      if(!zone.oneway){ if(zone.dowRet&&zone.dowRet.length)q.set("dowRet",zone.dowRet.join(",")); if(zone.parRet!=="all")q.set("parRet",zone.parRet); if(zone.sameWeek)q.set("sameWeek","1"); }
       if(zone.ponts)q.set("ponts","1");
       const j=await (await fetch(`${API_BASE}/api/caplibre?`+q.toString())).json();
       const wins=(j.windows||[]).slice(0,6);
@@ -3502,7 +3502,8 @@ window.Radar=(()=>{
     // jour + semaine de retour (si A/R)
     if(!z.oneway){
       h+='<label class="rd-fld">Jour de retour (idem)</label>'+dowSeg(z.dowRet,"dowRet")
-        +seg([{v:"all",label:"Semaines : toutes"},{v:"even",label:"Paires"},{v:"odd",label:"Impaires"}],z.parRet,"parRet");
+        +seg([{v:"all",label:"Semaines : toutes"},{v:"even",label:"Paires"},{v:"odd",label:"Impaires"}],z.parRet,"parRet")
+        +'<div class="rd-chiprow"><button class="rd-mini'+(z.sameWeek?" acc":"")+'" id="rdSameWeek">📅 Départ &amp; retour la même semaine</button></div>';
     }
     // ponts
     h+='<label class="rd-fld">Et aussi</label><div class="rd-chiprow">'
@@ -3590,6 +3591,7 @@ window.Radar=(()=>{
       else _edit.months=_edit.months.filter(x=>x!==ym);
     });
     const ponts=document.getElementById("rdPonts"); if(ponts)ponts.onclick=()=>{ _edit.ponts=!_edit.ponts; ponts.classList.toggle("acc",_edit.ponts); };
+    const sameWk=document.getElementById("rdSameWeek"); if(sameWk)sameWk.onclick=()=>{ _edit.sameWeek=!_edit.sameWeek; sameWk.classList.toggle("acc",_edit.sameWeek); };
     const save=document.getElementById("rdSaveZone"); if(save)save.onclick=saveEditor;
     const cancel=document.getElementById("rdCancelZone"); if(cancel)cancel.onclick=()=>{ editing=null;_edit=null; renderSettings(); };
     const del=document.getElementById("rdDeleteZone"); if(del)del.onclick=()=>{ const zs=loadZones().filter(z=>z.id!==del.dataset.delz); saveZones(zs); try{localStorage.removeItem(SNAP_KEY("z:"+del.dataset.delz));}catch(_){} editing=null;_edit=null; renderSettings(); };
