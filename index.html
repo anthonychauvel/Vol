@@ -709,6 +709,24 @@
   .rd-ppresets button:hover{border-color:var(--brass-rim);color:var(--ink)}
   .rd-watch{background:none;border:none;color:var(--muted);font-size:19px;cursor:pointer;padding:2px 8px 2px 0;line-height:1;vertical-align:middle}
   .rd-watch.on{color:var(--amber)}
+  .alnk{color:var(--amber);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+  #recentRow:not(:empty){margin:2px 0 12px}
+  .recent-hd{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .recent-chips{display:flex;gap:7px;flex-wrap:wrap}
+  .recent-chip{background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 11px;font-size:12.5px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .recent-chip:hover{border-color:var(--brass-rim)}
+  .recent-chip b{color:var(--amber);font-family:var(--mono)}
+  .recent-x{color:var(--muted);font-size:11px;padding-left:2px}
+  .recent-x:hover{color:var(--oxblood)}
+  .rd-xlegs{padding:2px 12px 10px;display:flex;flex-direction:column;gap:6px}
+  .rd-xleg{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+  .rd-xleg .rd-xlo{font-family:var(--mono);color:var(--amber);min-width:34px}
+  .rd-xleg .rd-xlp{color:var(--ink)}
+  .cal-verdict{margin-top:12px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--panel-2);font-size:12.5px;color:var(--muted);line-height:1.65;text-align:left}
+  .cal-verdict b{color:var(--ink)}
+  .cal-spark svg{display:block;background:var(--panel-2);border:1px solid var(--line);border-radius:11px}
+  .cal-spark-cap{font-size:11px;color:var(--muted);margin-top:5px;text-align:center;font-family:var(--mono)}
+  .cal-spark-cap b{color:var(--green)}
   .rdz-filters{font-family:var(--mono);font-size:10.5px;color:var(--muted);padding:1px 2px 9px;line-height:1.55}
   .rdz-links{padding:8px 14px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
   .rd-winbtn{background:var(--panel-2);border:1px solid var(--brass-rim);color:var(--amber);border-radius:10px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:var(--sans)}
@@ -956,6 +974,7 @@
       <button class="clr" id="destClear" aria-label="Effacer">×</button>
     </div>
     <div id="destAc"></div>
+    <div id="recentRow"></div>
     <div class="dests" id="dests"></div>
     <div class="note" id="calNote">
       <b>Touche une destination</b> pour ouvrir son <b>calendrier de prix</b> : chaque jour est coloré du moins cher (vert) au plus cher (rouge), et les jours <b>en vert entouré = vol direct</b> (le plus court). Le champ de recherche accepte <b>n'importe quelle ville du monde</b> : elle s'ajoute à ta liste et y reste. Idem pour le <b>départ</b>. <b>Durées</b> estimées à vol d'oiseau ; <b>prix</b> indicatifs (cache ≤ 7 j). Le bouton <b>Chercher</b> ouvre la recherche de vols. Le bouton <b>⚡</b> va chercher le <b>tarif réel du moment</b> pour tes dates — quota limité, donc uniquement sur appui.
@@ -1251,6 +1270,48 @@ const AIRLINES={
   VN:"Vietnam Airlines", AV:"Avianca", LA:"LATAM", CM:"Copa", AM:"Aeroméxico", G3:"Gol", AD:"Azul"
 };
 function airlineName(code){ if(!code)return ""; code=String(code).toUpperCase(); return AIRLINES[code]||code; }
+// sites officiels des compagnies (clic sur le nom → site de la compagnie)
+const AIRLINE_URL={
+  AF:"https://www.airfrance.fr", TO:"https://www.transavia.com", HV:"https://www.transavia.com",
+  FR:"https://www.ryanair.com", U2:"https://www.easyjet.com", VY:"https://www.vueling.com",
+  V7:"https://www.volotea.com", W6:"https://wizzair.com", W9:"https://wizzair.com", W4:"https://wizzair.com",
+  PC:"https://www.flypgs.com", EW:"https://www.eurowings.com", DE:"https://www.condor.com",
+  LS:"https://www.jet2.com", BY:"https://www.tui.co.uk", X3:"https://www.tuifly.com",
+  KL:"https://www.klm.com", LH:"https://www.lufthansa.com", BA:"https://www.britishairways.com",
+  IB:"https://www.iberia.com", I2:"https://www.iberia.com", LX:"https://www.swiss.com",
+  OS:"https://www.austrian.com", SN:"https://www.brusselsairlines.com", TP:"https://www.flytap.com",
+  AZ:"https://www.ita-airways.com", AY:"https://www.finnair.com", SK:"https://www.flysas.com",
+  LO:"https://www.lot.com", A3:"https://en.aegeanair.com", TK:"https://www.turkishairlines.com",
+  DY:"https://www.norwegian.com", SU:"https://www.aeroflot.ru", XK:"https://www.aircorsica.com",
+  SS:"https://www.flycorsair.com", BF:"https://www.frenchbee.com", UU:"https://www.airaustral.com",
+  TX:"https://www.aircaraibes.com", AT:"https://www.royalairmaroc.com", TU:"https://www.tunisair.com",
+  BJ:"https://www.nouvelair.com", AH:"https://www.airalgerie.dz", MS:"https://www.egyptair.com",
+  EK:"https://www.emirates.com", QR:"https://www.qatarairways.com", EY:"https://www.etihad.com",
+  SV:"https://www.saudia.com", WY:"https://www.omanair.com", GF:"https://www.gulfair.com",
+  RJ:"https://www.rj.com", ME:"https://www.mea.com.lb", LY:"https://www.elal.com", XY:"https://www.flynas.com",
+  DL:"https://www.delta.com", UA:"https://www.united.com", AA:"https://www.aa.com",
+  AC:"https://www.aircanada.com", ET:"https://www.ethiopianairlines.com", KQ:"https://www.kenya-airways.com",
+  SA:"https://www.flysaa.com", DT:"https://www.taag.com", AI:"https://www.airindia.com",
+  SQ:"https://www.singaporeair.com", CX:"https://www.cathaypacific.com", QF:"https://www.qantas.com",
+  NH:"https://www.ana.co.jp", JL:"https://www.jal.com", CA:"https://www.airchina.com",
+  MU:"https://www.ceair.com", CZ:"https://www.csair.com", KE:"https://www.koreanair.com",
+  OZ:"https://flyasiana.com", TG:"https://www.thaiairways.com", MH:"https://www.malaysiaairlines.com",
+  VN:"https://www.vietnamairlines.com", AV:"https://www.avianca.com", LA:"https://www.latamairlines.com",
+  CM:"https://www.copaair.com", AM:"https://www.aeromexico.com", G3:"https://www.voegol.com.br", AD:"https://www.voeazul.com.br"
+};
+// nom de compagnie cliquable (span, jamais un <a> → pas de lien imbriqué dans les lignes-liens)
+function airlineChip(code){
+  if(!code)return "";
+  code=String(code).toUpperCase();
+  const nm=AIRLINES[code]||code, url=AIRLINE_URL[code];
+  return url?'<span class="alnk" data-alurl="'+url+'" title="Site '+nm+'">'+nm+'</span>':nm;
+}
+// un seul écouteur délégué (capture) : clic sur un nom de compagnie → ouvre son site,
+// sans déclencher le lien de la ligne qui l'entoure.
+document.addEventListener("click",function(e){
+  const el=e.target.closest&&e.target.closest(".alnk");
+  if(el&&el.dataset.alurl){ e.preventDefault(); e.stopPropagation(); window.open(el.dataset.alurl,"_blank","noopener"); }
+},true);
 DESTS.forEach(d=>NAMES[d.i]=d.n);
 Object.assign(NAMES,{PAR:"Paris",LON:"Londres",BCN:"Barcelone",MAD:"Madrid",OPO:"Porto",LIS:"Lisbonne",
   DUB:"Dublin",AMS:"Amsterdam",BRU:"Bruxelles",CPH:"Copenhague",OSL:"Oslo",STO:"Stockholm",HEL:"Helsinki",
@@ -1281,6 +1342,26 @@ const LS_ORIGC="ESCALE_ORIG_CUSTOM_V1", LS_DESTC="ESCALE_DEST_CUSTOM_V1";
 function loadArr(k){try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:[];}catch(_){return [];}}
 function saveArr(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(_){}}
 const LS_DESTHIDE="ESCALE_DEST_HIDE_V1";
+// recherches récentes : routes (départ → destination) ouvertes récemment, accès rapide
+const LS_RECENT="ESCALE_RECENT_V1";
+function escH(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function pushRecent(from,fromCity,to,name){
+  if(!from||!to)return;
+  let r=loadArr(LS_RECENT).filter(x=>!(x.from===from&&x.to===to));
+  r.unshift({from,fromCity:fromCity||"",to,name:name||to});
+  saveArr(LS_RECENT,r.slice(0,8));
+  renderRecent();
+}
+function renderRecent(){
+  const box=document.getElementById("recentRow"); if(!box)return;
+  const r=loadArr(LS_RECENT);
+  if(!r.length){box.innerHTML="";return;}
+  box.innerHTML='<div class="recent-hd">Récent</div><div class="recent-chips">'
+    +r.map((x,i)=>'<button class="recent-chip" data-ri="'+i+'"><b>'+x.to+'</b> '+escH(x.name)+' <span class="recent-x" data-rx="'+i+'" title="Retirer">✕</span></button>').join("")
+    +'</div>';
+  box.querySelectorAll(".recent-chip").forEach(b=>b.onclick=()=>{ const x=loadArr(LS_RECENT)[+b.dataset.ri]; if(x)openPriceCal({i:x.to,n:x.name},x.from,x.fromCity); });
+  box.querySelectorAll(".recent-x").forEach(el=>el.onclick=(ev)=>{ ev.stopPropagation(); const arr=loadArr(LS_RECENT); arr.splice(+el.dataset.rx,1); saveArr(LS_RECENT,arr); renderRecent(); });
+}
 let CUSTOM_ORIG=loadArr(LS_ORIGC);   // aéroports/villes de départ ajoutés (monde)
 let CUSTOM_DEST=loadArr(LS_DESTC);   // destinations ajoutées (monde)
 let DEST_HIDE=loadArr(LS_DESTHIDE);  // destinations par défaut masquées
@@ -1388,7 +1469,7 @@ function selectApt(code){
     chips.innerHTML=`<span class="chip" style="color:var(--muted)">Desserte limitée / saisonnière — vérifie les liaisons du moment sur le site de l'aéroport.</span>`;
   }
   alBox.classList.add("show");
-  renderAirports();renderDispatch();refresh();
+  renderAirports();renderDispatch();refresh();renderRecent();
 }
 
 renderAirports();
@@ -1749,6 +1830,7 @@ document.getElementById("pNext").onclick=()=>{pView.setMonth(pView.getMonth()+1)
 let calFrom=null, calFromCity=null;
 function openPriceCal(d,fromCode,fromCity){
   calDest=d; calFrom=fromCode||(origin&&origin.code); calFromCity=fromCity||(origin&&origin.city);
+  if(calFrom&&d&&d.i)pushRecent(calFrom,calFromCity,d.i,d.n);
   pView=new Date(view.getFullYear(),view.getMonth(),1);
   document.getElementById("ovRoute").innerHTML=`${calFrom} <span class="arr">→</span> ${d.i} <span style="color:var(--muted);font-weight:500;font-size:14px">${d.n}</span>`;
   document.getElementById("ovSub").textContent=(oneWay?"Aller simple":"Aller-retour")+" · prix indicatif le moins cher par jour de départ (cache ≤ 7 j)"+(calFromCity?" · depuis "+calFromCity:"");
@@ -1785,6 +1867,61 @@ function priceColor(p,min,max){
   const t=(p-min)/(max-min),hue=120*(1-t);
   return `hsl(${hue} 55% 30%)`;
 }
+// sparkline SVG des prix par jour du mois affiché (mêmes données que le calendrier) :
+// montre d'un coup d'œil les creux et les pics. Honnête : prix PAR DATE sur le mois,
+// pas une évolution dans le temps (le cache ne garde ~7 j).
+function calSparkline(){
+  const y=pView.getFullYear(), m=pView.getMonth();
+  const dim=new Date(y,m+1,0).getDate();
+  const pts=[];
+  for(let dn=1;dn<=dim;dn++){ const o=pData[iso(new Date(y,m,dn))]; if(o&&typeof o.price==="number") pts.push({dn,price:o.price}); }
+  if(pts.length<3) return "";
+  const prices=pts.map(p=>p.price), mn=Math.min(...prices), mx=Math.max(...prices);
+  const W=320,H=66,pad=8;
+  const xf=dn=> pad + (dim>1?(dn-1)/(dim-1):0.5)*(W-2*pad);
+  const yf=pr=> mx===mn ? H/2 : (H-pad) - (pr-mn)/(mx-mn)*(H-2*pad);
+  const line=pts.map((p,i)=>(i?"L":"M")+xf(p.dn).toFixed(1)+" "+yf(p.price).toFixed(1)).join(" ");
+  const area="M"+xf(pts[0].dn).toFixed(1)+" "+(H-pad).toFixed(1)+" "+pts.map(p=>"L"+xf(p.dn).toFixed(1)+" "+yf(p.price).toFixed(1)).join(" ")+" L"+xf(pts[pts.length-1].dn).toFixed(1)+" "+(H-pad).toFixed(1)+" Z";
+  const cheap=pts.reduce((a,b)=>b.price<a.price?b:a,pts[0]);
+  const selDn=(dep && String(y)===dep.slice(0,4) && (m+1)===(+dep.slice(5,7)))?+dep.slice(8,10):null;
+  const sel=selDn?pts.find(p=>p.dn===selDn):null;
+  let dots='<circle cx="'+xf(cheap.dn).toFixed(1)+'" cy="'+yf(cheap.price).toFixed(1)+'" r="3.4" fill="var(--green)"/>';
+  if(sel) dots+='<circle cx="'+xf(sel.dn).toFixed(1)+'" cy="'+yf(sel.price).toFixed(1)+'" r="3.6" fill="none" stroke="var(--amber)" stroke-width="2"/>';
+  const mm=String(m+1).padStart(2,"0");
+  return '<div class="cal-spark"><svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'" preserveAspectRatio="none">'
+    +'<path d="'+area+'" fill="rgba(196,154,74,.10)"/>'
+    +'<path d="'+line+'" fill="none" stroke="var(--amber)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'
+    +dots+'</svg><div class="cal-spark-cap">Prix par jour du mois · creux le '+cheap.dn+'/'+mm+' à <b>'+cheap.price+'€</b>'+(sel?' · ta date '+sel.price+'€':'')+'</div></div>';
+}
+// repère "fenêtre de réservation idéale" : basé sur des repères connus (plus le trajet est
+// long, plus on réserve tôt) + le nombre de jours d'ici le départ. Honnête : ce sont des
+// repères moyens, pas une prédiction sur cette route précise.
+function bookingWindow(){
+  const y=pView.getFullYear(), m=pView.getMonth(), ym=iso(new Date(y,m,1)).slice(0,7);
+  let refDs=(dep && String(y)===dep.slice(0,4) && (m+1)===(+dep.slice(5,7)) && pData[dep])?dep:null;
+  if(!refDs){ let best=null; for(const k in pData){ if(k.slice(0,7)===ym && (!best||pData[k].price<pData[best].price)) best=k; } refDs=best; }
+  if(!refDs) return "";
+  const today=new Date(); today.setHours(0,0,0,0);
+  const dd=new Date(+refDs.slice(0,4),+refDs.slice(5,7)-1,+refDs.slice(8,10));
+  const days=Math.round((dd-today)/864e5);
+  if(days<0) return "";
+  let haul=null;
+  const mins=(calDest&&calDest.min!=null)?calDest.min:null;
+  let km=null;
+  if(origin&&origin.lat!=null&&calDest&&calDest.lat!=null) km=haversine(origin,calDest);
+  if(mins!=null) haul= mins<150?0:(mins<330?1:2);
+  else if(km!=null) haul= km<1500?0:(km<4000?1:2);
+  const specs=[{n:"court-courrier",a:3,b:8},{n:"moyen-courrier",a:6,b:12},{n:"long-courrier",a:8,b:20}];
+  const s=haul!=null?specs[haul]:{n:"ce trajet",a:4,b:12};
+  const w=Math.round(days/7);
+  let v;
+  if(days<7) v="⏰ très proche — les prix sont souvent au plus haut ; guette les invendus de dernière minute.";
+  else if(w<s.a) v="🕒 encore un peu tôt — surveille, la bonne fenêtre approche.";
+  else if(w<=s.b) v="✅ tu es dans la fenêtre idéale pour réserver.";
+  else v="⚠️ un peu tard pour l'idéal — regarde vite, ça peut encore bouger.";
+  return '<div class="cal-verdict"><b>🗓️ Réservation</b> ('+s.n+', départ dans ~'+days+' j) : fenêtre idéale <b>'+s.a+'–'+s.b+' sem.</b> avant le départ. '+v
+    +'<br><span style="color:var(--muted);font-style:italic">Astuce : mar./mer./sam. sont souvent moins chers que ven./dim.</span></div>';
+}
 function renderPriceCal(){
   const y=pView.getFullYear(),m=pView.getMonth();
   const dim=new Date(y,m+1,0).getDate();
@@ -1818,6 +1955,21 @@ function renderPriceCal(){
   if(!prices.length){
     html=`<div class="ov-status">Pas de tarif en cache pour cette route ce mois-ci. Essaie un autre mois ou une autre destination.${kLink}</div>`;
   }else{
+    html+=calSparkline();
+    // verdict « bon prix » : position du prix dans la distribution du mois (tertiles).
+    // Honnête : bon PAR RAPPORT aux autres dates du mois — pas une prédiction du futur
+    // (le cache Travelpayouts ne garde ~7 j, donc aucun historique long n'est disponible).
+    if(prices.length>=4){
+      const sorted=[...prices].sort((a,b)=>a-b);
+      const t1=sorted[Math.floor(sorted.length/3)], t2=sorted[Math.floor(sorted.length*2/3)];
+      const verdict=p=> p<=t1?'🟢 bon prix':(p<=t2?'🟠 dans la moyenne':'🔴 cher');
+      let sv='<div class="cal-verdict"><b>💶 Ce mois</b> : '+min+'€ → '+max+'€ &nbsp;·&nbsp; 🟢 ≤'+t1+'€ &nbsp; 🔴 ≥'+t2+'€';
+      const selo=(dep&&pData[dep])?pData[dep]:null;
+      if(selo) sv+='<br><b>Ta date ('+dep.slice(8,10)+'/'+dep.slice(5,7)+')</b> : '+verdict(selo.price)+' — '+selo.price+'€ '+(selo.transfers===0?'(direct)':'');
+      sv+=' <span style="color:var(--muted);font-style:italic">· comparé aux autres dates du mois</span></div>';
+      html+=sv;
+    }
+    html+=bookingWindow();
     if(prices.length<5){
       // Ce calendrier vient du cache Travelpayouts (recherches passées d'autres gens),
       // pas d'un scan en direct comme Kayak — sur une route peu recherchée (petit aéroport,
@@ -2191,7 +2343,7 @@ async function anywhereFor(code,directOnly){
     (j.results||[]).forEach(r=>{
       if(typeof r.price!=="number")return;
       if(!map[r.destination]||r.price<map[r.destination].price)
-        map[r.destination]={price:r.price,dur:r.duration_to||null,link:r.link||null,
+        map[r.destination]={price:r.price,dur:r.duration_to||null,link:r.link||null,airline:r.airline||null,
           transfers:(r.transfers==null?null:r.transfers),dep:r.departure_at||null,ret:r.return_at||null};
     });
     _anyCache[k]=map;return map;
@@ -2277,7 +2429,7 @@ function cmpCard(r,titleCode,titleName,viaText,scoreText){
     <div class="ctop"><div class="cdest">${nm}<span class="iata" style="margin-left:7px">${titleCode}</span></div>
       <div class="cprice">${r.price} €</div></div>
     <div class="cvia">${viaText}</div>
-    <div class="cmeta">${dirB}${dur}${sc}
+    <div class="cmeta">${dirB}${dur}${sc}${r.airline?`<span class="cbadge" style="text-transform:none;letter-spacing:0">${airlineChip(r.airline)}</span>`:""}
       ${LIVE_OK?`<button class="live clive" data-clive="${r.dest}" data-cfrom="${r.from}" title="Prix réel depuis ${r.from}">⚡</button>`:""}</div>
     <span class="pricelive" data-clivep="${r.dest}-${r.from}"></span>
     ${cmpLinksHtml(r.from,r.dest,r.link,true)}
@@ -2300,7 +2452,7 @@ async function renderCompare(){
     let html="";
     cmpOrigins.forEach((o,i)=>{
       const m=dmaps[i];
-      const dl=Object.keys(m).map(d=>({dest:d,from:o.code,fromCity:o.city,price:m[d].price,dur:m[d].dur,transfers:0,link:m[d].link}))
+      const dl=Object.keys(m).map(d=>({dest:d,from:o.code,fromCity:o.city,price:m[d].price,dur:m[d].dur,transfers:0,link:m[d].link,airline:m[d].airline}))
         .sort((a,b)=>a.price-b.price).slice(0,60);
       html+=`<div class="cmphead">${o.code} · ${o.city} — ${dl.length} direct${dl.length>1?"s":""}</div>`;
       html+= dl.length? dl.map(r=>cmpCard(r,r.dest,null,`direct depuis ${o.code}`,"")).join("")
@@ -2317,7 +2469,7 @@ async function renderCompare(){
   // ---- MODE 1 : destination verrouillée → quel aéroport est le moins cher ? ----
   if(cmpDestCode){
     let rows=cmpOrigins.map((o,i)=>{const c=maps[i][cmpDestCode];
-      return c?{dest:cmpDestCode,from:o.code,fromCity:o.city,price:c.price,dur:c.dur,transfers:c.transfers,link:c.link}:null;})
+      return c?{dest:cmpDestCode,from:o.code,fromCity:o.city,price:c.price,dur:c.dur,transfers:c.transfers,link:c.link,airline:c.airline}:null;})
       .filter(Boolean).filter(r=>passStops(r.transfers))
       .sort((a,b)=>stopRank(a.transfers)-stopRank(b.transfers)||a.price-b.price);
     if(!rows.length){box.innerHTML=`<div class="empty">Aucun tarif en cache vers ${cmpDestName||cmpDestCode} depuis tes aéroports. Essaie ⚡ ou d'autres dates.</div>`;return;}
@@ -2333,7 +2485,7 @@ async function renderCompare(){
   maps.forEach((m,i)=>{const code=cmpOrigins[i].code;
     for(const d in m){const c=m[d];
       if(!best[d]||c.price<best[d].price)
-        best[d]={dest:d,price:c.price,dur:c.dur,transfers:c.transfers,from:code,fromCity:cmpOrigins[i].city,link:c.link};}});
+        best[d]={dest:d,price:c.price,dur:c.dur,transfers:c.transfers,from:code,fromCity:cmpOrigins[i].city,link:c.link,airline:c.airline};}});
   let rows=Object.values(best).filter(r=>passStops(r.transfers));
   if(!rows.length){box.innerHTML='<div class="empty">Aucune desserte trouvée pour ces départs à ces dates.</div>';return;}
   const pN=normVals(rows,r=>r.price),dN=normVals(rows,r=>r.dur);
@@ -2517,7 +2669,7 @@ function clWinCard(w,isTop){
     const retDate=(!oneWay&&d.return_at)?d.return_at.slice(0,10):null;
     const liveBtn=LIVE_OK?`<button class="live cllive" data-cldest="${d.dest}" data-clfrom="${d.from}" data-cldate="${w.date}" data-clret="${retDate||""}" title="Prix réel pour ce départ">⚡</button>`:"";
     return `<div class="cld">
-      <div class="cldtop"><span class="cldcity">${nm} <small>${d.dest}</small></span>${tag}<span>${price}<small class="cldfrom">depuis ${d.from}</small></span>${liveBtn}</div>
+      <div class="cldtop"><span class="cldcity">${nm} <small>${d.dest}</small></span>${tag}<span>${price}<small class="cldfrom">depuis ${d.from}${airlineChip(d.airline)?` · ${airlineChip(d.airline)}`:""}</small></span>${liveBtn}</div>
       <span class="pricelive" data-clwlivep="${d.dest}-${d.from}-${w.date}"></span>
       ${cmpLinksHtml(d.from,d.dest,d.link,true,w.date,retDate)}
     </div>`;
@@ -2576,7 +2728,7 @@ async function renderCross(){
   }
   if(!common.length){box.innerHTML=`<div class="empty">${xDests.length?"Aucune de tes villes d'arrivée n'est en cache depuis ces départs. Essaie ⚡ sur une carte.":"Aucune destination commune trouvée. Élargis les dates ou change un départ."}</div>`;return;}
   const rows=common.map(d=>{
-    const legs=xOrigins.map((o,i)=>{const c=maps[i][d];return {code:o.code,city:o.city,price:c?c.price:null,dur:c?c.dur:null,link:c?c.link:null};});
+    const legs=xOrigins.map((o,i)=>{const c=maps[i][d];return {code:o.code,city:o.city,price:c?c.price:null,dur:c?c.dur:null,link:c?c.link:null,airline:c?c.airline:null};});
     const known=legs.map(l=>l.price).filter(x=>x!=null);
     const durs=legs.map(l=>l.dur).filter(x=>x!=null);
     return {dest:d,legs,partial:known.length<legs.length,
@@ -2592,7 +2744,7 @@ async function renderCross(){
   box.innerHTML=rows.slice(0,30).map(r=>{
     const nm=NAMES[r.dest]||r.dest;
     const legs=r.legs.map(l=>`<div class="xleg" data-xleg="${r.dest}|${l.code}"><span class="xo">${l.code} · ${l.city}</span>
-      <span class="xp" data-xp="${r.dest}|${l.code}">${l.price!=null?l.price+" €":"— ⚡"}</span><span class="xd">${l.dur!=null?fmtDur(l.dur):"—"}</span></div>
+      <span class="xp" data-xp="${r.dest}|${l.code}">${l.price!=null?l.price+" €":"— ⚡"}</span><span class="xd">${l.dur!=null?fmtDur(l.dur):"—"}${l.airline&&airlineChip(l.airline)?` · ${airlineChip(l.airline)}`:""}</span></div>
       ${cmpLinksHtml(l.code,r.dest,l.link,true)}`).join("");
     return `<div class="xcard">
       <div class="xhd"><div class="xdest">${nm}<span class="iata" style="margin-left:7px">${r.dest}</span></div>
@@ -2844,11 +2996,11 @@ async function renderStay(){
     try{
       let u=`${API_BASE}/api/prices?origin=${origin.code}&destination=${x.i}&depart=${dep}`;
       if(!oneWay&&ret)u+=`&return=${ret}`;
-      const j=await (await fetch(u)).json(); vol=j&&j.price?j.price:null;
+      const j=await (await fetch(u)).json(); vol=j&&j.price?j.price:null; _stayAl[x.i]=j&&j.airline?j.airline:null;
     }catch(_){}
     _stayVol[x.i]=vol;
     const fe=document.querySelector(`[data-stayf="${x.i}"]`);
-    if(fe){fe.className="price show";fe.innerHTML=vol?`vol dès ${vol} € <span class="lvl">(mois)</span>`:"vol —";}
+    if(fe){fe.className="price show";fe.innerHTML=vol?`vol dès ${vol} €${_stayAl[x.i]&&airlineChip(_stayAl[x.i])?` · ${airlineChip(_stayAl[x.i])}`:""} <span class="lvl">(mois)</span>`:"vol —";}
   }
 }
 // Prix hôtel « à partir de » via Booking (/api/stays), chargé UNIQUEMENT au tap —
@@ -2868,7 +3020,7 @@ async function loadStayHotel(code, x, d, nights){
   if(he)he.innerHTML=nuit?`hôtel dès ${nuit} €/nuit × ${nights} = ${nuit*nights} €`:"hôtel — indisponible pour cette ville/ces dates";
   stayTotal(code,nights);
 }
-let _stayNuit={}, _stayVol={};
+let _stayNuit={}, _stayVol={}, _stayAl={};
 function stayTotal(code,nights){
   const vol=_stayVol[code], nuit=_stayNuit[code];
   const te=document.querySelector(`[data-stayt="${code}"]`);
@@ -2916,7 +3068,7 @@ function renderAnywhere(){
     const name=NAMES[o.destination]||o.destination;
     const tr=o.transfers===0?'<span class="drc">direct</span>':(o.transfers!=null?o.transfers+" esc":"");
     const durTxt=o.duration_to!=null?fmtDur(o.duration_to):"";
-    const aln=airlineName(o.airline);
+    const aln=airlineChip(o.airline);
     const price="≈ "+o.price+" €"+(aln?" · "+aln:"")+(tr?" · "+tr:"");
     const priceHtml=o.link?`<a href="${o.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${price}</a>`:price;
     return `<div class="dest">
@@ -3037,7 +3189,7 @@ window.Radar=(()=>{
   function zoneDefault(){
     const first=monthsList()[1]||monthsList()[0];  // mois prochain par défaut
     return {id:newId(),label:"Nouvelle zone",origins:(origin?[origin.code]:[]),
-      oneway:!!oneWay,months:first?[first.ym]:[],dowOut:[],parOut:"all",
+      oneway:!!oneWay,mode:"cheapest",months:first?[first.ym]:[],dowOut:[],parOut:"all",
       dowRet:[],parRet:"all",ponts:false,stops:"all",sameWeek:false,enabled:true};
   }
 
@@ -3166,12 +3318,25 @@ window.Radar=(()=>{
     if(!origins.length) return {watched:0,movers:[],matches:[]};
     const per=await Promise.all(origins.map(o=>anyFetch(o,month,ow)));
     const best={};
-    origins.forEach((o,idx)=>per[idx].forEach(r=>{
-      if(!r.destination||r.price==null) return;
-      const cur=best[r.destination];
-      if(!cur||r.price<cur.price) best[r.destination]={price:r.price,transfers:r.transfers,link:r.link,airline:r.airline||null,
-        from:o,dep:(r.departure_at||"").slice(0,10),ret:(r.return_at||"").slice(0,10)};
-    }));
+    if(zone.mode==="cross" && origins.length>=2){
+      // Croisé : le moins cher par (origine,destination), puis SOMME sur toutes les origines
+      // (destinations accessibles à TOUS les voyageurs seulement).
+      const perBest=origins.map((o,idx)=>{ const mp={}; per[idx].forEach(r=>{ if(!r.destination||r.price==null)return;
+        if(!mp[r.destination]||r.price<mp[r.destination].price) mp[r.destination]={price:r.price,transfers:r.transfers,link:r.link,airline:r.airline||null,dep:(r.departure_at||"").slice(0,10),ret:(r.return_at||"").slice(0,10)}; }); return mp; });
+      Object.keys(perBest[0]||{}).forEach(d=>{
+        if(origins.includes(d)) return;
+        if(!perBest.every(mp=>mp[d])) return;
+        const legs=origins.map((o,idx)=>({from:o,price:perBest[idx][d].price,transfers:perBest[idx][d].transfers,link:perBest[idx][d].link,airline:perBest[idx][d].airline,dep:perBest[idx][d].dep,ret:perBest[idx][d].ret}));
+        best[d]={price:legs.reduce((a,l)=>a+l.price,0),cross:true,legs,transfers:null,airline:null,from:origins.join("+"),dep:legs[0].dep,ret:legs[0].ret,link:null};
+      });
+    }else{
+      origins.forEach((o,idx)=>per[idx].forEach(r=>{
+        if(!r.destination||r.price==null) return;
+        const cur=best[r.destination];
+        if(!cur||r.price<cur.price) best[r.destination]={price:r.price,transfers:r.transfers,link:r.link,airline:r.airline||null,
+          from:o,dep:(r.departure_at||"").slice(0,10),ret:(r.return_at||"").slice(0,10)};
+      }));
+    }
     // baisses vs snapshot propre à la zone+mois
     const sk=SNAP_KEY("z:"+zone.id+":"+month), prev=jget(sk,null), movers=[];
     const snap={};
@@ -3308,7 +3473,7 @@ window.Radar=(()=>{
         return '<a class="radar-row" data-price="'+m.price+'" href="'+(m.link||sky)+'" target="_blank" rel="noopener">'
           +'<span class="rd-city">'+wb+' '+nm+' <small>'+m.dest+'</small>'+badge+'</span>'
           +'<span class="rd-mid">'+fmtDelta(m.delta)+'</span>'
-          +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+' · '+m.month+(airlineName(m.airline)?' · '+airlineName(m.airline):'')+'</small></span></a>';
+          +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+' · '+m.month+(airlineName(m.airline)?' · '+airlineChip(m.airline):'')+'</small></span></a>';
       }).join("");
       html+='<div class="radar-sub2">Ce qui a baissé depuis ta dernière visite</div><div class="radar-list">'+rows+'</div>';
     }else if(!zoneCount){
@@ -3330,9 +3495,17 @@ window.Radar=(()=>{
           const wb='<button class="rd-watch'+(isWatched(m.dest)?' on':'')+'" data-watch="'+m.dest+'" title="Surveiller cette destination">'+(isWatched(m.dest)?'★':'☆')+'</button>';
           const live=LIVE_OK?'<button class="live rd-live" data-from="'+m.from+'" data-dest="'+m.dest+'" data-dep="'+(m.dep||"")+'" data-ret="'+(m.ret||"")+'" data-ow="'+(z.oneway?1:0)+'" title="Prix réel">⚡</button>':'';
           const dates=m.dep?(' · '+dm(m.dep)+((!z.oneway&&m.ret)?' → '+dm(m.ret):'')):'';
+          if(m.cross){
+            const legHtml=(m.legs||[]).map(l=>'<div class="rd-xleg"><span class="rd-xlo">'+l.from+'</span><span class="rd-xlp">'+l.price+' €'+(airlineChip(l.airline)?' · '+airlineChip(l.airline):'')+'</span>'
+              +radarCmpLinks(l.from,m.dest,l.dep,l.ret,l.link,!!z.oneway)+'</div>').join("");
+            return '<div class="rd-deal" data-price="'+m.price+'"><div class="rd-drow">'
+              +'<span class="rd-city">'+wb+' '+nm+' <small>'+m.dest+'</small><span class="rd-bdg">🤝 croisé</span></span>'
+              +'<span class="rd-price">total '+m.price+' €<small>'+(m.legs?m.legs.length:0)+' voyageurs</small></span></div>'
+              +'<div class="rd-xlegs">'+legHtml+'</div></div>';
+          }
           return '<div class="rd-deal" data-price="'+m.price+'"><div class="rd-drow">'
             +'<span class="rd-city">'+wb+' '+nm+' <small>'+m.dest+'</small>'+tag+bdg+'</span>'
-            +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+dates+(airlineName(m.airline)?' · '+airlineName(m.airline):'')+'</small></span>'+live+'</div>'
+            +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+dates+(airlineName(m.airline)?' · '+airlineChip(m.airline):'')+'</small></span>'+live+'</div>'
             +'<span class="pricelive" data-rdlive="'+m.dest+'-'+m.from+'-'+(m.dep||"")+'"></span>'
             +radarCmpLinks(m.from,m.dest,m.dep,m.ret,m.link,!!z.oneway)+'</div>';
         }).join("");
@@ -3429,7 +3602,7 @@ window.Radar=(()=>{
       const price=d.link?'<a class="cldprice" href="'+d.link+'" target="_blank" rel="noopener">'+d.price+' €</a>':'<span class="cldprice">'+d.price+' €</span>';
       const live=LIVE_OK?'<button class="live rd-live" data-from="'+d.from+'" data-dest="'+d.dest+'" data-dep="'+w.date+'" data-ret="'+(retDate||"")+'" data-ow="'+(zone.oneway?1:0)+'" title="Prix réel">⚡</button>':'';
       return '<div class="cld"><div class="cldtop"><span class="cldcity">'+nm+' <small>'+d.dest+'</small></span>'+tag
-        +'<span>'+price+'<small class="cldfrom">depuis '+d.from+'</small></span>'+live+'</div>'
+        +'<span>'+price+'<small class="cldfrom">depuis '+d.from+(airlineChip(d.airline)?' · '+airlineChip(d.airline):'')+'</small></span>'+live+'</div>'
         +'<span class="pricelive" data-rdlive="'+d.dest+'-'+d.from+'-'+w.date+'"></span>'
         +radarCmpLinks(d.from,d.dest,w.date,retDate,d.link,!!zone.oneway)+'</div>';
     }).join("");
@@ -3485,7 +3658,9 @@ window.Radar=(()=>{
   // résumé compact des filtres actifs d'une zone, pour l'afficher dans les résultats
   function zoneFilters(z){
     const dd=(z.dowOut&&z.dowOut.length)?z.dowOut.map(d=>DOW_LABELS[d]).join("/"):"tous jours";
-    const bits=["départ "+dd];
+    const bits=[];
+    if(z.mode==="cross")bits.push("🤝 croisé");
+    bits.push("départ "+dd);
     if(z.parOut==="even")bits.push("sem. paires"); else if(z.parOut==="odd")bits.push("sem. impaires");
     if(!z.oneway){
       const rr=(z.dowRet&&z.dowRet.length)?z.dowRet.map(d=>DOW_LABELS[d]).join("/"):null;
@@ -3514,6 +3689,10 @@ window.Radar=(()=>{
     let h='<div class="rdzone"><div class="rdzone-head">'
       +'<input class="rd-label" id="rdLabel" value="'+esc(z.label||"")+'" placeholder="Nom de la zone (ex. Ponts de printemps)">'
       +'</div><div class="rdzone-body">';
+    // type de zone : moins cher (aéroports = alternatives) ou croisé (aéroports = voyageurs)
+    h+='<label class="rd-fld">Type de zone</label>'
+      +seg([{v:"cheapest",label:"Moins cher"},{v:"cross",label:"🤝 Croisé"}],z.mode||"cheapest","mode")
+      +'<div class="rdz-meta" style="margin:-4px 2px 12px">« Croisé » = plusieurs voyageurs, chacun son aéroport → destination commune au <b>total</b> le moins cher.</div>';
     // aéroports
     h+='<label class="rd-fld">Aéroports de départ</label><div class="rd-chiprow" id="rdOrigins">'
       +(z.origins||[]).map(c=>'<span class="rd-chip"><b>'+c+'</b>'+(origName(c)?' '+esc(origName(c)):'')+' <button data-rmorig="'+c+'">✕</button></span>').join("")
