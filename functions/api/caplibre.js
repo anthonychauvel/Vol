@@ -127,6 +127,7 @@ export async function onRequest(context) {
   const parOut  = p.get("parOut")  || "all";        // all | even | odd
   const dowRet  = parseDowSet(p.get("dowRet"));      // jours de retour acceptés (ignoré si oneway)
   const parRet  = p.get("parRet")  || "all";
+  const sameWeek = p.get("sameWeek") === "1";       // retour dans la MÊME semaine ISO que le départ
   const needPonts = p.get("ponts") === "1";
   if (!origins.length || !dests.length || !/^\d{4}-\d{2}$/.test(month))
     return json({ error: "origins, dests et month (YYYY-MM) requis" }, 400);
@@ -208,10 +209,11 @@ export async function onRequest(context) {
     // contrainte jour/semaine de RETOUR : appliquée par destination (chaque tarif a
     // sa propre date de retour la moins chère), pas au niveau du jour de départ.
     let list = byDay[date];
-    if (!oneway && (dowRet || parRet !== "all")) {
+    if (!oneway && (dowRet || parRet !== "all" || sameWeek)) {
       list = list.filter(x => {
         if (!x.return_at) return false;
         const rd = x.return_at.slice(0, 10);
+        if (sameWeek && weekParity(rd).week !== week) return false;   // même semaine ISO que le départ
         if (dowRet && !dowRet.has(dowOf(rd))) return false;
         if (parRet !== "all") {
           const rp = weekParity(rd).parity;
