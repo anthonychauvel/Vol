@@ -2,7 +2,7 @@
 // - Le "shell" (page + icônes) est mis en cache → lancement instantané et hors-ligne.
 // - Les appels /api/ passent toujours par le réseau (données fraîches, jamais en cache).
 
-const CACHE = "escale-v58";
+const CACHE = "escale-v59";
 const SHELL = ["./", "./index.html", "./manifest.json",
   "./icon-192.png", "./icon-512.png",
   "./icon-maskable-192.png", "./icon-maskable-512.png", "./favicon.png"];
@@ -17,6 +17,18 @@ self.addEventListener("activate", (e) => {
       Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
+});
+
+// Push en arrière-plan (envoyé par /api/cron via VAPID). Affiche la notification même
+// quand l'app est fermée. Le corps est un JSON {title, body, url}.
+self.addEventListener("push", (e) => {
+  let d = { title: "Escale", body: "", url: "./" };
+  try { if (e.data) d = Object.assign(d, e.data.json()); }
+  catch (_) { try { if (e.data) d.body = e.data.text(); } catch (_) {} }
+  e.waitUntil(self.registration.showNotification(d.title, {
+    body: d.body, icon: "./icon-192.png", badge: "./icon-192.png",
+    tag: "escale-radar", renotify: true, data: { url: d.url || "./" }
+  }));
 });
 
 // Notifications Radar (locales, affichées via registration.showNotification depuis l'app).

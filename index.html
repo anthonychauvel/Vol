@@ -3183,7 +3183,7 @@ window.Radar=(()=>{
   const isWatched=d=>loadWatch().includes(d);
   const toggleWatch=d=>{const w=loadWatch();const i=w.indexOf(d);if(i>=0)w.splice(i,1);else w.push(d);jset(WATCH_KEY,w);};
   const dm=ds=>ds?ds.slice(8,10)+"/"+ds.slice(5,7):"";   // "2026-09-18" → "18/09"
-  const loadSet=()=>Object.assign({notify:false},jget(SET_KEY,{}));
+  const loadSet=()=>Object.assign({notify:false,push:false},jget(SET_KEY,{}));
   const saveSet=s=>jset(SET_KEY,s);
   function newId(){return "z"+Math.random().toString(36).slice(2,8);}
   function zoneDefault(){
@@ -3269,6 +3269,31 @@ window.Radar=(()=>{
     return `<div class="cmplinks">${items.join("")}</div>`;
   }
   // fenêtres ponts & fériés (à la demande, par zone) — calcul via /api/caplibre
+
+  /* ---------- notifications push en arrière-plan (VAPID + /api/push-subscribe) ---------- */
+  const VAPID_PUBLIC="BP4Er90LVafBBwwcsexGMW5de4SPyOWgnQQNE7F9pjqPBC35uFEXiecuG3KsLc30Fxhz3m1JeSkXvy55FDBpHdo";
+  const urlB64ToUint8=s=>{const pad="=".repeat((4-s.length%4)%4);const b=(s+pad).replace(/-/g,"+").replace(/_/g,"/");const raw=atob(b);const arr=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i);return arr;};
+  function buildPushConfig(){ return { zones:loadZones().map(z=>({origins:z.origins||[],months:z.months||[],oneway:!!z.oneway})), watch:loadWatch() }; }
+  async function pushGetSub(){ try{ const reg=await navigator.serviceWorker.ready; return await reg.pushManager.getSubscription(); }catch(_){ return null; } }
+  async function enableBackgroundPush(){
+    if(!("serviceWorker" in navigator)||!("PushManager" in window)){ alert("Notifications push non supportées ici. Sur iPhone, ajoute d'abord l'app à l'écran d'accueil (Partager → Sur l'écran d'accueil)."); return false; }
+    let perm=("Notification" in window)?Notification.permission:"denied";
+    if(perm!=="granted") perm=await Notification.requestPermission();
+    if(perm!=="granted") return false;
+    try{
+      const reg=await navigator.serviceWorker.ready;
+      let sub=await reg.pushManager.getSubscription();
+      if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64ToUint8(VAPID_PUBLIC)});
+      const r=await fetch(API_BASE+"/api/push-subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({subscription:sub.toJSON(),config:buildPushConfig()})});
+      if(!r.ok){ const j=await r.json().catch(()=>({})); alert("Serveur push pas prêt : "+(j.error||r.status)+". (Vérifie le binding KV et les clés VAPID côté Cloudflare.)"); return false; }
+      return true;
+    }catch(e){ alert("Impossible d'activer les notifications : "+e); return false; }
+  }
+  async function disableBackgroundPush(){
+    try{ const sub=await pushGetSub(); if(sub){ await fetch(API_BASE+"/api/push-subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"unsubscribe",subscription:sub.toJSON()})}); await sub.unsubscribe(); } }catch(_){}
+  }
+  // resynchronise la config surveillée côté serveur quand les zones/destinations changent
+  async function pushResync(){ const s=loadSet(); if(!s.push) return; const sub=await pushGetSub(); if(!sub) return; try{ await fetch(API_BASE+"/api/push-subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({subscription:sub.toJSON(),config:buildPushConfig()})}); }catch(_){} }
 
   /* ---------- notifications (locales, premier plan / réouverture) ---------- */
   async function notifyPermission(){
@@ -3621,6 +3646,8 @@ window.Radar=(()=>{
     // interrupteur notifications
     const nOn=set.notify && (!("Notification" in window)||Notification.permission==="granted");
     html+='<div class="rd-switch'+(nOn?" on":"")+'" id="rdNotify"><span class="dot"></span><span>Notifications à l\'ouverture quand une affaire baisse</span></div>';
+    const pOn=set.push===true;
+    html+='<div class="rd-switch'+(pOn?" on":"")+'" id="rdPush"><span class="dot"></span><span>🔔 Vraies notifications en arrière-plan (app fermée)</span></div>';
     if("Notification" in window && Notification.permission==="denied")
       html+='<div class="rd-note">Les notifications sont bloquées au niveau du navigateur/système. Autorise Escale dans les réglages du téléphone (l\'app doit être ajoutée à l\'écran d\'accueil sur iPhone).</div>';
     // destinations surveillées (globales) : ajout rapide par recherche + puces à retirer
@@ -3742,8 +3769,10 @@ window.Radar=(()=>{
       else set.notify=false;
       saveSet(set); renderSettings();
     };
+    const push=document.getElementById("rdPush");
+    if(push)push.onclick=async()=>{ const s=loadSet(); if(!s.push){ const ok=await enableBackgroundPush(); s.push=ok; } else { await disableBackgroundPush(); s.push=false; } saveSet(s); renderSettings(); };
     const add=document.getElementById("rdAddZone"); if(add)add.onclick=()=>{ editing="new"; _edit=zoneDefault(); renderSettings(); };
-    const back=document.getElementById("rdBackRes"); if(back)back.onclick=()=>{ editing=null;_edit=null; view="results"; renderResults(); rescan(); };
+    const back=document.getElementById("rdBackRes"); if(back)back.onclick=()=>{ editing=null;_edit=null; view="results"; renderResults(); rescan(); pushResync(); };
     // destinations surveillées : recherche mondiale (même moteur que les aéroports) + retrait
     const wInp=document.getElementById("rdWatchInput"), wAc=document.getElementById("rdWatchAc");
     let _wTok=0,_wTimer=null;
@@ -3835,6 +3864,8 @@ window.Radar=(()=>{
     html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app (pas de notification quand le téléphone dort). Le ⚡ confirme le tarif réel.</div>';
     const nOn=set.notify && (!("Notification" in window)||Notification.permission==="granted");
     html+='<div class="rd-switch'+(nOn?" on":"")+'" id="rdNotify"><span class="dot"></span><span>Notifications à l\'ouverture quand une affaire baisse</span></div>';
+    const pOn=set.push===true;
+    html+='<div class="rd-switch'+(pOn?" on":"")+'" id="rdPush"><span class="dot"></span><span>🔔 Vraies notifications en arrière-plan (app fermée)</span></div>';
     zones.forEach(z=>{ html+=(editing===z.id)?zoneEditor(_edit):zoneSummary(z); });
     if(editing==="new") html+=zoneEditor(_edit);
     html+='<div class="rdset-foot"><button class="rd-mini" id="rdBackRes">← Retour au radar</button></div></div>';
@@ -3842,6 +3873,8 @@ window.Radar=(()=>{
     bindHead();
     const notify=document.getElementById("rdNotify");
     if(notify)notify.onclick=async()=>{ const s=loadSet(); if(!s.notify){const p=await notifyPermission();s.notify=p==="granted";}else s.notify=false; saveSet(s); renderSettingsWithEdit(); };
+    const push=document.getElementById("rdPush");
+    if(push)push.onclick=async()=>{ const s=loadSet(); if(!s.push){ const ok=await enableBackgroundPush(); s.push=ok; } else { await disableBackgroundPush(); s.push=false; } saveSet(s); renderSettingsWithEdit(); };
     const back=document.getElementById("rdBackRes"); if(back)back.onclick=()=>{ editing=null;_edit=null; view="results"; renderResults(); rescan(); };
     bindEditor();
   }
@@ -3856,6 +3889,7 @@ window.Radar=(()=>{
     saveZones(zones);
     editing=null; _edit=null;
     renderSettings();
+    pushResync();
   }
 
   function clearAll(){
