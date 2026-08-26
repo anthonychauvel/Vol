@@ -3074,11 +3074,16 @@ window.Radar=(()=>{
       const s=isoUTC(nd); if(fY.set.has(s)||fN.set.has(s)){ferieName=fY.names[s]||fN.names[s];break;}}
     return {dow,week,parity,we,pont:!!ferieName,ferieName};
   }
-  function zonePass(zone,ds,transfers){
+  function zonePass(zone,ds,transfers,retDs){
     // escales
     if(transfers!=null){
       if(zone.stops==="direct" && transfers!==0) return false;
       if(zone.stops==="escale" && transfers<1)   return false;
+    }
+    // départ & retour la même semaine ISO (A/R) — si l'option est cochée
+    if(zone.sameWeek && !zone.oneway){
+      if(!ds || !retDs) return false;
+      if(isoWeek(new Date(ds+"T00:00:00")) !== isoWeek(new Date(retDs+"T00:00:00"))) return false;
     }
     if(!ds) return true;                             // pas de date connue : on n'exclut pas sur les critères date
     const m=dateMeta(ds);
@@ -3184,7 +3189,7 @@ window.Radar=(()=>{
     // globalité filtrée par TES dispos : direct/escale + jours + semaines paires/impaires + ponts
     // (par défaut aucun de ces critères n'est coché → toute la liste ; on coche pour restreindre)
     const matches=Object.keys(best).map(d=>({dest:d,...best[d],month}))
-      .filter(x=>zonePass(zone,x.dep,x.transfers))
+      .filter(x=>zonePass(zone,x.dep,x.transfers,x.ret))
       .sort((a,b)=>a.price-b.price);
     return {watched:Object.keys(best).length,movers,matches};
   }
