@@ -707,6 +707,9 @@
   .rd-ppresets{display:flex;gap:6px;flex-wrap:wrap;margin:0 2px 10px}
   .rd-ppresets button{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer;font-family:var(--mono)}
   .rd-ppresets button:hover{border-color:var(--brass-rim);color:var(--ink)}
+  .rd-watch{background:none;border:none;color:var(--muted);font-size:15px;cursor:pointer;padding:0 3px 0 0;line-height:1;vertical-align:middle}
+  .rd-watch.on{color:var(--amber)}
+  .rdz-filters{font-family:var(--mono);font-size:10.5px;color:var(--muted);padding:1px 2px 9px;line-height:1.55}
   .rdz-links{padding:8px 14px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
   .rd-winbtn{background:var(--panel-2);border:1px solid var(--brass-rim);color:var(--amber);border-radius:10px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:var(--sans)}
   .rd-winbtn:disabled{opacity:.5;cursor:default}
@@ -3030,6 +3033,12 @@ window.Radar=(()=>{
   /* ---------- zones de surveillance ---------- */
   const loadZones=()=>jget(ZONES_KEY,[]);
   const saveZones=z=>jset(ZONES_KEY,z);
+  // destinations surveillées (ajout rapide depuis les résultats) → épinglées en tête
+  const WATCH_KEY="escale:radar:watch:v1";
+  const loadWatch=()=>jget(WATCH_KEY,[]);
+  const isWatched=d=>loadWatch().includes(d);
+  const toggleWatch=d=>{const w=loadWatch();const i=w.indexOf(d);if(i>=0)w.splice(i,1);else w.push(d);jset(WATCH_KEY,w);};
+  const dm=ds=>ds?ds.slice(8,10)+"/"+ds.slice(5,7):"";   // "2026-09-18" → "18/09"
   const loadSet=()=>Object.assign({notify:false},jget(SET_KEY,{}));
   const saveSet=s=>jset(SET_KEY,s);
   function newId(){return "z"+Math.random().toString(36).slice(2,8);}
@@ -3299,12 +3308,14 @@ window.Radar=(()=>{
     let html=headHTML(sub)+priceBarHTML();
     // 1) baisses transverses
     if(drops.length){
+      drops.sort((a,b)=>(isWatched(b.dest)?1:0)-(isWatched(a.dest)?1:0));
       const rows=drops.map(m=>{
         const nm=NAMES[m.dest]||m.dest;
         let sky=`https://www.skyscanner.fr/transport/vols/${m.from.toLowerCase()}/${m.dest.toLowerCase()}/`;
         const badge=m.transfers===0?'<span class="rd-drc">direct</span>':'';
+        const wb='<button class="rd-watch'+(isWatched(m.dest)?' on':'')+'" data-watch="'+m.dest+'" title="Surveiller cette destination">'+(isWatched(m.dest)?'★':'☆')+'</button>';
         return '<a class="radar-row" data-price="'+m.price+'" href="'+(m.link||sky)+'" target="_blank" rel="noopener">'
-          +'<span class="rd-city">'+nm+' <small>'+m.dest+'</small>'+badge+'</span>'
+          +'<span class="rd-city">'+wb+' '+nm+' <small>'+m.dest+'</small>'+badge+'</span>'
           +'<span class="rd-mid">'+fmtDelta(m.delta)+'</span>'
           +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+' · '+m.month+(airlineName(m.airline)?' · '+airlineName(m.airline):'')+'</small></span></a>';
       }).join("");
@@ -3317,16 +3328,20 @@ window.Radar=(()=>{
       const z=zr.zone;
       const mscan=zr.monthsScanned<zr.monthsTotal?(" · "+zr.monthsScanned+"/"+zr.monthsTotal+" mois auto"):"";
       html+='<div class="rdz-block"><div class="rdz-btitle">'+esc(z.label||"Zone")
-        +'<span class="rdz-meta">'+z.origins.join(", ")+" · "+(z.oneway?"aller simple":"A/R")+mscan+'</span></div>';
+        +'<span class="rdz-meta">'+z.origins.join(", ")+" · "+(z.oneway?"aller simple":"A/R")+mscan+'</span></div>'
+        +'<div class="rdz-filters">'+zoneFilters(z)+'</div>';
       if(zr.matches.length){
-        const rows=zr.matches.map(m=>{
+        const sorted=[...zr.matches].sort((a,b)=>(isWatched(b.dest)?1:0)-(isWatched(a.dest)?1:0));
+        const rows=sorted.map(m=>{
           const nm=NAMES[m.dest]||m.dest, meta=m.dep?dateMeta(m.dep):null;
           const tag=m.transfers===0?'<span class="rd-drc">direct</span>':(m.transfers>0?'<span class="rd-esc">'+m.transfers+' esc</span>':'');
           const bdg=meta?(meta.pont?'<span class="rd-bdg">pont</span>':(meta.we?'<span class="rd-bdg">week-end</span>':'')):'';
+          const wb='<button class="rd-watch'+(isWatched(m.dest)?' on':'')+'" data-watch="'+m.dest+'" title="Surveiller cette destination">'+(isWatched(m.dest)?'★':'☆')+'</button>';
           const live=LIVE_OK?'<button class="live rd-live" data-from="'+m.from+'" data-dest="'+m.dest+'" data-dep="'+(m.dep||"")+'" data-ret="'+(m.ret||"")+'" data-ow="'+(z.oneway?1:0)+'" title="Prix réel">⚡</button>':'';
+          const dates=m.dep?(' · '+dm(m.dep)+((!z.oneway&&m.ret)?' → '+dm(m.ret):'')):'';
           return '<div class="rd-deal" data-price="'+m.price+'"><div class="rd-drow">'
-            +'<span class="rd-city">'+nm+' <small>'+m.dest+'</small>'+tag+bdg+'</span>'
-            +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+(m.dep?' · '+m.dep:'')+(airlineName(m.airline)?' · '+airlineName(m.airline):'')+'</small></span>'+live+'</div>'
+            +'<span class="rd-city">'+wb+' '+nm+' <small>'+m.dest+'</small>'+tag+bdg+'</span>'
+            +'<span class="rd-price">'+m.price+' €<small>depuis '+m.from+dates+(airlineName(m.airline)?' · '+airlineName(m.airline):'')+'</small></span>'+live+'</div>'
             +'<span class="pricelive" data-rdlive="'+m.dest+'-'+m.from+'-'+(m.dep||"")+'"></span>'
             +radarCmpLinks(m.from,m.dest,m.dep,m.ret,m.link,!!z.oneway)+'</div>';
         }).join("");
@@ -3355,6 +3370,7 @@ window.Radar=(()=>{
     if(pmin)pmin.oninput=()=>{ _pmin=pmin.value; applyPriceFilter(); };
     if(pmax)pmax.oninput=()=>{ _pmax=pmax.value; applyPriceFilter(); };
     document.querySelectorAll(".rd-ppresets button").forEach(b=>b.onclick=()=>{ _pmin=b.dataset.pmin; _pmax=b.dataset.pmax; if(pmin)pmin.value=_pmin; if(pmax)pmax.value=_pmax; applyPriceFilter(); });
+    document.querySelectorAll(".rd-watch").forEach(b=>b.onclick=(e)=>{ e.preventDefault(); e.stopPropagation(); toggleWatch(b.dataset.watch); renderResults(); });
   }
 
   // ⚡ prix réel pour une affaire précise (force la date de l'affaire, pas la date globale).
@@ -3467,6 +3483,21 @@ window.Radar=(()=>{
       +'<button class="rd-mini" data-editz="'+z.id+'">Modifier</button>'
       +'<button class="rd-mini" data-togglez="'+z.id+'">'+(z.enabled?"On":"Off")+'</button></div>'
       +'<div class="rdzone-sum">'+bits.filter(Boolean).join(" · ")+'</div></div>';
+  }
+  // résumé compact des filtres actifs d'une zone, pour l'afficher dans les résultats
+  function zoneFilters(z){
+    const dd=(z.dowOut&&z.dowOut.length)?z.dowOut.map(d=>DOW_LABELS[d]).join("/"):"tous jours";
+    const bits=["départ "+dd];
+    if(z.parOut==="even")bits.push("sem. paires"); else if(z.parOut==="odd")bits.push("sem. impaires");
+    if(!z.oneway){
+      const rr=(z.dowRet&&z.dowRet.length)?z.dowRet.map(d=>DOW_LABELS[d]).join("/"):null;
+      if(rr)bits.push("retour "+rr);
+      if(z.parRet==="even")bits.push("ret. paires"); else if(z.parRet==="odd")bits.push("ret. impaires");
+      if(z.sameWeek)bits.push("même semaine");
+    }
+    if(z.ponts)bits.push("ponts & fériés");
+    if(z.stops==="direct")bits.push("direct"); else if(z.stops==="escale")bits.push("avec escale");
+    return bits.join(" · ");
   }
   function seg(items,cur,attr){ // items:[{v,label}] — boutons .clseg à sélection unique
     return '<div class="clseg" data-seg="'+attr+'">'+items.map(it=>
