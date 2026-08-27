@@ -20,6 +20,7 @@ export async function onRequest(context) {
   if (!env.VAPID_PUBLIC || !env.VAPID_PRIVATE) return new Response("clés VAPID non configurées", { status: 500 });
 
   const base = new URL(request.url).origin;
+  const testMode = p.get("test") === "1";   // envoie une notif de test immédiate (validation crypto)
   const DROP_PCT = 0.90;   // baisse d'au moins 10 %
   const DROP_ABS = 15;     // et d'au moins 15 €
   let checked = 0, sent = 0, removed = 0, errors = 0;
@@ -31,6 +32,20 @@ export async function onRequest(context) {
     let rec; try { rec = JSON.parse(raw); } catch (_) { continue; }
     if (!rec || !rec.subscription) continue;
     checked++;
+
+    if (testMode) {
+      const payload = JSON.stringify({ title: "🔔 Test Escale", body: "Si tu vois ça, les notifications marchent 🎉", url: "./" });
+      try {
+        const status = await sendPush(rec.subscription, payload, {
+          vapidPublic: env.VAPID_PUBLIC, vapidPrivate: env.VAPID_PRIVATE,
+          subject: env.VAPID_SUBJECT || "mailto:admin@example.com"
+        });
+        if (status === 201 || status === 200) sent++;
+        else if (status === 404 || status === 410) { await env.PUSH_KV.delete(k.name); removed++; }
+        else errors++;
+      } catch (_) { errors++; }
+      continue;
+    }
 
     const cfg = rec.config || {}, last = rec.last || {}, zones = cfg.zones || [];
     const watch = (cfg.watch && cfg.watch.length) ? new Set(cfg.watch) : null;
@@ -85,7 +100,7 @@ export async function onRequest(context) {
     }
   }
 
-  return new Response(JSON.stringify({ ok: true, checked, sent, removed, errors }), {
+  return new Response(JSON.stringify({ ok: true, build: "cron-testmode-1", checked, sent, removed, errors }), {
     headers: { "Content-Type": "application/json; charset=utf-8" }
   });
 }
