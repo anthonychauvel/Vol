@@ -3395,8 +3395,9 @@ window.Radar=(()=>{
   }
 
   /* ---------- état d'affichage ---------- */
+  const RESULTS_KEY="escale:radar:results:v1";   // derniers résultats (affichage instantané à l'ouverture)
   let _busy=false, view="results", editing=null;   // editing = id de zone en cours d'édition (ou "new")
-  let _lastResults=null;
+  let _lastResults=jget(RESULTS_KEY,null);
   let _pmin="", _pmax="";   // filtre tranche de prix (€) appliqué à l'affichage (non persisté)
   function priceBarHTML(){
     return '<div class="rd-pricebar"><span class="rd-plabel">Prix €</span>'
@@ -3432,12 +3433,15 @@ window.Radar=(()=>{
     const lanes=loadLanes(), zones=loadZones().filter(z=>z.enabled), set=loadSet();
     const sec=document.getElementById("radarSec"); if(!sec){_busy=false;return;}
     if(!lanes.length && !zones.length && view==="results"){ renderIdle(); _busy=false; return; }
-    if(view==="results")
+    // affichage instantané des derniers résultats connus pendant que le scan se rafraîchit
+    if(_lastResults && view==="results"){ try{ renderResults(); }catch(_){} }
+    if(view==="results" && !_lastResults)
       sec.innerHTML='<div class="radar-load">✦ Radar — vérification en cours…</div>';
     let allMovers=[], watched=0, zoneOut=[];
     for(const l of lanes){ const r=await scanLane(l); if(r){ watched+=r.count; allMovers=allMovers.concat(r.movers); } }
     for(const z of zones){ const r=await scanZone(z); watched+=r.watched; allMovers=allMovers.concat(r.movers); zoneOut.push({zone:z,...r}); }
     _lastResults={movers:allMovers,watched,laneCount:lanes.length,zones:zoneOut};
+    try{jset(RESULTS_KEY,_lastResults);}catch(_){}
     // notifications : ne signale que du NEUF par rapport au dernier envoi
     if(set.notify){
       const drops=dedupeDrops(allMovers);
@@ -3898,6 +3902,7 @@ window.Radar=(()=>{
     try{localStorage.removeItem(LANES_KEY);}catch(_){}
     loadZones().forEach(z=>(z.months||[]).forEach(m=>{try{localStorage.removeItem(SNAP_KEY("z:"+z.id+":"+m));}catch(_){}}));
     try{localStorage.removeItem(SIG_KEY);}catch(_){}
+    try{localStorage.removeItem(RESULTS_KEY);}catch(_){}
     _lastResults=null; view="results";
     if(loadZones().length){ rescan(); } else { const sec=document.getElementById("radarSec"); if(sec){renderIdle();} }
   }
@@ -3907,7 +3912,7 @@ window.Radar=(()=>{
   return {note,rescan,clear:clearAll,openSettings:()=>{view="settings";renderSettings();}};
 })();
 // lance la vérification après le premier rendu (laisse le temps aux noms de villes d'arriver)
-setTimeout(()=>{try{Radar.rescan();}catch(_){}} ,900);
+setTimeout(()=>{try{Radar.rescan();}catch(_){}} ,150);
 
 /* ================= INIT ================= */
 drawCal();renderDests();refresh();
