@@ -710,6 +710,13 @@
   .rd-watch{background:none;border:none;color:var(--muted);font-size:19px;cursor:pointer;padding:2px 8px 2px 0;line-height:1;vertical-align:middle}
   .rd-watch.on{color:var(--amber)}
   .alnk{color:var(--amber);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+  .radar-box{margin:0 0 14px}
+  .radar-sum{list-style:none;cursor:pointer;background:var(--panel-2);border:1px solid var(--brass-rim);border-radius:14px;padding:12px 15px;font-family:var(--serif);font-size:16px;color:var(--brass-face);font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .radar-sum::-webkit-details-marker{display:none}
+  .radar-sum::after{content:"▾ déplier";color:var(--muted);font-size:11px;font-family:var(--mono);font-weight:400;letter-spacing:.04em;white-space:nowrap}
+  .radar-box[open] .radar-sum::after{content:"▴ replier"}
+  .radar-box[open] .radar-sum{margin-bottom:10px}
+  .radar-sum .rsum-c{font-family:var(--mono);font-size:11.5px;color:var(--muted);font-weight:400}
   #recentRow:not(:empty){margin:2px 0 12px}
   .recent-hd{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
   .recent-chips{display:flex;gap:7px;flex-wrap:wrap}
@@ -796,8 +803,11 @@
     </div>
   </header>
 
-  <!-- Radar : rempli au chargement par Radar.rescan(), masqué tant qu'il n'y a rien -->
-  <section id="radarSec" class="radar" hidden></section>
+  <!-- Radar : bloc repliable (fermé par défaut pour alléger l'accueil) -->
+  <details id="radarBox" class="radar-box" hidden>
+    <summary id="radarSum" class="radar-sum">✦ Radar</summary>
+    <section id="radarSec" class="radar"></section>
+  </details>
 
   <nav class="tools" id="toolBar">
     <button class="toolpill on" data-tool="simple">✦ Simplifié</button>
@@ -885,8 +895,8 @@
   <section class="wizsec" data-step="3" data-blk="butin">
     <div class="step"><b>IV</b><h2>Butin en vue</h2><small id="destCount"></small></div>
     <div class="seg" id="modeSeg" style="margin-bottom:12px">
-      <button data-mode="list" class="on">Ma sélection</button>
-      <button data-mode="anywhere">N'importe où</button>
+      <button data-mode="list">Ma sélection</button>
+      <button data-mode="anywhere" class="on">N'importe où</button>
       <button data-mode="compare">Comparateur</button>
       <button data-mode="caplibre">✦ Cap Libre</button>
       <button data-mode="cross">Croisé</button>
@@ -1245,7 +1255,7 @@ const DESTS = [
 /* ================= ÉTAT ================= */
 let origin=null, dep=null, ret=null, band="all", oneWay=false;
 let view=new Date(); view.setDate(1);
-let mode="list";
+let mode="anywhere";
 let stops="all";           // all | direct | 1(avec escale)
 const _transfers={};       // code destination -> nb escales (Ma sélection, chargé avec les prix)
 const API_BASE="";
@@ -1470,6 +1480,21 @@ function selectApt(code){
   }
   alBox.classList.add("show");
   renderAirports();renderDispatch();refresh();renderRecent();
+  // Nettoyage notifications : retire le badge d'app persistant (le "1" rouge sur Android),
+  // ferme les notifications restantes et supprime tout abonnement push encore actif.
+  (async()=>{
+    try{ if(navigator.clearAppBadge) await navigator.clearAppBadge(); }catch(_){}
+    try{
+      if("serviceWorker" in navigator){
+        const reg=await navigator.serviceWorker.ready;
+        if(reg.getNotifications){ (await reg.getNotifications()).forEach(n=>{try{n.close();}catch(_){}}); }
+        if(reg.pushManager){
+          const sub=await reg.pushManager.getSubscription();
+          if(sub){ try{ await fetch(API_BASE+"/api/push-subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"unsubscribe",subscription:sub.toJSON()})}); }catch(_){} try{ await sub.unsubscribe(); }catch(_){} }
+        }
+      }
+    }catch(_){}
+  })();
 }
 
 renderAirports();
@@ -1712,6 +1737,13 @@ function bookingFlightURL(from,to,depOv,retOv){
   if(d){p.set("depart",d);if(!oneWay&&r)p.set("return",r);}
   return "https://www.booking.com/flights/index.html?"+p.toString();
 }
+// lien "chercher ce vol sur le site X" — recherche ciblée fiable (jamais de 404) pour les
+// sites sans deep-link vol daté fiable (Expedia, Lastminute, Cdiscount/Misterfly). Les 4
+// comparateurs principaux (Skyscanner/Kayak/Aviasales/Booking) restent, eux, pré-remplis.
+function flightSiteLink(from,to,dep,domain,label){
+  const q=encodeURIComponent((NAMES[from]||from)+" "+(NAMES[to]||to)+" vol"+(dep?" "+dep:"")+" site:"+domain);
+  return `<a class="cgo alt" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">${label}</a>`;
+}
 // aviaLink = lien réel Aviasales (c.link/r.link) si connu. withSky=false quand un gros
 // bouton "Chercher" Skyscanner dédié existe déjà juste à côté (évite le doublon).
 // depOv/retOv optionnels (voir plus haut) : passés par Cap Libre pour la date de la fenêtre.
@@ -1721,6 +1753,10 @@ function cmpLinksHtml(from,to,aviaLink,withSky,depOv,retOv){
   const k=kayakURL(from,to,false,depOv,retOv);if(k)items.push(`<a class="cgo" href="${k}" target="_blank" rel="noopener">Kayak</a>`);
   if(aviaLink)items.push(`<a class="cgo" href="${aviaLink}" target="_blank" rel="noopener">Aviasales</a>`);
   const bk=bookingFlightURL(from,to,depOv,retOv);if(bk)items.push(`<a class="cgo alt" href="${bk}" target="_blank" rel="noopener">Booking</a>`);
+  if(from&&to){ const dd=depOv!==undefined?depOv:dep;
+    items.push(flightSiteLink(from,to,dd,"expedia.fr","Expedia"));
+    items.push(flightSiteLink(from,to,dd,"lastminute.com","Lastminute"));
+    items.push(flightSiteLink(from,to,dd,"cdiscount.com","Cdiscount")); }
   if(from&&to)items.push(`<span class="cgo alt calpick" data-calfrom="${from}" data-calto="${to}">📅 dates flexibles</span>`);
   return items.length?`<div class="cmplinks">${items.join("")}</div>`:"";
 }
@@ -1793,7 +1829,8 @@ async function fetchPrices(){
       if(j.price){
         _transfers[d.i]=(j.transfers==null?null:j.transfers);
         const trTxt=j.transfers===0?'<span class="drc">direct</span>':(j.transfers!=null?j.transfers+" esc":"");
-        const label="≈ "+j.price+" € · mois"+(trTxt?" · "+trTxt:"");
+        const aln=airlineChip(j.airline);
+        const label="≈ "+j.price+" € · mois"+(aln?" · "+aln:"")+(trTxt?" · "+trTxt:"");
         el.innerHTML=j.link?`<a href="${j.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${label}</a>`:label;
         el.className="price show";
         const row=el.closest(".dest"); if(row&&j.transfers===0)row.classList.add("direct");
@@ -2171,8 +2208,16 @@ function hotelCard(h,nights){
     </div>
     <div class="hmeta">${note}${st}${dist}${cancel}${am}</div>
     ${h.url?`<a class="hgo" href="${h.url}" target="_blank" rel="noopener">Réserver (dates pré-remplies) →</a>`:""}
-    ${h.googleUrl?`<a class="hgo alt" href="${h.googleUrl}" target="_blank" rel="noopener">comparer sur Google (dates à revérifier) →</a>`:""}
+    ${h.googleUrl?`<a class="hgo alt" href="${h.googleUrl}" target="_blank" rel="noopener">Google (dates à revérifier) →</a>`:""}
+    ${hotelSiteLink(h,"booking.com","Booking")}${hotelSiteLink(h,"expedia.fr","Expedia")}${hotelSiteLink(h,"lastminute.com","Lastminute")}${hotelSiteLink(h,"cdiscount.com","Cdiscount")}
   </div>`;
+}
+// lien "trouver cet hôtel sur le site X" — recherche ciblée fiable (jamais de 404), sans dates
+// (les sites hôteliers n'ont pas de deep-link daté fiable ; le lien Booking daté ci-dessus reste
+// la voie pré-remplie). On cible le site via Google pour tomber sur la bonne fiche.
+function hotelSiteLink(h,domain,label){
+  const q=encodeURIComponent(h.name+" "+(h.city||"")+" site:"+domain);
+  return `<a class="hgo alt" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">${label} →</a>`;
 }
 function hotelPhotoCard(h,nights,cur){
   const sym=cur==="EUR"?"€":(cur==="USD"?"$":cur||"€");
@@ -2239,7 +2284,7 @@ function renderHotels(list,nights,meta){
   document.getElementById("hCount").textContent=list.length+" hôtel"+(list.length>1?"s":"")+(meta?" · "+meta:"");
 }
 function hotelParams(t,d){
-  const p=new URLSearchParams({checkIn:d.ci,checkOut:d.co,adults:String(HF.ad)});
+  const p=new URLSearchParams({checkIn:d.ci,checkOut:d.co,adults:String(HF.ad),limit:"100"});
   if(HF.km)p.set("maxKm",String(HF.km));
   if(HF.stars)p.set("minStars",String(HF.stars));
   p.set("privateOnly",HF.priv?"1":"0");
@@ -3266,6 +3311,9 @@ window.Radar=(()=>{
     const bp=new URLSearchParams({type:ow?"ONEWAY":"ROUNDTRIP",from:`${from}.AIRPORT`,to:`${to}.AIRPORT`,adults:"1",cabinClass:"ECONOMY"});
     if(depDate){bp.set("depart",depDate);if(!ow&&retDate)bp.set("return",retDate);}
     items.push(`<a class="cgo alt" href="https://www.booking.com/flights/index.html?${bp.toString()}" target="_blank" rel="noopener">Booking</a>`);
+    items.push(flightSiteLink(from,to,depDate,"expedia.fr","Expedia"));
+    items.push(flightSiteLink(from,to,depDate,"lastminute.com","Lastminute"));
+    items.push(flightSiteLink(from,to,depDate,"cdiscount.com","Cdiscount"));
     return `<div class="cmplinks">${items.join("")}</div>`;
   }
   // fenêtres ponts & fériés (à la demande, par zone) — calcul via /api/caplibre
@@ -3300,12 +3348,7 @@ window.Radar=(()=>{
     if(!("Notification" in window)) return "unsupported";
     try{ return await Notification.requestPermission(); }catch(_){ return Notification.permission; }
   }
-  async function fireNotif(title,body){
-    if(!("Notification" in window)||Notification.permission!=="granted") return;
-    const opts={body,icon:"icon-192.png",badge:"icon-192.png",tag:"escale-radar",renotify:true,data:{url:"./"}};
-    try{ if("serviceWorker" in navigator){const reg=await navigator.serviceWorker.ready; if(reg&&reg.showNotification){reg.showNotification(title,opts);return;}} }catch(_){}
-    try{ new Notification(title,opts); }catch(_){}
-  }
+  async function fireNotif(){ /* notifications retirées (badge "1" persistant sur Android) */ }
 
   /* ---------- scan ---------- */
   const _anyCache={};
@@ -3474,9 +3517,19 @@ window.Radar=(()=>{
       +'<button class="radar-x" id="radarClear">effacer</button></div>';
   }
   // Section repliée quand il n'y a encore rien : garde un point d'entrée vers les Réglages.
+  const RADAR_OPEN_KEY="escale:radar:open:v1";
+  function revealRadar(summary,forceOpen){
+    const box=document.getElementById("radarBox"), sum=document.getElementById("radarSum");
+    if(!box)return;
+    box.hidden=false;
+    if(sum)sum.innerHTML=summary||"✦ Radar";
+    let saved=false; try{saved=localStorage.getItem(RADAR_OPEN_KEY)==="1";}catch(_){}
+    if(forceOpen)box.open=true; else box.open=saved;
+    if(!box._bound){ box._bound=true; box.addEventListener("toggle",()=>{ try{localStorage.setItem(RADAR_OPEN_KEY,box.open?"1":"0");}catch(_){}} ); }
+  }
   function renderIdle(){
     const sec=document.getElementById("radarSec"); if(!sec) return;
-    sec.hidden=false;
+    revealRadar("✦ Radar");
     sec.innerHTML=headHTML("aucune zone — appuie sur ⚙ pour surveiller tes bons plans")
       +'<div class="radar-foot">Définis des zones (aéroports, mois, jours/semaines, ponts, direct/escale) et Escale te remonte les baisses à chaque ouverture.</div>';
     bindHead();
@@ -3485,7 +3538,7 @@ window.Radar=(()=>{
   function renderResults(){
     const sec=document.getElementById("radarSec"); if(!sec) return;
     const R=_lastResults||{movers:[],watched:0,laneCount:0,zones:[]};
-    sec.hidden=false;
+    revealRadar("✦ Radar"+(R.watched?' <span class="rsum-c">'+R.watched+' surveillés</span>':""));
     const drops=dedupeDrops(R.movers).slice(0,MAX_ROWS);
     const zoneCount=R.zones.length;
     const sub=zoneCount?(zoneCount+" zone"+(zoneCount>1?"s":"")+" · "+R.watched+" liaisons surveillées")
@@ -3643,17 +3696,12 @@ window.Radar=(()=>{
   /* ---------- réglages (zones) ---------- */
   function renderSettings(){
     const sec=document.getElementById("radarSec"); if(!sec) return;
-    sec.hidden=false;
+    revealRadar("✦ Radar — réglages",true);
     const zones=loadZones(), set=loadSet();
     let html=headHTML("réglages — zones de surveillance")+'<div class="rdset">';
-    html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app (pas de notification quand le téléphone dort : ce projet n\'a aucun serveur payant). Les prix viennent du cache gratuit — le ⚡ confirme le tarif réel.</div>';
-    // interrupteur notifications
-    const nOn=set.notify && (!("Notification" in window)||Notification.permission==="granted");
-    html+='<div class="rd-switch'+(nOn?" on":"")+'" id="rdNotify"><span class="dot"></span><span>Notifications à l\'ouverture quand une affaire baisse</span></div>';
-    const pOn=set.push===true;
-    html+='<div class="rd-switch'+(pOn?" on":"")+'" id="rdPush"><span class="dot"></span><span>🔔 Vraies notifications en arrière-plan (app fermée)</span></div>';
-    if("Notification" in window && Notification.permission==="denied")
-      html+='<div class="rd-note">Les notifications sont bloquées au niveau du navigateur/système. Autorise Escale dans les réglages du téléphone (l\'app doit être ajoutée à l\'écran d\'accueil sur iPhone).</div>';
+    html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app. Les prix viennent du cache gratuit — le ⚡ confirme le tarif réel.</div>';
+    // notifications retirées (elles laissaient un badge "1" persistant sur Android) —
+    // le Radar se consulte à l'ouverture de l'app.
     // destinations surveillées (globales) : ajout rapide par recherche + puces à retirer
     const watch=loadWatch();
     html+='<label class="rd-fld" style="margin-top:4px">★ Destinations surveillées <span style="font-weight:400;color:var(--muted)">— épinglées en tête des résultats</span></label>';
@@ -3865,11 +3913,9 @@ window.Radar=(()=>{
     // reconstruit tout le panneau réglages mais l'éditeur lit _edit
     const zones=loadZones(), set=loadSet();
     let html=headHTML("réglages — zones de surveillance")+'<div class="rdset">';
-    html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app (pas de notification quand le téléphone dort). Le ⚡ confirme le tarif réel.</div>';
+    html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app. Le ⚡ confirme le tarif réel.</div>';
     const nOn=set.notify && (!("Notification" in window)||Notification.permission==="granted");
-    html+='<div class="rd-switch'+(nOn?" on":"")+'" id="rdNotify"><span class="dot"></span><span>Notifications à l\'ouverture quand une affaire baisse</span></div>';
-    const pOn=set.push===true;
-    html+='<div class="rd-switch'+(pOn?" on":"")+'" id="rdPush"><span class="dot"></span><span>🔔 Vraies notifications en arrière-plan (app fermée)</span></div>';
+    // notifications retirées (badge Android persistant)
     zones.forEach(z=>{ html+=(editing===z.id)?zoneEditor(_edit):zoneSummary(z); });
     if(editing==="new") html+=zoneEditor(_edit);
     html+='<div class="rdset-foot"><button class="rd-mini" id="rdBackRes">← Retour au radar</button></div></div>';
@@ -3980,7 +4026,7 @@ function showTool(t){
   else if(t==="cross")mode="cross";
   else if(t==="stay")mode="stay";
   else if(t==="caplibre")mode="caplibre";
-  else if(t==="simple"){ if(["compare","cross","stay","caplibre"].includes(mode))mode="list"; }
+  else if(t==="simple"){ mode="anywhere"; }
   else mode="list";                       // outils au sol : la section IV est masquée
   if(t==="simple"){ wizAllOn=false; applyWiz(); }
   renderDispatch();
