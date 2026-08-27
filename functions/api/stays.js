@@ -191,7 +191,7 @@ function applyFilters(out, f) {
     if (f.minStars && h.stars < f.minStars) { drop.categorie++; return false; }
     if (f.maxKm && h.distanceKm != null && h.distanceKm > f.maxKm) { drop.tropLoin++; return false; }
     return true;
-  }).sort((a, b) => a.priceTotal - b.priceTotal).slice(0, 25);
+  }).sort((a, b) => a.priceTotal - b.priceTotal).slice(0, 100);
   return { configured: out.configured, label: out.label, checkIn: out.checkIn, checkOut: out.checkOut,
     nights: out.nights, currency: out.currency, hotels, total: hotels.length, filtered: drop };
 }
