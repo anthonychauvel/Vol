@@ -1747,7 +1747,7 @@ function flightSiteLink(from,to,dep,domain,label){
   } else if(domain==="cdiscount.com"){
     url="https://www.cdiscount.com/voyages/vol/fl-dep-fr/dep-"+from.toLowerCase()+"/"+from.toLowerCase()+"-"+to.toLowerCase()+".html";
   } else {
-    url="https://www.fr.lastminute.com/vol";
+    url="https://www.fr.lastminute.com/billet-avion";
   }
   return '<a class="cgo alt" href="'+url+'" target="_blank" rel="noopener">'+label+'</a>';
 }
@@ -3131,14 +3131,17 @@ function renderAnywhere(){
           <span class="price show">${priceHtml}</span>
         </div>
         <span class="pricelive" data-livep="${o.destination}"></span>
+        ${cmpLinksHtml(origin.code,o.destination,o.link,false,o.departure_at?o.departure_at.slice(0,10):undefined,o.return_at?o.return_at.slice(0,10):undefined)}
       </div>
       ${(LIVE_OK&&dep)?`<button class="live" data-anylive="${idx}" title="Prix réel pour tes dates">⚡</button>`:''}
       <button class="go" data-anygo="${idx}">Chercher</button>
     </div>`;}).join("");
   box.querySelectorAll(".go").forEach(b=>b.onclick=()=>{
     const o=list[+b.dataset.anygo];window.open(skyURL(o.destination),"_blank");});
-  box.querySelectorAll(".info").forEach(el=>el.onclick=()=>{
+  box.querySelectorAll(".info").forEach(el=>el.onclick=(ev)=>{
+    if(ev.target.closest("a,.calpick,.alnk"))return;
     const o=list[+el.dataset.any];openPriceCal({i:o.destination,n:NAMES[o.destination]||o.destination});});
+  bindCalPick(box);
   box.querySelectorAll(".live").forEach(b=>b.onclick=()=>{
     const o=list[+b.dataset.anylive];
     runLiveRow({i:o.destination,n:NAMES[o.destination]||o.destination},b);});
