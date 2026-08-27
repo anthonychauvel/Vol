@@ -813,7 +813,6 @@
     <button class="toolpill on" data-tool="simple">✦ Simplifié</button>
     <button class="toolpill" data-tool="compare">Comparateur</button>
     <button class="toolpill" data-tool="cross">Croisé</button>
-    <button class="toolpill" data-tool="stay">Séjour</button>
     <button class="toolpill" data-tool="caplibre">✦ Cap Libre</button>
     <button class="toolpill" data-tool="hotels">Hôtels</button>
     <button class="toolpill" data-tool="car">Voiture</button>
@@ -900,7 +899,6 @@
       <button data-mode="compare">Comparateur</button>
       <button data-mode="caplibre">✦ Cap Libre</button>
       <button data-mode="cross">Croisé</button>
-      <button data-mode="stay">Séjour</button>
     </div>
 
     <div id="cmpPanel" style="display:none">
@@ -1737,12 +1735,21 @@ function bookingFlightURL(from,to,depOv,retOv){
   if(d){p.set("depart",d);if(!oneWay&&r)p.set("return",r);}
   return "https://www.booking.com/flights/index.html?"+p.toString();
 }
-// lien "chercher ce vol sur le site X" — recherche ciblée fiable (jamais de 404) pour les
-// sites sans deep-link vol daté fiable (Expedia, Lastminute, Cdiscount/Misterfly). Les 4
-// comparateurs principaux (Skyscanner/Kayak/Aviasales/Booking) restent, eux, pré-remplis.
+// lien commercial vol pointant DANS la recherche de vol de chaque site (plus Google).
+// Expedia : deep-link daté réel. Cdiscount : page-route (trajet pré-rempli, sans date).
+// Lastminute : page de recherche vol (SPA sans deep-link fiable → à compléter à la main).
 function flightSiteLink(from,to,dep,domain,label){
-  const q=encodeURIComponent((NAMES[from]||from)+" "+(NAMES[to]||to)+" vol"+(dep?" "+dep:"")+" site:"+domain);
-  return `<a class="cgo alt" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">${label}</a>`;
+  let url;
+  if(domain==="expedia.fr"){
+    const dpart=dep?((+dep.slice(5,7))+"/"+(+dep.slice(8,10))+"/"+dep.slice(0,4)+"TANYT"):"";
+    const leg1="from:"+from+",to:"+to+(dpart?",departure:"+dpart:"");
+    url="https://www.expedia.fr/Flights-Search?leg1="+encodeURIComponent(leg1)+"&trip=oneway&passengers="+encodeURIComponent("adults:1,children:0,infantinlap:N")+"&mode=search";
+  } else if(domain==="cdiscount.com"){
+    url="https://www.cdiscount.com/voyages/vol/fl-dep-fr/dep-"+from.toLowerCase()+"/"+from.toLowerCase()+"-"+to.toLowerCase()+".html";
+  } else {
+    url="https://www.fr.lastminute.com/vol";
+  }
+  return '<a class="cgo alt" href="'+url+'" target="_blank" rel="noopener">'+label+'</a>';
 }
 // aviaLink = lien réel Aviasales (c.link/r.link) si connu. withSky=false quand un gros
 // bouton "Chercher" Skyscanner dédié existe déjà juste à côté (évite le doublon).
