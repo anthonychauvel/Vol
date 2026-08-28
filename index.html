@@ -786,6 +786,49 @@
   @media (prefers-reduced-motion:reduce){#toTop{transition:none}}
   footer{color:#8a7a4e;letter-spacing:.04em;font-style:italic}
 
+  /* ===== Vol-main 13 : nouveautés ===== */
+  /* squelettes de chargement (remplace spinners/vides) */
+  @keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}
+  .sk{display:inline-block;border-radius:6px;background:linear-gradient(90deg,rgba(139,162,172,.10) 25%,rgba(139,162,172,.22) 50%,rgba(139,162,172,.10) 75%);background-size:400px 100%;animation:shimmer 1.15s linear infinite}
+  .sk-price{width:96px;height:12px;vertical-align:middle}
+  .pgrid-sk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .pgrid-sk .sk{aspect-ratio:1/1;border-radius:9px}
+  @media (prefers-reduced-motion:reduce){ .sk{animation:none} }
+  /* empreinte carbone */
+  .co2{font-family:var(--mono);font-size:10.5px;color:#7fb3a2;border:1px solid #2f5f52;border-radius:999px;padding:1px 7px;margin-left:7px;white-space:nowrap}
+  /* météo à destination (overlay calendrier) */
+  .wx{margin:2px 0 10px;font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:8px 11px}
+  .wx b{color:var(--amber);font-weight:700}
+  .wx-src{color:var(--muted);font-style:italic}
+  /* prix anormalement bas (repère "erreur tarifaire") */
+  .pday.anom{outline:2px solid #e0b64a;outline-offset:-2px;box-shadow:0 0 10px rgba(224,182,74,.4)}
+  .pday .anom-tag{position:absolute;top:2px;right:3px;font-size:9px}
+  .anom-note{margin-top:10px;text-align:left;color:#e7c25f;font-size:12px;background:rgba(224,182,74,.08);border:1px solid #6d5a1e;border-radius:10px;padding:8px 11px}
+  /* historique de prix perso */
+  .hist{margin-top:10px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+  .hist-hd{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+  .hist-hd .up{color:#e0846a} .hist-hd .down{color:var(--green)}
+  .hist-cap{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:3px}
+  /* vue année (heatmap 12 mois) */
+  .ygrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+  .ycell{aspect-ratio:1.5/1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border:1px solid var(--line);position:relative}
+  .ycell .ym{font-family:var(--mono);font-size:11px;color:#0c1a13;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .ycell .yp{font-family:var(--mono);font-size:14px;font-weight:800;color:#0c1a13}
+  .ycell.nodata{background:var(--panel-2);border-style:dashed;cursor:default}
+  .ycell.nodata .ym{color:var(--muted)} .ycell.nodata .yp{color:var(--muted);font-size:10px;font-weight:400}
+  .ycell.best{outline:2px solid var(--green);outline-offset:-2px}
+  .calview{display:flex;gap:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:3px}
+  .calview button{flex:0 0 auto;background:none;border:0;color:var(--muted);font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:999px;cursor:pointer}
+  .calview button.on{background:var(--brass-face);color:#2a1c06;font-weight:700}
+  /* boutons partager / calendrier (overlay + Cap Libre) */
+  .ovacts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .ovact{flex:1;min-width:130px;text-align:center;background:var(--panel-2);border:1px solid var(--brass-rim);color:var(--amber);font-family:var(--mono);font-size:12px;padding:9px 10px;border-radius:10px;cursor:pointer;text-decoration:none}
+  .ovact:hover{background:#16303c}
+  /* Radar : seuil de prix cible */
+  .rd-target{margin-top:10px}
+  .rd-target input{width:90px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:5px 8px;font-family:var(--mono);font-size:13px}
+  .tgt{font-family:var(--mono);font-size:10px;color:#0c1a13;background:var(--green);border-radius:999px;padding:1px 7px;margin-left:6px;font-weight:700}
+
   /* — repli mouvement réduit : plus de reflets ni d'éveil — */
   @media (prefers-reduced-motion:reduce){
     header::before,.go::after{display:none}
@@ -1090,11 +1133,16 @@
       <span id="ovLiveRes">tarif réel pour les dates choisies</span>
       <span class="quota" id="ovQuota"></span>
     </div>
-    <div class="pcal-top">
-      <button id="pPrev" aria-label="Mois précédent">‹</button>
-      <div class="ml" id="pLabel"></div>
-      <button id="pNext" aria-label="Mois suivant">›</button>
+    <div class="calview" id="calView" style="margin:0 auto 8px;width:max-content">
+      <button data-cv="month" class="on">Mois</button>
+      <button data-cv="year">12 mois</button>
     </div>
+    <div class="pcal-top">
+      <button id="pPrev" aria-label="Précédent">‹</button>
+      <div class="ml" id="pLabel"></div>
+      <button id="pNext" aria-label="Suivant">›</button>
+    </div>
+    <div id="ovWeather"></div>
     <div id="pgridWrap"></div>
     <div class="pleg">
       <span>moins cher</span><span class="grad"></span><span>plus cher</span>
@@ -1813,7 +1861,7 @@ function renderDests(){
       <div class="info" data-open="${idx}">
         <div class="name">${d.n}<span class="iata">${d.i}</span><span class="rmdest" data-rm="${d.i}" title="Retirer cette ville">✕</span><span class="cal-ic">📅 prix/jour</span></div>
         <div class="meta">
-          ${d.min!=null?`<span class="dur">${fmtDur(d.min)}</span>`:`<span class="dur" style="color:var(--muted)">choisis un départ</span>`}
+          ${d.min!=null?`<span class="dur">${fmtDur(d.min)}</span>${co2ChipFor(d)}`:`<span class="dur" style="color:var(--muted)">choisis un départ</span>`}
           <span class="price" data-price="${d.i}"></span>
         </div>
         <span class="pricelive" data-livep="${d.i}"></span>
@@ -1846,31 +1894,192 @@ function syncButtons(){const ready=origin&&dep, live=ready&&!(LIVE_Q&&LIVE_Q.exh
   document.querySelectorAll(".live").forEach(b=>b.disabled=!live);}
 
 /* ================= PRIX LISTE ================= */
+/* ================= VOL-MAIN 13 — HELPERS PARTAGÉS ================= */
+/* Cache client des prix (mémoire + localStorage, TTL 6 h) : partagé Ma sélection + calendrier.
+   Évite de re-télécharger à chaque re-rendu et protège le quota Travelpayouts gratuit. */
+const PX_TTL=6*3600*1000;
+const _pxMem=new Map();
+let _pxAbort=null;   // renvoie true si la tâche en cours doit s'interrompre (changement d'écran)
+function pxGet(key){
+  let e=_pxMem.get(key);
+  if(!e){ try{ const raw=localStorage.getItem("escale:px:"+key); if(raw){ e=JSON.parse(raw); _pxMem.set(key,e); } }catch(_){} }
+  if(e && (Date.now()-e.t)<PX_TTL) return e.v;
+  return null;
+}
+function pxSet(key,v){
+  const e={t:Date.now(),v}; _pxMem.set(key,e);
+  try{ localStorage.setItem("escale:px:"+key,JSON.stringify(e)); }catch(_){}
+}
+// exécute des tâches async par lots de `size` en parallèle (au lieu d'une par une)
+async function inBatches(items,size,fn){
+  for(let i=0;i<items.length;i+=size){
+    if(_pxAbort&&_pxAbort())return;
+    await Promise.all(items.slice(i,i+size).map(fn));
+  }
+}
+
+/* Historique de prix perso : série {d,p,t} par route, construite au fil des consultations.
+   Honnête et gratuit ; ne se remplit que sur les routes que tu regardes vraiment. */
+const HIST_MAX=40;
+function _histKey(from,to,ow){ return from+"-"+to+(ow?"|ow":"|rt"); }
+function histRecord(from,to,ow,price){
+  if(!from||!to||price==null||!isFinite(price))return;
+  const k="escale:hist:"+_histKey(from,to,ow);
+  let a; try{ a=JSON.parse(localStorage.getItem(k))||[]; }catch(_){ a=[]; }
+  const today=iso(new Date()), last=a[a.length-1];
+  if(last&&last.d===today){ last.p=Math.min(last.p,price); last.t=Date.now(); }
+  else a.push({d:today,p:price,t:Date.now()});
+  if(a.length>HIST_MAX)a=a.slice(a.length-HIST_MAX);
+  try{ localStorage.setItem(k,JSON.stringify(a)); }catch(_){}
+}
+function histTrend(from,to,ow){
+  let a; try{ a=JSON.parse(localStorage.getItem("escale:hist:"+_histKey(from,to,ow)))||[]; }catch(_){ a=[]; }
+  if(a.length<2)return null;
+  const first=a[0],last=a[a.length-1];
+  const days=Math.max(0,Math.round((last.t-first.t)/864e5));
+  const deltaPct=first.p?Math.round((last.p-first.p)/first.p*100):0;
+  const ps=a.map(x=>x.p);
+  return {n:a.length,first:first.p,last:last.p,min:Math.min(...ps),max:Math.max(...ps),days,deltaPct,series:a};
+}
+function histSpark(series){
+  if(!series||series.length<2)return "";
+  const ps=series.map(x=>x.p),mn=Math.min(...ps),mx=Math.max(...ps);
+  const W=260,H=42,pad=6,n=series.length;
+  const xf=i=>pad+(n>1?i/(n-1):0.5)*(W-2*pad);
+  const yf=p=>mx===mn?H/2:(H-pad)-(p-mn)/(mx-mn)*(H-2*pad);
+  const line=series.map((x,i)=>(i?"L":"M")+xf(i).toFixed(1)+" "+yf(x.p).toFixed(1)).join(" ");
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="'+H+'" preserveAspectRatio="none"><path d="'+line+'" fill="none" stroke="var(--amber)" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>';
+}
+function histBlock(from,to,ow){
+  const t=histTrend(from,to,ow); if(!t)return "";
+  const dir = t.deltaPct<=-3?'<span class="down">▼ en baisse</span>' : (t.deltaPct>=3?'<span class="up">▲ en hausse</span>' : '≈ stable');
+  const since = t.days<=0?"aujourd'hui":(t.days===1?"depuis hier":"depuis "+t.days+" j");
+  return '<div class="hist"><div class="hist-hd">📈 ton historique · '+dir+'</div>'
+    +histSpark(t.series)
+    +'<div class="hist-cap">'+t.n+' relevés · de '+t.first+'€ à <b>'+t.last+'€</b> ('+(t.deltaPct>0?"+":"")+t.deltaPct+'%) '+since+' · creux vu : '+t.min+'€</div></div>';
+}
+
+/* Météo « normales » à destination pour un mois (Open-Meteo archive : gratuit, sans clé). */
+const _wxCache={};
+async function weatherFor(lat,lng,monthIdx){
+  if(lat==null||lng==null)return null;
+  const key=lat.toFixed(2)+","+lng.toFixed(2)+":"+monthIdx;
+  if(_wxCache[key]!==undefined)return _wxCache[key];
+  const y=new Date().getFullYear()-1;              // l'archive ne couvre pas le futur → même mois l'an passé
+  const mm=pad(monthIdx+1),last=new Date(y,monthIdx+1,0).getDate();
+  const url=`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}`
+    +`&start_date=${y}-${mm}-01&end_date=${y}-${mm}-${pad(last)}`
+    +`&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`;
+  try{
+    const r=await fetch(url); if(!r.ok)throw 0; const j=await r.json();
+    const d=j.daily||{}, tmax=d.temperature_2m_max||[], tmin=d.temperature_2m_min||[], pr=d.precipitation_sum||[];
+    const avg=a=>{const v=a.filter(x=>x!=null);return v.length?v.reduce((x,y)=>x+y,0)/v.length:null;};
+    const hi=avg(tmax),lo=avg(tmin),rain=pr.filter(x=>x!=null&&x>=1).length;
+    const res=(hi==null)?null:{hi:Math.round(hi),lo:Math.round(lo),rainDays:rain,year:y};
+    _wxCache[key]=res; return res;
+  }catch(_){ _wxCache[key]=null; return null; }
+}
+function wxLabel(w,monthIdx){
+  if(!w)return "";
+  const em=w.hi>=26?"☀️":(w.hi>=18?"🌤️":(w.hi>=10?"⛅":"🌧️"));
+  return `<div class="wx">${em} <b>${MOIS[monthIdx]}</b> à destination : ≈ ${w.hi}° / ${w.lo}° · ~${w.rainDays} j de pluie <span class="wx-src">· normales ${w.year}</span></div>`;
+}
+
+/* Empreinte carbone estimée d'un vol (aller) à partir de la distance. Ordre de grandeur, éco. */
+function co2kg(km){
+  if(km==null||!isFinite(km))return null;
+  const f=km<1500?0.16:(km<4000?0.14:0.11);
+  return Math.round(km*f);
+}
+function co2ChipFor(destObj){
+  if(!origin||!destObj||destObj.lat==null||origin.lat==null)return "";
+  const v=co2kg(haversine(origin,destObj)); if(v==null)return "";
+  return `<span class="co2" title="Estimation aller, classe éco. — ordre de grandeur">≈ ${v} kg CO₂</span>`;
+}
+
+/* Export .ics : pose les dates du voyage dans le calendrier du téléphone (blob local). */
+function icsDownload(from,to,name,dep,ret,price){
+  const dt=s=>s.replace(/-/g,"");
+  const nextDay=s=>{const p=s.split("-");return iso(new Date(+p[0],+p[1]-1,+p[2]+1));};
+  const stamp=new Date().toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
+  const uid="escale-"+from+to+dep+"@vol-main";
+  const desc=`Vol repere via Escale${price!=null?` — des ${price} EUR`:""}. Dates a confirmer sur le comparateur.`;
+  const ev=(u,d1,d2,s)=>["BEGIN:VEVENT","UID:"+u,"DTSTAMP:"+stamp,"DTSTART;VALUE=DATE:"+dt(d1),"DTEND;VALUE=DATE:"+dt(d2),"SUMMARY:"+s,"DESCRIPTION:"+desc,"END:VEVENT"].join("\r\n");
+  const ttl=`Vol ${from} - ${to}`+(name?` (${name})`:"");
+  let body=ev(uid,dep,nextDay(dep),ttl+" - aller");
+  if(ret)body+="\r\n"+ev(uid+"-r",ret,nextDay(ret),ttl+" - retour");
+  const cal=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Escale//Vol-main//FR","CALSCALE:GREGORIAN",body,"END:VCALENDAR"].join("\r\n");
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([cal],{type:"text/calendar;charset=utf-8"}));
+  a.download=`escale-${from}-${to}-${dep}.ics`; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+}
+
+/* Partage natif (mobile) : lien profond qui rouvre Escale sur la même recherche. */
+function deepLink(tool,from,to,dep,ret,ow,band){
+  const p=new URLSearchParams();
+  if(tool&&tool!=="simple")p.set("t",tool);
+  if(from)p.set("o",from); if(to)p.set("d",to);
+  if(dep)p.set("dep",dep); if(ret&&!ow)p.set("ret",ret);
+  if(ow)p.set("ow","1"); if(band&&band!=="all")p.set("b",band);
+  return location.origin+location.pathname+(p.toString()?"#"+p.toString():"");
+}
+async function shareRoute(from,to,name,dep,ret,price){
+  const url=deepLink(currentTool,from,to,dep,ret,oneWay,band);
+  const text=`✈️ ${from} → ${to}`+(name?` (${name})`:"")+(price!=null?` dès ${price} €`:"")+(dep?` · ${frShort(dep)}`:"");
+  try{ if(navigator.share){ await navigator.share({title:"Escale",text,url}); return; } }catch(_){ return; }
+  try{ await navigator.clipboard.writeText(text+" — "+url); alert("Lien copié !"); }
+  catch(_){ prompt("Copie ce lien :",url); }
+}
+// applique un état reçu par lien profond au chargement ; renvoie l'outil cible (ou null)
+function applyDeepLink(){
+  const h=(location.hash||"").replace(/^#/,""); if(!h)return null;
+  const p=new URLSearchParams(h);
+  if(p.get("ow")==="1")oneWay=true;
+  const b=p.get("b"); if(b)band=b;
+  const dp=p.get("dep"); if(dp){ dep=dp; view=new Date(+dp.slice(0,4),+dp.slice(5,7)-1,1); }
+  const rt=p.get("ret"); if(rt&&!oneWay)ret=rt;
+  const o=p.get("o"); if(o&&findAirport(o))selectApt(o);   // en dernier : selectApt() relance refresh() avec dep déjà posé
+  return p.get("t")||"simple";
+}
+
 let priceReqId=0;
 async function fetchPrices(){
   if(!(origin&&dep)) return;
   const list=currentList(),myId=++priceReqId;
-  document.querySelectorAll(".price").forEach(el=>{el.textContent="…";el.className="price show loading";});
-  for(const d of list){
+  // squelettes de chargement (au lieu du "…")
+  document.querySelectorAll(".price").forEach(el=>{el.innerHTML='<span class="sk sk-price"></span>';el.className="price show loading";});
+  _pxAbort=()=>myId!==priceReqId;
+  const pkey=d=>"pr:"+origin.code+":"+d.i+":"+dep+":"+(oneWay?"ow":(ret||""));
+  const paint=(d,j)=>{
+    const el=document.querySelector(`.price[data-price="${d.i}"]`); if(!el)return;
+    if(j&&j.price){
+      _transfers[d.i]=(j.transfers==null?null:j.transfers);
+      histRecord(origin.code,d.i,oneWay,j.price);           // alimente l'historique perso
+      const trTxt=j.transfers===0?'<span class="drc">direct</span>':(j.transfers!=null?j.transfers+" esc":"");
+      const aln=airlineChip(j.airline);
+      const label="≈ "+j.price+" € · mois"+(aln?" · "+aln:"")+(trTxt?" · "+trTxt:"");
+      el.innerHTML=j.link?`<a href="${j.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${label}</a>`:label;
+      el.className="price show";
+      const row=el.closest(".dest"); if(row&&j.transfers===0)row.classList.add("direct");
+    }else{ el.textContent="";el.className="price"; }
+  };
+  // 1) peindre tout de suite ce qui est déjà en cache
+  const todo=[];
+  for(const d of list){ const c=pxGet(pkey(d)); if(c!==null){ paint(d,c); } else todo.push(d); }
+  applyStopsListDom();
+  // 2) récupérer le reste en parallèle (lots de 6) au lieu d'un par un
+  await inBatches(todo,6,async(d)=>{
     if(myId!==priceReqId)return;
-    const el=document.querySelector(`.price[data-price="${d.i}"]`);if(!el)continue;
     try{
       let u=`${API_BASE}/api/prices?origin=${origin.code}&destination=${d.i}&depart=${dep}`;
       if(!oneWay&&ret)u+=`&return=${ret}`;
-      const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();
+      const r=await fetch(u); if(!r.ok)throw 0; const j=await r.json();
       if(myId!==priceReqId)return;
-      if(j.price){
-        _transfers[d.i]=(j.transfers==null?null:j.transfers);
-        const trTxt=j.transfers===0?'<span class="drc">direct</span>':(j.transfers!=null?j.transfers+" esc":"");
-        const aln=airlineChip(j.airline);
-        const label="≈ "+j.price+" € · mois"+(aln?" · "+aln:"")+(trTxt?" · "+trTxt:"");
-        el.innerHTML=j.link?`<a href="${j.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${label}</a>`:label;
-        el.className="price show";
-        const row=el.closest(".dest"); if(row&&j.transfers===0)row.classList.add("direct");
-      }else{el.textContent="";el.className="price";}
-      applyStopsListDom();
-    }catch(_){el.textContent="";el.className="price";}
-  }
+      pxSet(pkey(d),j.price?j:{});      // mémorise (même "sans prix", pour ne pas re-tenter pendant 6 h)
+      paint(d,j); applyStopsListDom();
+    }catch(_){ const el=document.querySelector(`.price[data-price="${d.i}"]`); if(el){el.textContent="";el.className="price";} }
+  });
+  if(myId===priceReqId)_pxAbort=null;
 }
 
 /* réordonne et masque les lignes de Ma sélection selon le filtre escales,
@@ -1895,8 +2104,9 @@ function applyStopsListDom(){
 const overlay=document.getElementById("overlay");
 let calDest=null, pView=new Date(), pData=null, pReqId=0;
 document.getElementById("ovClose").onclick=closeCal;
-document.getElementById("pPrev").onclick=()=>{pView.setMonth(pView.getMonth()-1);loadPriceCal();};
-document.getElementById("pNext").onclick=()=>{pView.setMonth(pView.getMonth()+1);loadPriceCal();};
+document.getElementById("pPrev").onclick=()=>{ if(calYearMode)pView.setFullYear(pView.getFullYear()-1); else pView.setMonth(pView.getMonth()-1); loadPriceCal(); };
+document.getElementById("pNext").onclick=()=>{ if(calYearMode)pView.setFullYear(pView.getFullYear()+1); else pView.setMonth(pView.getMonth()+1); loadPriceCal(); };
+(function(){ const cv=document.getElementById("calView"); if(cv)cv.querySelectorAll("button").forEach(b=>b.onclick=()=>{ calYearMode=(b.dataset.cv==="year"); syncCalViewBtns(); loadPriceCal(); }); })();
 let calFrom=null, calFromCity=null;
 function openPriceCal(d,fromCode,fromCity){
   calDest=d; calFrom=fromCode||(origin&&origin.code); calFromCity=fromCity||(origin&&origin.city);
@@ -1914,23 +2124,90 @@ function openPriceCal(d,fromCode,fromCity){
   if(LIVE_Q&&LIVE_Q.exhausted)
     document.getElementById("ovLiveRes").textContent="quota live épuisé ce mois — prix en cache uniquement";
   setQuota();
+  calYearMode=false; syncCalViewBtns();
   loadPriceCal();
 }
 function closeCal(){overlay.classList.remove("show");document.body.style.overflow="";}
+let calYearMode=false;
+function calSkeletonGrid(){ let s='<div class="pgrid-sk">'; for(let i=0;i<35;i++)s+='<div class="sk"></div>'; return s+'</div>'; }
+async function loadCalWeather(){
+  const box=document.getElementById("ovWeather"); if(!box||!calDest)return;
+  if(calYearMode){ box.innerHTML=""; return; }
+  const mi=pView.getMonth();
+  box.innerHTML='<div class="wx" style="opacity:.55">météo à destination…</div>';
+  const w=await weatherFor(calDest.lat,calDest.lng,mi);
+  if(pView.getMonth()!==mi)return;                       // l'utilisateur a changé de mois entre-temps
+  box.innerHTML=w?wxLabel(w,mi):"";
+}
 async function loadPriceCal(){
+  if(calYearMode){ loadPriceCalYear(); return; }
   const y=pView.getFullYear(),m=pView.getMonth();
   document.getElementById("pLabel").textContent=MOIS[m]+" "+y;
   const wrap=document.getElementById("pgridWrap");
-  wrap.innerHTML=`<div class="ov-status">Chargement des prix…</div>`;
+  wrap.innerHTML=calSkeletonGrid();
+  loadCalWeather();
   const myId=++pReqId,month=y+"-"+pad(m+1);
+  const ck="cal:"+calFrom+":"+calDest.i+":"+month+":"+(oneWay?1:0);
+  const cached=pxGet(ck);
+  if(cached){ pData=cached; if(myId===pReqId)renderPriceCal(); return; }
   try{
     const r=await fetch(`${API_BASE}/api/calendar?origin=${calFrom}&destination=${calDest.i}&month=${month}&oneway=${oneWay?1:0}`);
     if(!r.ok)throw 0;const j=await r.json();if(myId!==pReqId)return;
-    pData=j.days||{};renderPriceCal();
+    pData=j.days||{}; pxSet(ck,pData);
+    renderPriceCal();
   }catch(_){
     if(myId!==pReqId)return;
     wrap.innerHTML=`<div class="ov-status">Aucun prix disponible (API non déployée, ou pas de cache pour cette route ce mois-ci).<br>Tu peux quand même choisir tes dates dans le calendrier principal.</div>`;
   }
+}
+/* Vue « année » : balaie 12 mois via /api/calendar (mis en cache → réchauffe aussi la vue mois),
+   min par mois en heatmap. Tape un mois pour revenir au détail jour de ce mois. */
+async function loadPriceCalYear(){
+  document.getElementById("pLabel").textContent="12 mois";
+  const box=document.getElementById("ovWeather"); if(box)box.innerHTML="";
+  const wrap=document.getElementById("pgridWrap");
+  wrap.innerHTML=`<div class="ov-status">Analyse des 12 prochains mois…</div>`;
+  const myId=++pReqId;
+  const base=new Date(pView.getFullYear(),pView.getMonth(),1);
+  const months=[]; for(let i=0;i<12;i++){ const d=new Date(base.getFullYear(),base.getMonth()+i,1); months.push({ym:iso(d).slice(0,7),d}); }
+  const mins={};
+  _pxAbort=()=>myId!==pReqId;
+  await inBatches(months,4,async(mo)=>{
+    const ck="cal:"+calFrom+":"+calDest.i+":"+mo.ym+":"+(oneWay?1:0);
+    let days=pxGet(ck);
+    if(!days){
+      try{ const r=await fetch(`${API_BASE}/api/calendar?origin=${calFrom}&destination=${calDest.i}&month=${mo.ym}&oneway=${oneWay?1:0}`);
+        if(r.ok){ const j=await r.json(); days=j.days||{}; pxSet(ck,days); } }catch(_){}
+    }
+    if(days){ const ps=Object.values(days).map(o=>o.price).filter(x=>x!=null); if(ps.length)mins[mo.ym]=Math.min(...ps); }
+  });
+  _pxAbort=null;
+  if(myId!==pReqId)return;
+  renderPriceCalYear(months,mins);
+}
+function renderPriceCalYear(months,mins){
+  const vals=Object.values(mins);
+  const mn=vals.length?Math.min(...vals):0, mx=vals.length?Math.max(...vals):0;
+  const bestYm=vals.length?Object.keys(mins).reduce((a,b)=>mins[b]<mins[a]?b:a):null;
+  let html='<div class="ygrid">';
+  months.forEach(mo=>{
+    const p=mins[mo.ym], lab=MOIS[mo.d.getMonth()].slice(0,4)+" "+String(mo.d.getFullYear()).slice(2);
+    if(p==null){ html+=`<div class="ycell nodata"><span class="ym">${lab}</span><span class="yp">—</span></div>`; return; }
+    const bg=priceColor(p,mn,mx);
+    html+=`<div class="ycell${mo.ym===bestYm?" best":""}" style="background:${bg}" data-ym="${mo.ym}"><span class="ym">${lab}</span><span class="yp">${p}€</span></div>`;
+  });
+  html+='</div>';
+  if(!vals.length) html='<div class="ov-status">Pas de prix en cache sur les 12 prochains mois pour cette route.</div>';
+  else if(bestYm){ const bm=months.find(x=>x.ym===bestYm); html+=`<div class="cal-verdict"><b>🟢 Le moins cher</b> : ${MOIS[bm.d.getMonth()]} ${bm.d.getFullYear()} — dès ${mins[bestYm]}€. <span style="color:var(--muted);font-style:italic">Tape un mois pour voir le détail jour par jour.</span></div>`; }
+  const wrap=document.getElementById("pgridWrap");
+  wrap.innerHTML=html;
+  wrap.querySelectorAll(".ycell[data-ym]").forEach(el=>el.onclick=()=>{
+    const p=el.dataset.ym.split("-"); pView=new Date(+p[0],+p[1]-1,1); calYearMode=false; syncCalViewBtns(); loadPriceCal();
+  });
+}
+function syncCalViewBtns(){
+  const seg=document.getElementById("calView"); if(!seg)return;
+  seg.querySelectorAll("button").forEach(b=>b.classList.toggle("on",(b.dataset.cv==="year")===calYearMode));
 }
 function priceColor(p,min,max){
   if(min===max)return "hsl(120 55% 30%)";
@@ -1998,6 +2275,10 @@ function renderPriceCal(){
   let start=(new Date(y,m,1).getDay()+6)%7;
   const prices=Object.values(pData).map(o=>o.price);
   const min=prices.length?Math.min(...prices):0,max=prices.length?Math.max(...prices):0;
+  const _sp=[...prices].sort((a,b)=>a-b);
+  const median=_sp.length?_sp[Math.floor(_sp.length/2)]:0;
+  const anomLimit=median?median*0.55:0;              // repère "prix anormalement bas" (possible erreur tarifaire)
+  let anomCount=0,anomCheapest=null;
   let html='<div class="pgrid">'+["L","M","M","J","V","S","D"].map(x=>`<div class="dow">${x}</div>`).join("");
   for(let i=0;i<start;i++)html+='<div class="pday out"></div>';
   for(let dn=1;dn<=dim;dn++){
@@ -2006,8 +2287,10 @@ function renderPriceCal(){
     const bg=priceColor(o.price,min,max);
     const direct=o.transfers===0?" direct":"";
     const selCls=(ds===dep)?" sel":"";
-    html+=`<div class="pday${direct}${selCls}" style="background:${bg}" data-pick="${ds}">
-      <span class="dd">${dn}</span><span class="pp">${o.price}€</span></div>`;
+    const isAnom=anomLimit&&prices.length>=6&&o.price<anomLimit;
+    if(isAnom){ anomCount++; if(!anomCheapest||o.price<anomCheapest.price)anomCheapest={ds,price:o.price}; }
+    html+=`<div class="pday${direct}${selCls}${isAnom?" anom":""}" style="background:${bg}" data-pick="${ds}">
+      ${isAnom?'<span class="anom-tag">⚡</span>':''}<span class="dd">${dn}</span><span class="pp">${o.price}€</span></div>`;
   }
   html+="</div>";
   // Sans date dans l'URL, Kayak ignore la route et affiche un exemple par défaut
@@ -2033,7 +2316,9 @@ function renderPriceCal(){
       const sorted=[...prices].sort((a,b)=>a-b);
       const t1=sorted[Math.floor(sorted.length/3)], t2=sorted[Math.floor(sorted.length*2/3)];
       const verdict=p=> p<=t1?'🟢 bon prix':(p<=t2?'🟠 dans la moyenne':'🔴 cher');
-      let sv='<div class="cal-verdict"><b>💶 Ce mois</b> : '+min+'€ → '+max+'€ &nbsp;·&nbsp; 🟢 ≤'+t1+'€ &nbsp; 🔴 ≥'+t2+'€';
+      const _fa=findAirport(calFrom);
+      const _km=(_fa&&_fa.lat!=null&&calDest.lat!=null)?haversine(_fa,calDest):null, _c=co2kg(_km);
+      let sv='<div class="cal-verdict"><b>💶 Ce mois</b> : '+min+'€ → '+max+'€ &nbsp;·&nbsp; 🟢 ≤'+t1+'€ &nbsp; 🔴 ≥'+t2+'€'+(_c!=null?' <span class="co2">≈ '+_c+' kg CO₂</span>':'');
       const selo=(dep&&pData[dep])?pData[dep]:null;
       if(selo) sv+='<br><b>Ta date ('+dep.slice(8,10)+'/'+dep.slice(5,7)+')</b> : '+verdict(selo.price)+' — '+selo.price+'€ '+(selo.transfers===0?'(direct)':'');
       sv+=' <span style="color:var(--muted);font-style:italic">· comparé aux autres dates du mois</span></div>';
@@ -2049,9 +2334,15 @@ function renderPriceCal(){
     // Lien toujours proposé (route + date pré-remplies) : l'utilisateur active ensuite
     // « dates flexibles » directement sur la page Kayak.
     if(kLink)html+=`<div class="ov-status" style="margin-top:12px;text-align:center">${kLink}</div>`;
+    if(anomCount){ html+=`<div class="anom-note">⚡ <b>${anomCount} date${anomCount>1?"s":""} anormalement bas${anomCount>1?"ses":"se"}</b> ce mois (${anomCheapest.price}€ le ${frShort(anomCheapest.ds)}, &lt; moitié de la médiane ${median}€). Possible erreur tarifaire ou promo courte — à confirmer vite avec ⚡ ou un comparateur.</div>`; }
+    html+=histBlock(calFrom,calDest.i,oneWay);
+    html+=`<div class="ovacts"><button class="ovact" id="ovShare">↗ Partager cette route</button>${dep?`<button class="ovact" id="ovIcs">📅 Ajouter au calendrier</button>`:``}</div>`;
+    if(prices.length)histRecord(calFrom,calDest.i,oneWay,min);   // relève le mini du mois dans l'historique perso
   }
   document.getElementById("pgridWrap").innerHTML=html;
   document.getElementById("pgridWrap").querySelectorAll(".pday[data-pick]").forEach(el=>el.onclick=()=>pickFromCal(el.dataset.pick));
+  const _sh=document.getElementById("ovShare"); if(_sh)_sh.onclick=()=>shareRoute(calFrom,calDest.i,calDest.n,dep,(!oneWay?ret:null),min||null);
+  const _ic=document.getElementById("ovIcs"); if(_ic)_ic.onclick=()=>icsDownload(calFrom,calDest.i,calDest.n,dep,(!oneWay&&ret&&ret>=dep?ret:null),(dep&&pData[dep])?pData[dep].price:(min||null));
 }
 function pickFromCal(ds){
   const o=pData[ds];
@@ -2729,6 +3020,8 @@ async function runCapLibre(){
     box.innerHTML=wins.map((w,i)=>clWinCard(w,i===0)).join("");
     bindCalPick(box);
     box.querySelectorAll(".cllive").forEach(b=>b.onclick=()=>clLive(b.dataset.clfrom,b.dataset.cldest,b.dataset.cldate,b.dataset.clret||null,b));
+    box.querySelectorAll(".clshare").forEach(b=>b.onclick=()=>shareRoute(b.dataset.clfrom,b.dataset.cldest,NAMES[b.dataset.cldest]||b.dataset.cldest,b.dataset.cldate,b.dataset.clret||null,+b.dataset.clprice||null));
+    box.querySelectorAll(".clics").forEach(b=>b.onclick=()=>icsDownload(b.dataset.clfrom,b.dataset.cldest,NAMES[b.dataset.cldest]||b.dataset.cldest,b.dataset.cldate,b.dataset.clret||null,+b.dataset.clprice||null));
   }catch(e){
     box.innerHTML='<div class="empty">Cap Libre indisponible pour le moment. Réessaie dans un instant.</div>';
   }
@@ -2773,6 +3066,7 @@ function clWinCard(w,isTop){
       <div class="clwin-cost">à partir de <b>${w.minPrice} €</b> · ${w.best.length} destination${w.best.length>1?"s":""}</div>
     </div>
     ${dests}
+    ${(w.best&&w.best.length)?`<div class="ovacts"><button class="ovact clshare" data-clfrom="${w.best[0].from}" data-cldest="${w.best[0].dest}" data-cldate="${w.date}" data-clret="${(!oneWay&&w.best[0].return_at)?w.best[0].return_at.slice(0,10):""}" data-clprice="${w.best[0].price}">↗ Partager</button><button class="ovact clics" data-clfrom="${w.best[0].from}" data-cldest="${w.best[0].dest}" data-cldate="${w.date}" data-clret="${(!oneWay&&w.best[0].return_at)?w.best[0].return_at.slice(0,10):""}" data-clprice="${w.best[0].price}">📅 Calendrier</button></div>`:""}
     <div class="clwhy">${why}</div>
   </div>`;
 }
@@ -3646,7 +3940,18 @@ window.Radar=(()=>{
     });
     html+='<div class="radar-foot">Cache gratuit ≤ 7 j · touche le ⚡ pour le prix réel avant de réserver.</div>';
     sec.innerHTML=html;
-    bindHead(); bindResults(); applyPriceFilter();
+    bindHead(); bindResults(); applyPriceFilter(); markTargets();
+  }
+  // surligne les vols sous ton seuil cible (post-rendu : toutes les lignes portent data-price)
+  function markTargets(){
+    const sec=document.getElementById("radarSec"); if(!sec)return;
+    sec.querySelectorAll(".tgt").forEach(el=>el.remove());
+    const t=loadSet().target; if(!t||!(t>0))return;
+    sec.querySelectorAll("[data-price]").forEach(row=>{
+      const p=+row.getAttribute("data-price"); if(!(p<=t))return;
+      const city=row.querySelector(".rd-city");
+      if(city && !city.querySelector(".tgt")) city.insertAdjacentHTML("beforeend",' <span class="tgt">🎯 cible</span>');
+    });
   }
 
   function bindHead(){
@@ -3738,32 +4043,40 @@ window.Radar=(()=>{
   }
 
   /* ---------- réglages (zones) ---------- */
-  function renderSettings(){
+  function renderSettings(editorMode){
     const sec=document.getElementById("radarSec"); if(!sec) return;
+    if(editorMode && !_edit) return;                 // sécurité : mode éditeur sans zone en cours
     revealRadar("✦ Radar — réglages",true);
     const zones=loadZones(), set=loadSet();
     let html=headHTML("réglages — zones de surveillance")+'<div class="rdset">';
     html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app. Les prix viennent du cache gratuit — le ⚡ confirme le tarif réel.</div>';
-    // notifications retirées (elles laissaient un badge "1" persistant sur Android) —
-    // le Radar se consulte à l'ouverture de l'app. (Le mode soft/premium est dans le header.)
-    // destinations surveillées (globales) : ajout rapide par recherche + puces à retirer
-    const watch=loadWatch();
-    html+='<label class="rd-fld" style="margin-top:4px">★ Destinations surveillées <span style="font-weight:400;color:var(--muted)">— épinglées en tête des résultats</span></label>';
-    html+='<div class="rd-chiprow" id="rdWatchChips">'
-      +(watch.length?watch.map(c=>'<span class="rd-chip"><b>'+c+'</b>'+(NAMES[c]?' '+esc(NAMES[c]):'')+' <button data-rmwatch="'+c+'">✕</button></span>').join(""):'<span class="rdz-meta">aucune — ajoute-en ci-dessous ou touche l\'étoile ☆ d\'un résultat</span>')
-      +'</div>';
-    html+='<div class="rd-add"><input id="rdWatchInput" type="search" autocomplete="off" placeholder="Ville ou aéroport à surveiller (ex. Porto, Athènes…)"></div><div id="rdWatchAc"></div>';
-    // zones
-    if(!zones.length && editing!=="new")
-      html+='<div class="rdz-empty" style="margin:12px 0">Aucune zone pour l\'instant.</div>';
+    // notifications retirées (badge "1" persistant sur Android) — le Radar se consulte à l'ouverture.
+    // Le bloc seuil + destinations surveillées n'est montré QUE hors édition de zone
+    // (pendant l'édition, on n'affiche pas la recherche pour ne pas voler le focus / sauter le scroll).
+    if(!editorMode){
+      html+=targetHtml(set);
+      const watch=loadWatch();
+      html+='<label class="rd-fld" style="margin-top:4px">★ Destinations surveillées <span style="font-weight:400;color:var(--muted)">— épinglées en tête des résultats</span></label>';
+      html+='<div class="rd-chiprow" id="rdWatchChips">'
+        +(watch.length?watch.map(c=>'<span class="rd-chip"><b>'+c+'</b>'+(NAMES[c]?' '+esc(NAMES[c]):'')+' <button data-rmwatch="'+c+'">✕</button></span>').join(""):'<span class="rdz-meta">aucune — ajoute-en ci-dessous ou touche l\'étoile ☆ d\'un résultat</span>')
+        +'</div>';
+      html+='<div class="rd-add"><input id="rdWatchInput" type="search" autocomplete="off" placeholder="Ville ou aéroport à surveiller (ex. Porto, Athènes…)"></div><div id="rdWatchAc"></div>';
+      if(!zones.length && editing!=="new")
+        html+='<div class="rdz-empty" style="margin:12px 0">Aucune zone pour l\'instant.</div>';
+    }
     zones.forEach(z=>{ html+= (editing===z.id) ? zoneEditor(_edit||z) : zoneSummary(z); });
     if(editing==="new") html+=zoneEditor(_edit||zoneDefault());
     html+='<div class="rdset-foot">';
-    if(editing!=="new") html+='<button class="rd-mini acc" id="rdAddZone">+ Nouvelle zone</button>';
+    if(editing!=="new" && !editorMode) html+='<button class="rd-mini acc" id="rdAddZone">+ Nouvelle zone</button>';
     html+='<button class="rd-mini" id="rdBackRes">← Retour au radar</button></div>';
     html+='</div>';
     sec.innerHTML=html;
     bindHead(); bindSettings();
+  }
+  function targetHtml(set){
+    const v=(set&&set.target>0)?set.target:"";
+    return '<div class="rd-target"><label class="rd-fld">🎯 Seuil de prix cible <span style="font-weight:400;color:var(--muted)">— surligne les vols sous ce prix</span></label>'
+      +'<input id="rdTarget" type="number" inputmode="numeric" min="0" step="10" placeholder="ex. 80" value="'+v+'"> €</div>';
   }
   function zoneSummary(z){
     const mm=(z.months||[]).map(ym=>{const p=ym.split("-");return MOIS[(+p[1])-1].slice(0,4)+".";}).join(" ");
@@ -3858,15 +4171,9 @@ window.Radar=(()=>{
   let _origNames={};
   function origName(c){ return NAMES[c]||_origNames[c]||""; }
   function bindSettings(){
-    const notify=document.getElementById("rdNotify");
-    if(notify)notify.onclick=async()=>{
-      const set=loadSet();
-      if(!set.notify){ const p=await notifyPermission(); if(p==="granted"){set.notify=true;} else {set.notify=false;} }
-      else set.notify=false;
-      saveSet(set); renderSettings();
-    };
-    const push=document.getElementById("rdPush");
-    if(push)push.onclick=async()=>{ const s=loadSet(); if(!s.push){ const ok=await enableBackgroundPush(); s.push=ok; } else { await disableBackgroundPush(); s.push=false; } saveSet(s); renderSettings(); };
+    // seuil de prix cible (les toggles notif/push ont été retirés — code mort supprimé)
+    const tgt=document.getElementById("rdTarget");
+    if(tgt)tgt.onchange=()=>{ const s=loadSet(); const n=parseInt(tgt.value,10); s.target=(n>0?n:0); saveSet(s); };
     const soft=document.getElementById("rdSoft");
     if(soft)soft.onclick=()=>{ const code=prompt("Code pour changer de mode :"); if(code===null)return; if(code.trim()!=="19871502"){alert("Code incorrect.");return;} localStorage.setItem(SOFT_KEY, SOFT_MODE?"premium":"soft"); location.reload(); };
     const add=document.getElementById("rdAddZone"); if(add)add.onclick=()=>{ editing="new"; _edit=zoneDefault(); renderSettings(); };
@@ -3954,28 +4261,8 @@ window.Radar=(()=>{
   }
   // re-render de l'éditeur en gardant le buffer _edit (préserve type de trajet/mois cochés)
   function redrawEditor(){ const y=window.scrollY; renderSettingsWithEdit(); window.scrollTo(0,y); }
-  function renderSettingsWithEdit(){
-    const sec=document.getElementById("radarSec"); if(!sec||!_edit) return;
-    // reconstruit tout le panneau réglages mais l'éditeur lit _edit
-    const zones=loadZones(), set=loadSet();
-    let html=headHTML("réglages — zones de surveillance")+'<div class="rdset">';
-    html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app. Le ⚡ confirme le tarif réel.</div>';
-    const nOn=set.notify && (!("Notification" in window)||Notification.permission==="granted");
-    // notifications retirées (badge Android persistant) — mode soft/premium dans le header
-    zones.forEach(z=>{ html+=(editing===z.id)?zoneEditor(_edit):zoneSummary(z); });
-    if(editing==="new") html+=zoneEditor(_edit);
-    html+='<div class="rdset-foot"><button class="rd-mini" id="rdBackRes">← Retour au radar</button></div></div>';
-    sec.innerHTML=html;
-    bindHead();
-    const notify=document.getElementById("rdNotify");
-    if(notify)notify.onclick=async()=>{ const s=loadSet(); if(!s.notify){const p=await notifyPermission();s.notify=p==="granted";}else s.notify=false; saveSet(s); renderSettingsWithEdit(); };
-    const push=document.getElementById("rdPush");
-    if(push)push.onclick=async()=>{ const s=loadSet(); if(!s.push){ const ok=await enableBackgroundPush(); s.push=ok; } else { await disableBackgroundPush(); s.push=false; } saveSet(s); renderSettingsWithEdit(); };
-    const soft=document.getElementById("rdSoft");
-    if(soft)soft.onclick=()=>{ const code=prompt("Code pour changer de mode :"); if(code===null)return; if(code.trim()!=="19871502"){alert("Code incorrect.");return;} localStorage.setItem(SOFT_KEY, SOFT_MODE?"premium":"soft"); location.reload(); };
-    const back=document.getElementById("rdBackRes"); if(back)back.onclick=()=>{ editing=null;_edit=null; view="results"; renderResults(); rescan(); };
-    bindEditor();
-  }
+  // fusionné : le mode éditeur passe par renderSettings(true) — plus de panneau dupliqué à maintenir
+  function renderSettingsWithEdit(){ renderSettings(true); }
   function saveEditor(){
     if(!_edit)return;
     _edit.origins=[...new Set((_edit.origins||[]).filter(Boolean))].slice(0,5);
@@ -4064,6 +4351,7 @@ const TOOL_HINT={
 };
 function showTool(t){
   currentTool=t;
+  try{localStorage.setItem("escale:lasttool",t);}catch(_){}
   document.body.className=document.body.className.replace(/\btool-\S+/g,"").replace(/\bfocused\b/g,"").trim();
   document.body.classList.add("tool-"+t);
   if(t!=="simple")document.body.classList.add("focused");
@@ -4083,7 +4371,13 @@ function showTool(t){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll(".toolpill").forEach(b=>b.onclick=()=>showTool(b.dataset.tool));
-showTool("simple");
+(function bootTool(){
+  let t=null;
+  try{ t=applyDeepLink(); }catch(_){ t=null; }                 // lien profond partagé (rouvre la même recherche)
+  if(!t){ try{ const lt=localStorage.getItem("escale:lasttool"); if(lt)t=lt; }catch(_){} }  // sinon : dernier outil utilisé
+  try{ drawCal(); refresh(); }catch(_){}
+  showTool(t||"simple");
+})();
 </script>
 </body>
 </html>
