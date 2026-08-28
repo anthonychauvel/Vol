@@ -1267,6 +1267,14 @@ let view=new Date(); view.setDate(1);
 // voitures) sont coupées pour protéger les quotas. Le premium se débloque par code.
 const SOFT_KEY="ESCALE_SOFT";
 let SOFT_MODE = (localStorage.getItem(SOFT_KEY)||"soft")!=="premium";
+// Bouton mode soft/premium dans la bulle de bienvenue (protégé par code). Câblé ici, au tout
+// début, pour qu'il fonctionne toujours (le script est en fin de <body> : le bouton existe déjà).
+(function(){
+  const mt=document.getElementById("modeToggle"); if(!mt)return;
+  mt.textContent = SOFT_MODE ? "◐ Mode SOFT · appuyer pour PREMIUM" : "● Mode PREMIUM · appuyer pour SOFT";
+  mt.classList.toggle("premium", !SOFT_MODE);
+  mt.onclick=()=>{ const code=prompt("Code pour changer de mode :"); if(code===null)return; if(String(code).trim()!=="19871502"){alert("Code incorrect.");return;} localStorage.setItem(SOFT_KEY, SOFT_MODE?"premium":"soft"); location.reload(); };
+})();
 let mode="anywhere";
 let stops="all";           // all | direct | 1(avec escale)
 const _transfers={};       // code destination -> nb escales (Ma sélection, chargé avec les prix)
@@ -1492,13 +1500,6 @@ function selectApt(code){
   }
   alBox.classList.add("show");
   renderAirports();renderDispatch();refresh();renderRecent();
-  // Bouton mode soft/premium dans la bulle de bienvenue (protégé par code).
-  (function(){
-    const mt=document.getElementById("modeToggle"); if(!mt)return;
-    mt.textContent = SOFT_MODE ? "◐ Mode soft · appuyer pour premium" : "● Mode premium actif";
-    mt.classList.toggle("premium", !SOFT_MODE);
-    mt.onclick=()=>{ const code=prompt("Code pour changer de mode :"); if(code===null)return; if(code.trim()!=="19871502"){alert("Code incorrect.");return;} localStorage.setItem(SOFT_KEY, SOFT_MODE?"premium":"soft"); location.reload(); };
-  })();
   // Nettoyage notifications : retire le badge d'app persistant (le "1" rouge sur Android),
   // ferme les notifications restantes et supprime tout abonnement push encore actif.
   (async()=>{
