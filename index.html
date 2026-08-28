@@ -407,6 +407,8 @@
   .hint.show{display:block}
   footer{text-align:center;color:var(--muted);font-size:11px;margin-top:30px;font-family:var(--mono);letter-spacing:.08em}
   .quotaline{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:6px;letter-spacing:.02em}
+  .mode-toggle{margin-top:10px;background:var(--panel-2);border:1px solid var(--brass-rim);color:var(--brass-face);font-family:var(--mono);font-size:11px;letter-spacing:.03em;border-radius:999px;padding:6px 13px;cursor:pointer;position:relative;z-index:2}
+  .mode-toggle.premium{color:var(--amber);border-color:var(--amber)}
   /* ---- Cap Libre ---- */
   .clfld{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
   .clseg{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
@@ -800,6 +802,7 @@
     <h1>Mettre le cap <span>— tes ports, tes dates, le prix jour par jour</span></h1>
     <p class="sub">Aéroport, type de trajet, dates (n° de semaine + paire/impaire), filtre durée. Touche une destination pour le calendrier de prix couleur.</p>
   <p class="quotaline" id="headerQuota"></p>
+  <button id="modeToggle" class="mode-toggle" type="button"></button>
     </div>
   </header>
 
@@ -971,6 +974,13 @@
       <div class="clseg" id="clConstraints">
         <button data-clc="ponts" class="on">🇫🇷 Ponts &amp; fériés</button>
       </div>
+
+      <label class="clfld" style="margin-top:14px">Départs supplémentaires</label>
+      <div class="opicker">
+        <input id="clInput" type="search" inputmode="search" autocomplete="off" placeholder="En plus de l'étape I : Rennes, Brest…">
+        <div class="odrop" id="clDrop"></div>
+      </div>
+      <div class="ochips" id="clChips"></div>
 
       <label class="clfld" style="margin-top:14px">Mois à explorer</label>
       <div class="clseg" id="clMonths"></div>
@@ -1478,6 +1488,13 @@ function selectApt(code){
   }
   alBox.classList.add("show");
   renderAirports();renderDispatch();refresh();renderRecent();
+  // Bouton mode soft/premium dans la bulle de bienvenue (protégé par code).
+  (function(){
+    const mt=document.getElementById("modeToggle"); if(!mt)return;
+    mt.textContent = SOFT_MODE ? "◐ Mode soft · appuyer pour premium" : "● Mode premium actif";
+    mt.classList.toggle("premium", !SOFT_MODE);
+    mt.onclick=()=>{ const code=prompt("Code pour changer de mode :"); if(code===null)return; if(code.trim()!=="19871502"){alert("Code incorrect.");return;} localStorage.setItem(SOFT_KEY, SOFT_MODE?"premium":"soft"); location.reload(); };
+  })();
   // Nettoyage notifications : retire le badge d'app persistant (le "1" rouge sur Android),
   // ferme les notifications restantes et supprime tout abonnement push encore actif.
   (async()=>{
@@ -1632,7 +1649,7 @@ function renderDispatch(){
   else if(mode==="stay") renderStay();
   else if(mode==="compare"){renderCmpChips();renderCmpDestChip();renderCompare();}
   else if(mode==="cross"){renderXChips();renderXDestChips();renderCross();}
-  else if(mode==="caplibre"){ if(!CL_MONTHS_BUILT)buildClMonths(); clSyncOneWay(); }
+  else if(mode==="caplibre"){ if(!CL_MONTHS_BUILT)buildClMonths(); clSyncOneWay(); renderClChips(); }
   else renderAnywhere();
   if(window.Radar)Radar.note(mode);   // alimente la veille Radar au fil de la navigation
 }
@@ -2043,6 +2060,10 @@ function pickFromCal(ds){
    La bascule est décidée côté serveur ; le compteur SerpApi est le vrai chiffre
    du compte (account.json), pas une estimation locale.
    Aucun appel automatique : uniquement sur le bouton ⚡. Cache serveur 6 h. */
+// Mode soft/premium : en soft (défaut), les API à token payant (⚡ prix réel, Booking,
+// voitures) sont désactivées pour protéger les quotas. Le premium se débloque par code.
+const SOFT_KEY="ESCALE_SOFT";
+let SOFT_MODE = (localStorage.getItem(SOFT_KEY)||"soft")!=="premium";
 let LIVE_OK=false, LIVE_Q=null;
 
 function fmtQuota(){
@@ -2156,8 +2177,8 @@ document.getElementById("ovLiveBtn").onclick=async function(){
   }catch(_){res.textContent="prix live indisponible";}
   btn.disabled=!!(LIVE_Q&&LIVE_Q.exhausted);
 };
-// sonde d'état : quelles clés sont branchées, combien de crédits restent ?
-fetch(`${API_BASE}/api/live`).then(r=>r.json()).then(j=>{
+// sonde d'état : quelles clés sont branchées, combien de crédits restent ? (coupée en soft)
+if(!SOFT_MODE) fetch(`${API_BASE}/api/live`).then(r=>r.json()).then(j=>{
   LIVE_OK=!!(j&&j.configured);
   if(LIVE_OK){setQuota(j);renderDispatch();}
 }).catch(()=>{});
@@ -2275,7 +2296,7 @@ async function searchHotelsBooking(){
   btn.disabled=false;
 }
 let BOOKING_OK=false;
-fetch(`${API_BASE}/api/stays`).then(r=>r.json()).then(j=>{
+if(!SOFT_MODE) fetch(`${API_BASE}/api/stays`).then(r=>r.json()).then(j=>{
   BOOKING_OK=!!(j&&j.configured);
   const b=document.getElementById("hBooking"); if(b)b.style.display=BOOKING_OK?"block":"none";
 }).catch(()=>{});
@@ -2333,9 +2354,10 @@ async function searchHotelsLive(){
 document.getElementById("hLive").onclick=searchHotelsLive;
 
 /* ================= COMPARATEUR & CROISÉ (multi-départs) ================= */
-const LS_CMP="ESCALE_CMP_V1", LS_X="ESCALE_CROSS_V1";
+const LS_CMP="ESCALE_CMP_V1", LS_X="ESCALE_CROSS_V1", LS_CL="ESCALE_CL_ORIG_V1";
 let cmpOrigins=loadArr(LS_CMP);       // [{code,city}]
 let xOrigins=loadArr(LS_X);
+let clOrigins=loadArr(LS_CL);   // départs supplémentaires propres à Cap Libre (en plus de l'étape I)
 let cmpWeight=0.35, xSort="total";
 let cmpDestCode=null, cmpDestName=null, cmpView="best";
 const LS_XDEST="ESCALE_XDEST_V1";
@@ -2453,6 +2475,9 @@ function chipsHtml(list){return list.map(o=>
 
 makeOriginPicker("cmpInput","cmpDrop",()=>cmpOrigins,v=>{cmpOrigins=v;saveArr(LS_CMP,v);},5,()=>{renderCmpChips();renderCompare();});
 makeOriginPicker("xInput","xDrop",()=>xOrigins,v=>{xOrigins=v;saveArr(LS_X,v);},3,()=>{renderXChips();renderCross();});
+makeOriginPicker("clInput","clDrop",()=>clOrigins,v=>{clOrigins=v;saveArr(LS_CL,v);},4,()=>{renderClChips();runCapLibre();});
+function renderClChips(){const el=document.getElementById("clChips");if(!el)return;el.innerHTML=chipsHtml(clOrigins);
+  el.querySelectorAll(".ox").forEach(x=>x.onclick=()=>{clOrigins=clOrigins.filter(o=>o.code!==x.dataset.rm);saveArr(LS_CL,clOrigins);renderClChips();runCapLibre();});}
 function renderCmpChips(){const el=document.getElementById("cmpChips");el.innerHTML=chipsHtml(cmpOrigins);
   el.querySelectorAll(".ox").forEach(x=>x.onclick=()=>{cmpOrigins=cmpOrigins.filter(o=>o.code!==x.dataset.rm);saveArr(LS_CMP,cmpOrigins);renderCmpChips();renderCompare();});}
 function renderXChips(){const el=document.getElementById("xChips");el.innerHTML=chipsHtml(xOrigins);
@@ -2621,11 +2646,15 @@ function clSyncOneWay(){
 }
 
 function clOriginCodes(){
-  // Cap Libre est multi-départs : on réutilise les origines du mode Croisé si définies,
-  // sinon l'origine simple. (xOrigins existe déjà pour le mode Croisé.)
+  // Aéroport de l'étape I + départs supplémentaires propres à Cap Libre (dédupliqués).
+  const codes=[];
+  if(origin && origin.code) codes.push(origin.code);
+  if(typeof clOrigins!=="undefined" && clOrigins) clOrigins.forEach(o=>{ if(o.code && !codes.includes(o.code)) codes.push(o.code); });
+  if(codes.length) return codes.slice(0,5);
+  // repli si rien à l'étape I ni en supplément : réutilise les départs du mode Croisé
   if(typeof xOrigins!=="undefined" && xOrigins && xOrigins.length)
     return xOrigins.map(o=>o.code).filter(Boolean).slice(0,5);
-  return origin?[origin.code]:[];
+  return [];
 }
 // destinations à balayer : le réseau RÉEL desservi par l'aéroport de départ noté —
 // vols directs ET lignes avec correspondance confondus (/api/anywhere, comme pour
@@ -2860,8 +2889,8 @@ function rentalcarsURL(city,ci,co){
   return "https://www.rentalcars.com/SearchResults.do?"+p.toString();
 }
 let CARS_OK=false;
-// sonde : la clé RapidAPI est-elle branchée ?
-fetch(`${API_BASE}/api/cars`).then(r=>r.json()).then(j=>{
+// sonde : la clé RapidAPI est-elle branchée ? (coupée en soft)
+if(!SOFT_MODE) fetch(`${API_BASE}/api/cars`).then(r=>r.json()).then(j=>{
   CARS_OK=!!(j&&j.configured);
   const b=document.getElementById("carSearch");
   if(b)b.style.display=CARS_OK?"block":"none";      // sans clé : on ne montre que le lien Discover Cars
@@ -3711,7 +3740,7 @@ window.Radar=(()=>{
     let html=headHTML("réglages — zones de surveillance")+'<div class="rdset">';
     html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app. Les prix viennent du cache gratuit — le ⚡ confirme le tarif réel.</div>';
     // notifications retirées (elles laissaient un badge "1" persistant sur Android) —
-    // le Radar se consulte à l'ouverture de l'app.
+    // le Radar se consulte à l'ouverture de l'app. (Le mode soft/premium est dans le header.)
     // destinations surveillées (globales) : ajout rapide par recherche + puces à retirer
     const watch=loadWatch();
     html+='<label class="rd-fld" style="margin-top:4px">★ Destinations surveillées <span style="font-weight:400;color:var(--muted)">— épinglées en tête des résultats</span></label>';
@@ -3833,6 +3862,8 @@ window.Radar=(()=>{
     };
     const push=document.getElementById("rdPush");
     if(push)push.onclick=async()=>{ const s=loadSet(); if(!s.push){ const ok=await enableBackgroundPush(); s.push=ok; } else { await disableBackgroundPush(); s.push=false; } saveSet(s); renderSettings(); };
+    const soft=document.getElementById("rdSoft");
+    if(soft)soft.onclick=()=>{ const code=prompt("Code pour changer de mode :"); if(code===null)return; if(code.trim()!=="19871502"){alert("Code incorrect.");return;} localStorage.setItem(SOFT_KEY, SOFT_MODE?"premium":"soft"); location.reload(); };
     const add=document.getElementById("rdAddZone"); if(add)add.onclick=()=>{ editing="new"; _edit=zoneDefault(); renderSettings(); };
     const back=document.getElementById("rdBackRes"); if(back)back.onclick=()=>{ editing=null;_edit=null; view="results"; renderResults(); rescan(); pushResync(); };
     // destinations surveillées : recherche mondiale (même moteur que les aéroports) + retrait
@@ -3925,7 +3956,7 @@ window.Radar=(()=>{
     let html=headHTML("réglages — zones de surveillance")+'<div class="rdset">';
     html+='<div class="rd-note">Le Radar se rafraîchit à chaque <b>ouverture</b> de l\'app. Le ⚡ confirme le tarif réel.</div>';
     const nOn=set.notify && (!("Notification" in window)||Notification.permission==="granted");
-    // notifications retirées (badge Android persistant)
+    // notifications retirées (badge Android persistant) — mode soft/premium dans le header
     zones.forEach(z=>{ html+=(editing===z.id)?zoneEditor(_edit):zoneSummary(z); });
     if(editing==="new") html+=zoneEditor(_edit);
     html+='<div class="rdset-foot"><button class="rd-mini" id="rdBackRes">← Retour au radar</button></div></div>';
@@ -3935,6 +3966,8 @@ window.Radar=(()=>{
     if(notify)notify.onclick=async()=>{ const s=loadSet(); if(!s.notify){const p=await notifyPermission();s.notify=p==="granted";}else s.notify=false; saveSet(s); renderSettingsWithEdit(); };
     const push=document.getElementById("rdPush");
     if(push)push.onclick=async()=>{ const s=loadSet(); if(!s.push){ const ok=await enableBackgroundPush(); s.push=ok; } else { await disableBackgroundPush(); s.push=false; } saveSet(s); renderSettingsWithEdit(); };
+    const soft=document.getElementById("rdSoft");
+    if(soft)soft.onclick=()=>{ const code=prompt("Code pour changer de mode :"); if(code===null)return; if(code.trim()!=="19871502"){alert("Code incorrect.");return;} localStorage.setItem(SOFT_KEY, SOFT_MODE?"premium":"soft"); location.reload(); };
     const back=document.getElementById("rdBackRes"); if(back)back.onclick=()=>{ editing=null;_edit=null; view="results"; renderResults(); rescan(); };
     bindEditor();
   }
