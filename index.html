@@ -1275,6 +1275,10 @@ let SOFT_MODE = (localStorage.getItem(SOFT_KEY)||"soft")!=="premium";
   mt.classList.toggle("premium", !SOFT_MODE);
   mt.onclick=()=>{ const code=prompt("Code pour changer de mode :"); if(code===null)return; if(String(code).trim()!=="19871502"){alert("Code incorrect.");return;} localStorage.setItem(SOFT_KEY, SOFT_MODE?"premium":"soft"); location.reload(); };
 })();
+// En mode soft : masque les boutons des features à token payant (hôtel Booking, voiture,
+// activités). Leurs sondes sont coupées, donc ils ne seraient sinon jamais masqués. Le reste
+// (cache gratuit Travelpayouts, liens des fiches, "À voir" Wikipédia) reste actif.
+if(SOFT_MODE){ ["hBooking","carSearch","attrSearch","attrHead"].forEach(id=>{ const e=document.getElementById(id); if(e)e.style.display="none"; }); }
 let mode="anywhere";
 let stops="all";           // all | direct | 1(avec escale)
 const _transfers={};       // code destination -> nb escales (Ma sélection, chargé avec les prix)
@@ -2981,7 +2985,7 @@ const _carBtn=document.getElementById("carSearch"); if(_carBtn)_carBtn.onclick=s
 
 /* ================= ATTRACTIONS ================= */
 let ATTR_OK=false;
-fetch(`${API_BASE}/api/attractions`).then(r=>r.json()).then(j=>{ATTR_OK=!!(j&&j.configured);
+if(!SOFT_MODE) fetch(`${API_BASE}/api/attractions`).then(r=>r.json()).then(j=>{ATTR_OK=!!(j&&j.configured);
   ["attrHead","attrSearch"].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=ATTR_OK?"":"none";});
 }).catch(()=>{});
 function attrCard(a,cur){
