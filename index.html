@@ -1263,6 +1263,10 @@ const DESTS = [
 /* ================= ÉTAT ================= */
 let origin=null, dep=null, ret=null, band="all", oneWay=false;
 let view=new Date(); view.setDate(1);
+// Mode soft/premium : en soft (défaut), les API à token payant (⚡ prix réel, Booking,
+// voitures) sont coupées pour protéger les quotas. Le premium se débloque par code.
+const SOFT_KEY="ESCALE_SOFT";
+let SOFT_MODE = (localStorage.getItem(SOFT_KEY)||"soft")!=="premium";
 let mode="anywhere";
 let stops="all";           // all | direct | 1(avec escale)
 const _transfers={};       // code destination -> nb escales (Ma sélection, chargé avec les prix)
@@ -2060,10 +2064,6 @@ function pickFromCal(ds){
    La bascule est décidée côté serveur ; le compteur SerpApi est le vrai chiffre
    du compte (account.json), pas une estimation locale.
    Aucun appel automatique : uniquement sur le bouton ⚡. Cache serveur 6 h. */
-// Mode soft/premium : en soft (défaut), les API à token payant (⚡ prix réel, Booking,
-// voitures) sont désactivées pour protéger les quotas. Le premium se débloque par code.
-const SOFT_KEY="ESCALE_SOFT";
-let SOFT_MODE = (localStorage.getItem(SOFT_KEY)||"soft")!=="premium";
 let LIVE_OK=false, LIVE_Q=null;
 
 function fmtQuota(){
