@@ -1962,20 +1962,16 @@ function histBlock(from,to,ow){
 /* Météo « normales » à destination pour un mois (Open-Meteo archive : gratuit, sans clé). */
 const _wxCache={};
 async function weatherFor(lat,lng,monthIdx){
+  // repli coords : destination par défaut connue mais passée sans lat/lng
+  if((lat==null||lng==null)&&calDest){ const k=DESTS.find(x=>x.i===calDest.i); if(k){ lat=k.lat; lng=k.lng; } }
   if(lat==null||lng==null)return null;
   const key=lat.toFixed(2)+","+lng.toFixed(2)+":"+monthIdx;
   if(_wxCache[key]!==undefined)return _wxCache[key];
-  const y=new Date().getFullYear()-1;              // l'archive ne couvre pas le futur → même mois l'an passé
-  const mm=pad(monthIdx+1),last=new Date(y,monthIdx+1,0).getDate();
-  const url=`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}`
-    +`&start_date=${y}-${mm}-01&end_date=${y}-${mm}-${pad(last)}`
-    +`&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`;
   try{
-    const r=await fetch(url); if(!r.ok)throw 0; const j=await r.json();
-    const d=j.daily||{}, tmax=d.temperature_2m_max||[], tmin=d.temperature_2m_min||[], pr=d.precipitation_sum||[];
-    const avg=a=>{const v=a.filter(x=>x!=null);return v.length?v.reduce((x,y)=>x+y,0)/v.length:null;};
-    const hi=avg(tmax),lo=avg(tmin),rain=pr.filter(x=>x!=null&&x>=1).length;
-    const res=(hi==null)?null:{hi:Math.round(hi),lo:Math.round(lo),rainDays:rain,year:y};
+    // via /api/weather (même origine → passe par le SW comme le reste ; open-meteo appelé côté serveur)
+    const r=await fetch(`${API_BASE}/api/weather?lat=${lat}&lng=${lng}&m=${monthIdx}`);
+    if(!r.ok)throw 0; const j=await r.json();
+    const res=(j&&j.hi!=null)?{hi:j.hi,lo:j.lo,rainDays:j.rainDays,year:j.year}:null;
     _wxCache[key]=res; return res;
   }catch(_){ _wxCache[key]=null; return null; }
 }

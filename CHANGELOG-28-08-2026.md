@@ -1,3 +1,20 @@
+# Escale — Vol-main_14 (28/08/2026) — correctif météo
+
+La météo ne s'affichait pas (test en mode simplifié). Cause : l'appel **direct** du
+navigateur à open-meteo (fragile selon domaine/SW/réseau).
+**Correctif** : la météo passe maintenant par une **fonction `/api/weather`** (même
+origine → gérée par le SW exactement comme `/api/prices`, et open-meteo est appelé
+**côté serveur**, donc plus aucun souci CORS). Ajout d'un repli de coordonnées pour les
+destinations par défaut passées sans lat/lng. SW bump **v76 → v77**.
+
+> ⚠️ Comme `/api/prices`, la météo a besoin de l'environnement déployé (Cloudflare Pages
+> ou `wrangler pages dev`) — elle ne marchera pas en ouvrant `index.html` en `file://`.
+> Après déploiement, **recharge fort** (le SW peut servir l'ancien code en cache).
+
+Nouveau fichier : `functions/api/weather.js`.
+
+---
+
 # Escale — Vol-main_13 (28/08/2026)
 
 Grosse passe d'améliorations issue du PDF + propositions plus poussées.
