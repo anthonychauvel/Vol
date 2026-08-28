@@ -3651,7 +3651,7 @@ window.Radar=(()=>{
 
   function bindHead(){
     const g=document.getElementById("radarGear"); if(g)g.onclick=()=>{ view=view==="settings"?"results":"settings"; if(view==="settings")renderSettings(); else renderResults(); };
-    const b=document.getElementById("radarClear"); if(b)b.onclick=clearAll;
+    const b=document.getElementById("radarClear"); if(b)b.onclick=()=>{ if(confirm("Effacer le suivi du Radar (destinations auto-surveillées + remise à zéro de l'historique des prix) ?\n\nTes zones de surveillance, elles, sont conservées.")) clearAll(); };
   }
   function bindResults(){
     document.querySelectorAll(".rd-live").forEach(b=>b.onclick=()=>radarLive(b.dataset.from,b.dataset.dest,b.dataset.dep,b.dataset.ret,b.dataset.ow==="1",b));
