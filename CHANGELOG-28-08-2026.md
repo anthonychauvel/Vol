@@ -1,3 +1,20 @@
+# Escale — Vol-main_24 (28/08/2026) — retour or/noir + menu + PDF + logo néon + fix bulles
+
+- **Thème remis en noir & or** (Laiton & Abysse), plus lisible. Re-skin néon annulé.
+- **Logo néon GTA conservé** : icônes (`icon-192/512`, maskable, favicon) régénérées à partir de
+  ton logo néon sur fond navy. S'affiche tel quel sur le thème or.
+- **Menu outils ☰ (haut-gauche)** — remplace la barre de pills : liste de tous les onglets,
+  actif surligné, ferme au clic ailleurs. Barre horizontale masquée.
+- **Export PDF de l'itinéraire** — bouton après le tracé : PDF propre (ville, mode, étapes,
+  distances/temps, total) via jsPDF (lazy-load).
+- **Fix des 2 bulles vides** au-dessus du Radar (bannières qui forçaient `display:flex` même vides).
+- SW **v86 → v87**.
+
+Versions intermédiaires : _21 (date prioritaire → toutes destinations, top 12, gated Radar-ouvert),
+_22 (plafond 80 destinations), _23 (essai bleu nuit — annulé en _24).
+
+---
+
 # Escale — Vol-main_20 (28/08/2026) — Itinéraire + Polarsteps + date prioritaire Radar
 
 Nouveau fichier backend : `functions/api/poi.js` (OpenTripMap → **clé `OPENTRIPMAP_KEY` à ajouter

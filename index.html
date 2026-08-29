@@ -13,19 +13,19 @@
 <title>Escale · recherche de vols perso</title>
 <style>
   :root{
-    /* — Corsaire au néon : coucher de soleil façon Vice (rose/magenta/violet/orange + cyan) — */
-    --abyss:#0a0614;--bg:#150a26;--panel:#241338;--panel-2:#190d2b;--line:#3d2a5c;
-    --ink:#f6eefc;--muted:#a892c4;
-    --amber:#ff5ea8;              /* rose néon (accent principal) */
-    --amber-dim:#3a1430;
-    --gold-hi:#ffd0e8;--gold-lo:#c73f86;--gold-deep:#7a2350;
-    --green:#38e0c8;             /* cyan néon : vol direct, patine */
-    --oxblood:#ff4d6d;           /* danger, quota épuisé */
-    --pair:#2a1a44;--impair:#1b1030;--radius:14px;
-    /* faces "métal néon" réutilisables (dégradé logo : rose → orange → violet) */
-    --brass-face:linear-gradient(157deg,#ffcf87 0%,#ff8fc2 20%,#ff4d94 45%,#b23bd6 68%,#ff9ec4 100%);
-    --brass-face-hi:linear-gradient(157deg,#ffe0b0 0%,#ffb3d6 22%,#ff6ba8 50%,#c458e0 68%,#ffc0dd 100%);
-    --brass-rim:#c23a86;
+    /* — Laiton & Abysse : palette corsaire métallisée — */
+    --abyss:#060d12;--bg:#0a1620;--panel:#11242e;--panel-2:#0a141b;--line:#2a4a58;
+    --ink:#f2ecdd;--muted:#8ba2ac;
+    --amber:#f3c360;              /* or doublon (base) */
+    --amber-dim:#382a12;
+    --gold-hi:#ffe9ad;--gold-lo:#9a6a26;--gold-deep:#654618;
+    --green:#5bc7a2;             /* vert-de-gris : patine, vol direct */
+    --oxblood:#c65048;           /* danger, quota épuisé */
+    --pair:#1d3a4a;--impair:#122129;--radius:14px;
+    /* faces métalliques réutilisables */
+    --brass-face:linear-gradient(157deg,#ffe9ad 0%,#f3c565 19%,#e0a63e 44%,#b7802d 60%,#e8ba58 82%,#ffe2a1 100%);
+    --brass-face-hi:linear-gradient(157deg,#fff2c8 0%,#ffd987 22%,#f0bd54 50%,#cf9636 66%,#ffcf78 100%);
+    --brass-rim:#7c5620;
     --serif:"Iowan Old Style","Palatino Linotype",Palatino,"URW Palladio L",Georgia,"Times New Roman",serif;
     --mono:"SF Mono",ui-monospace,"Roboto Mono",Menlo,Consolas,monospace;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -833,11 +833,22 @@
   /* ===== Vol-main 17 : nouveautés ===== */
   /* bannières de lancement (cible atteinte / installation) */
   .launch-banner{margin:10px 0 0;background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--brass-rim);border-radius:12px;padding:11px 14px;font-family:var(--mono);font-size:13px;color:var(--ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  .launch-banner[hidden]{display:none}
   .launch-banner b{color:var(--amber)}
   .launch-banner.install{cursor:default;border-color:var(--line)}
   .launch-banner .lb-actions{margin-left:auto;display:flex;gap:7px;align-items:center}
   .launch-banner .lb-yes{background:var(--brass-face);color:#2a1c06;border:0;border-radius:8px;font-family:var(--mono);font-weight:700;font-size:12px;padding:6px 12px;cursor:pointer}
   .launch-banner .lb-no{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;font-family:var(--mono);font-size:12px;padding:5px 10px;cursor:pointer}
+  /* menu outils (bouton haut-gauche → liste déroulante ; remplace la barre de pills) */
+  #toolBar{display:none}
+  .navmenu-btn{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);left:12px;z-index:400;width:44px;height:44px;border-radius:12px;background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--brass-rim);color:var(--amber);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.45)}
+  .navmenu-btn:active{transform:scale(.94)}
+  .navmenu{position:fixed;top:calc(env(safe-area-inset-top,0px) + 58px);left:12px;z-index:400;background:var(--panel);border:1px solid var(--brass-rim);border-radius:14px;padding:6px;min-width:216px;box-shadow:0 12px 34px rgba(0,0,0,.55);max-height:74vh;overflow:auto}
+  .navmenu[hidden]{display:none}
+  .navmenu-title{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:6px 13px 8px}
+  .navmenu button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font-family:var(--serif);font-size:15px;padding:11px 13px;border-radius:9px;cursor:pointer}
+  .navmenu button:hover{background:var(--panel-2)}
+  .navmenu button.on{background:var(--brass-face);color:#2a1c06;font-weight:700}
   /* panneau ★ Mes trajets (réutilise .radar-box) */
   .trips-list{display:flex;flex-direction:column}
   .trip-row{display:flex;align-items:center;border-bottom:1px solid var(--line)}
@@ -909,21 +920,7 @@
   .pdate-p{font-weight:700;white-space:nowrap}
   .pdate-p .up{color:#e0846a} .pdate-p .down{color:var(--green)}
 
-  /* — habillage néon coucher de soleil (esprit corsaire, couleurs façon Vice) — */
-  body{background:
-    radial-gradient(130% 85% at 50% -12%, rgba(255,94,168,.12) 0%, rgba(178,59,214,.07) 34%, transparent 62%),
-    var(--bg);
-    background-attachment:fixed}
-  h1{background:linear-gradient(92deg,#ffb0d4 0%,#ff5ea8 28%,#ff7a3d 60%,#c46bff 100%);
-    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
-    font-weight:900;letter-spacing:-.02em}
-  h1 span{-webkit-text-fill-color:var(--muted);color:var(--muted);font-weight:600}
-  .eyebrow{color:#ff7eb8;text-shadow:0 0 14px rgba(255,94,168,.35)}
-  header .mark{box-shadow:0 0 20px rgba(255,94,168,.22)}
-  .toolpill.on{text-shadow:0 0 10px rgba(255,94,168,.35)}
-  /* liseré néon subtil sur les gros boutons dorés existants */
-  .go,.wstep.on b{box-shadow:0 3px 14px rgba(255,77,148,.28)}
-
+  /* — repli mouvement réduit : plus de reflets ni d'éveil — */
   @media (prefers-reduced-motion:reduce){
     header::before,.go::after{display:none}
     header .mark{animation:none}
@@ -932,6 +929,8 @@
 </head>
 <body>
 <div class="wrap">
+  <button id="navMenuBtn" class="navmenu-btn" type="button" aria-label="Menu des outils">☰</button>
+  <nav id="navMenu" class="navmenu" hidden aria-label="Outils"></nav>
   <header>
     <img class="mark" src="icon-512.png" alt="" width="46" height="46">
     <div class="htxt">
@@ -4718,7 +4717,7 @@ function ensureLeaflet(){
 }
 
 /* Itinéraire : POIs géolocalisés (OpenTripMap), ordre optimisé (plus proche voisin + 2-opt), carte. */
-let _itinPois=[], _itinCenter=null, _itinMode="walk", _itinMap=null, _itinLayer=null;
+let _itinPois=[], _itinCenter=null, _itinMode="walk", _itinMap=null, _itinLayer=null, _itinRoute=null;
 function distLL(a,b){ const R=6371,rad=x=>x*Math.PI/180;
   const dLat=rad(b.lat-a.lat),dLng=rad(b.lon-a.lon);
   const s=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;
@@ -4748,6 +4747,7 @@ const MODE_SPEED={walk:{kmh:4.5,det:1.35,emo:"🚶"},transit:{kmh:17,det:1.4,emo
 function legText(km){ const m=MODE_SPEED[_itinMode], real=km*m.det, min=Math.max(1,Math.round(real/m.kmh*60));
   return m.emo+" "+(real<1?Math.round(real*1000)+" m":real.toFixed(1)+" km")+" · ~"+min+" min"; }
 function renderItinResult(route){
+  _itinRoute=route;
   const box=document.getElementById("itinResult"); let html='<div class="itin-steps">', total=0;
   route.forEach((p,i)=>{ let leg="";
     if(i>0){ const km=distLL(route[i-1],p); total+=km*MODE_SPEED[_itinMode].det; leg='<div class="step-leg">'+legText(km)+'</div>'; }
@@ -4755,7 +4755,41 @@ function renderItinResult(route){
   html+='</div>';
   const m=MODE_SPEED[_itinMode], tmin=Math.round(total/m.kmh*60);
   html+='<div class="itin-total">'+m.emo+' <b>'+route.length+' étapes</b> · ≈ '+(total<1?Math.round(total*1000)+" m":total.toFixed(1)+" km")+' · ~'+(tmin>=60?Math.floor(tmin/60)+"h"+String(tmin%60).padStart(2,"0"):tmin+" min")+' de trajet (hors temps de visite)</div>';
+  html+='<button class="hsearchbtn" id="itinPdf" style="margin-top:12px;width:100%">📄 Exporter l\'itinéraire en PDF</button>';
   box.innerHTML=html;
+  const pb=document.getElementById("itinPdf"); if(pb)pb.onclick=exportItinPdf;
+}
+/* Export PDF de l'itinéraire (jsPDF en lazy-load). */
+let _jspdfP=null;
+function ensureJsPDF(){
+  if(window.jspdf&&window.jspdf.jsPDF)return Promise.resolve(window.jspdf.jsPDF);
+  if(_jspdfP)return _jspdfP;
+  _jspdfP=new Promise((res,rej)=>{ const s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"; s.onload=()=>res(window.jspdf&&window.jspdf.jsPDF); s.onerror=()=>rej(new Error("jspdf")); document.head.appendChild(s); });
+  return _jspdfP;
+}
+async function exportItinPdf(){
+  if(!_itinRoute||!_itinRoute.length)return;
+  let JsPDF; try{ JsPDF=await ensureJsPDF(); if(!JsPDF)throw 0; }catch(_){ alert("Impossible de charger le générateur PDF (réseau ?)."); return; }
+  const doc=new JsPDF({unit:"mm",format:"a4"});
+  const ci=document.getElementById("itinCity"), city=((ci&&ci.value)||_itinCity||"").trim();
+  const m=MODE_SPEED[_itinMode], modeLbl={walk:"à pied",transit:"transport",car:"voiture"}[_itinMode];
+  let y=18;
+  doc.setFontSize(18); doc.setTextColor(20,20,20); doc.text("Itineraire de visite"+(city?" - "+city:""),15,y); y+=8;
+  doc.setFontSize(11); doc.setTextColor(90,90,90); doc.text("Mode : "+modeLbl+"  -  "+_itinRoute.length+" etapes",15,y); y+=9;
+  doc.setDrawColor(200); doc.line(15,y,195,y); y+=8;
+  let total=0;
+  _itinRoute.forEach((p,i)=>{
+    if(y>272){ doc.addPage(); y=20; }
+    doc.setFontSize(12); doc.setTextColor(20,20,20); doc.text((i+1)+". "+p.name,15,y); y+=6;
+    if(i>0){ const km=distLL(_itinRoute[i-1],p), real=km*m.det, min=Math.max(1,Math.round(real/m.kmh*60)); total+=real;
+      doc.setFontSize(10); doc.setTextColor(120,120,120); doc.text("     "+(real<1?Math.round(real*1000)+" m":real.toFixed(1)+" km")+" - ~"+min+" min",15,y); y+=6; }
+    y+=1;
+  });
+  y+=4; if(y>272){doc.addPage();y=20;} doc.setDrawColor(200); doc.line(15,y,195,y); y+=8;
+  const tmin=Math.round(total/m.kmh*60);
+  doc.setFontSize(12); doc.setTextColor(20,20,20); doc.text("Total : ~ "+(total<1?Math.round(total*1000)+" m":total.toFixed(1)+" km")+" - ~"+(tmin>=60?Math.floor(tmin/60)+"h"+String(tmin%60).padStart(2,"0"):tmin+" min")+" (hors visites)",15,y);
+  doc.setFontSize(8); doc.setTextColor(150,150,150); doc.text("Genere par Escale",15,290);
+  doc.save("itineraire"+(city?"-"+city.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""):"")+".pdf");
 }
 function renderItinMap(route){
   const wrap=document.getElementById("itinMap"); wrap.hidden=false;
@@ -4764,8 +4798,8 @@ function renderItinMap(route){
     if(_itinLayer)_itinLayer.remove();
     _itinLayer=L.layerGroup().addTo(_itinMap);
     const latlngs=route.map(p=>[p.lat,p.lon]);
-    L.polyline(latlngs,{color:"#ff5ea8",weight:3,opacity:.9}).addTo(_itinLayer);
-    route.forEach((p,i)=>{ const ic=L.divIcon({className:"",html:'<div style="background:linear-gradient(157deg,#ff8fc2,#b23bd6);color:#2a0620;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 12px monospace;box-shadow:0 1px 4px rgba(0,0,0,.4)">'+(i+1)+'</div>',iconSize:[24,24],iconAnchor:[12,12]});
+    L.polyline(latlngs,{color:"#f3c360",weight:3,opacity:.95}).addTo(_itinLayer);
+    route.forEach((p,i)=>{ const ic=L.divIcon({className:"",html:'<div style="background:linear-gradient(157deg,#ffe9ad,#c99a3a);color:#2a1c06;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 12px monospace;box-shadow:0 1px 4px rgba(0,0,0,.5)">'+(i+1)+'</div>',iconSize:[24,24],iconAnchor:[12,12]});
       L.marker([p.lat,p.lon],{icon:ic}).addTo(_itinLayer).bindPopup((i+1)+". "+p.name); });
     _itinMap.fitBounds(latlngs,{padding:[30,30]});
     setTimeout(()=>{try{_itinMap.invalidateSize();}catch(_){}} ,120);
@@ -4802,6 +4836,19 @@ async function itinFetch(){
 })();
 
 (function(){ const rb=document.getElementById("radarBox"); if(rb)rb.addEventListener("toggle",()=>{ if(rb.open){ try{ window.Radar&&Radar.priorityDate&&Radar.priorityDate(); }catch(_){} } }); })();
+
+/* Menu outils : bouton haut-gauche → liste déroulante (remplace la barre de pills). */
+(function(){
+  const btn=document.getElementById("navMenuBtn"), menu=document.getElementById("navMenu");
+  if(!btn||!menu)return;
+  const pills=[...document.querySelectorAll("#toolBar .toolpill")];
+  menu.innerHTML='<div class="navmenu-title">Outils</div>'+pills.map(p=>'<button data-tool="'+p.dataset.tool+'">'+p.textContent.trim()+'</button>').join("");
+  const items=[...menu.querySelectorAll("button")];
+  const mark=()=>items.forEach(b=>b.classList.toggle("on",b.dataset.tool===currentTool));
+  btn.onclick=(e)=>{ e.stopPropagation(); if(menu.hidden){ mark(); menu.hidden=false; } else menu.hidden=true; };
+  items.forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); showTool(b.dataset.tool); menu.hidden=true; });
+  document.addEventListener("click",(e)=>{ if(!menu.hidden && !menu.contains(e.target) && e.target!==btn) menu.hidden=true; });
+})();
 
 (function bootTool(){
   let t=null;
