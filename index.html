@@ -2418,28 +2418,25 @@ function nearbyOrigins(code,maxN,maxKm){
 async function loadNearbyOrigins(){
   const box=document.getElementById("ovNearby"); if(!box)return;
   if(SOFT_MODE||calYearMode||!calFrom||!calDest){ box.innerHTML=""; return; }   // premium + vue mois uniquement
-  const near=nearbyOrigins(calFrom,3,220);
-  if(!near.length){ box.innerHTML=""; return; }
   const myId=pReqId, y=pView.getFullYear(), m=pView.getMonth(), month=y+"-"+pad(m+1);
-  const primMin=(pData&&Object.values(pData).length)?Math.min(...Object.values(pData).map(o=>o.price).filter(x=>x!=null)):null;
+  const ck="nearby:"+calFrom+":"+calDest.i+":"+month+":"+(oneWay?1:0);
   box.innerHTML='<div class="nearby"><div class="nearby-hd">✈️ Aussi depuis tes aéroports voisins…</div></div>';
-  const rows=[];
-  await inBatches(near,3,async(a)=>{
-    const ck="cal:"+a.code+":"+calDest.i+":"+month+":"+(oneWay?1:0);
-    let days=pxGet(ck);
-    if(!days){ try{ const r=await fetch(`${API_BASE}/api/calendar?origin=${a.code}&destination=${calDest.i}&month=${month}&oneway=${oneWay?1:0}`);
-      if(r.ok){ const j=await r.json(); days=j.days||{}; pxSet(ck,days); } }catch(_){} }
-    const ps=days?Object.values(days).map(o=>o.price).filter(x=>x!=null):[];
-    rows.push({code:a.code,city:a.city,km:Math.round(a.km),min:ps.length?Math.min(...ps):null});
-  });
+  let data=pxGet(ck);
+  if(!data){
+    try{ const r=await fetch(`${API_BASE}/api/nearby?origin=${calFrom}&destination=${calDest.i}&month=${month}&oneway=${oneWay?1:0}`);
+      if(r.ok){ const j=await r.json(); data=j.list||[]; pxSet(ck,data); } }catch(_){ data=null; }
+  }
   if(myId!==pReqId)return;                                    // route/mois changés entre-temps
-  const all=[{code:calFrom,city:calFromCity,km:0,min:primMin,prim:true}].concat(rows);
-  const withP=all.filter(x=>x.min!=null), cheapest=withP.length?Math.min(...withP.map(x=>x.min)):null;
+  if(!data||!data.length){ box.innerHTML=""; return; }        // rien d'exploitable
+  const home=findAirport(calFrom);
+  const rows=data.map(x=>{ const a=findAirport(x.origin); const km=(home&&home.lat!=null&&a&&a.lat!=null)?Math.round(haversine(home,a)):null; return {code:x.origin,city:(a&&a.city)||NAMES[x.origin]||"",km,price:x.price,dest:x.dest,prim:x.origin===calFrom}; });
+  const cheapest=Math.min(...rows.map(x=>x.price));
   let html='<div class="nearby"><div class="nearby-hd">✈️ Aussi depuis tes aéroports voisins (ce mois)</div><div class="nearby-list">';
-  all.forEach(x=>{
-    const tag=x.prim?'<span class="nb-tag">ton départ</span>':'<span class="nb-km">'+x.km+' km</span>';
-    const best=(x.min!=null&&x.min===cheapest&&withP.length>1)?'<span class="nb-best">le moins cher</span>':'';
-    html+='<div class="nearby-row"><span class="nb-ap"><b>'+x.code+'</b> '+(x.city||'')+tag+'</span><span class="nb-p">'+(x.min!=null?'dès '+x.min+'€ '+best:'—')+'</span></div>';
+  rows.forEach(x=>{
+    const tag=x.prim?'<span class="nb-tag">ton départ</span>':(x.km!=null?'<span class="nb-km">'+x.km+' km</span>':'');
+    const destTxt=(x.dest&&x.dest!==calDest.i)?' <span class="nb-km">→ '+x.dest+'</span>':'';
+    const best=(x.price===cheapest&&rows.length>1)?'<span class="nb-best">le moins cher</span>':'';
+    html+='<div class="nearby-row"><span class="nb-ap"><b>'+x.code+'</b> '+(x.city||'')+tag+destTxt+'</span><span class="nb-p">dès '+x.price+'€ '+best+'</span></div>';
   });
   box.innerHTML=html+'</div></div>';
 }
