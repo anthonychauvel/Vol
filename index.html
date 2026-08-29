@@ -13,19 +13,19 @@
 <title>Escale · recherche de vols perso</title>
 <style>
   :root{
-    /* — Laiton & Abysse : palette corsaire métallisée — */
-    --abyss:#060d12;--bg:#0a1620;--panel:#11242e;--panel-2:#0a141b;--line:#2a4a58;
-    --ink:#f2ecdd;--muted:#8ba2ac;
-    --amber:#f3c360;              /* or doublon (base) */
-    --amber-dim:#382a12;
-    --gold-hi:#ffe9ad;--gold-lo:#9a6a26;--gold-deep:#654618;
-    --green:#5bc7a2;             /* vert-de-gris : patine, vol direct */
-    --oxblood:#c65048;           /* danger, quota épuisé */
-    --pair:#1d3a4a;--impair:#122129;--radius:14px;
-    /* faces métalliques réutilisables */
-    --brass-face:linear-gradient(157deg,#ffe9ad 0%,#f3c565 19%,#e0a63e 44%,#b7802d 60%,#e8ba58 82%,#ffe2a1 100%);
-    --brass-face-hi:linear-gradient(157deg,#fff2c8 0%,#ffd987 22%,#f0bd54 50%,#cf9636 66%,#ffcf78 100%);
-    --brass-rim:#7c5620;
+    /* — Corsaire au néon : coucher de soleil façon Vice (rose/magenta/violet/orange + cyan) — */
+    --abyss:#0a0614;--bg:#150a26;--panel:#241338;--panel-2:#190d2b;--line:#3d2a5c;
+    --ink:#f6eefc;--muted:#a892c4;
+    --amber:#ff5ea8;              /* rose néon (accent principal) */
+    --amber-dim:#3a1430;
+    --gold-hi:#ffd0e8;--gold-lo:#c73f86;--gold-deep:#7a2350;
+    --green:#38e0c8;             /* cyan néon : vol direct, patine */
+    --oxblood:#ff4d6d;           /* danger, quota épuisé */
+    --pair:#2a1a44;--impair:#1b1030;--radius:14px;
+    /* faces "métal néon" réutilisables (dégradé logo : rose → orange → violet) */
+    --brass-face:linear-gradient(157deg,#ffcf87 0%,#ff8fc2 20%,#ff4d94 45%,#b23bd6 68%,#ff9ec4 100%);
+    --brass-face-hi:linear-gradient(157deg,#ffe0b0 0%,#ffb3d6 22%,#ff6ba8 50%,#c458e0 68%,#ffc0dd 100%);
+    --brass-rim:#c23a86;
     --serif:"Iowan Old Style","Palatino Linotype",Palatino,"URW Palladio L",Georgia,"Times New Roman",serif;
     --mono:"SF Mono",ui-monospace,"Roboto Mono",Menlo,Consolas,monospace;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -624,6 +624,9 @@
   body.tool-car    [data-sub]:not([data-sub="car"]){display:none}
   body.tool-attr   [data-sub]:not([data-sub="attr"]){display:none}
   body.tool-see    [data-sub]:not([data-sub="see"]){display:none}
+  body.tool-itin   [data-blk="surplace"]{display:block !important}
+  body.tool-itin   [data-sub]:not([data-sub="itin"]){display:none}
+  body.tool-itin   [data-blk="surplace"] .note{display:none}
   /* ---- Radar (accueil : veille prix sans quota) ---- */
   .radar{margin:0 0 14px;border:1px solid var(--brass-rim);border-radius:14px;background:linear-gradient(180deg,rgba(255,210,122,.05),transparent);overflow:hidden}
   .radar[hidden]{display:none}
@@ -827,7 +830,100 @@
   .rd-target input{width:90px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:5px 8px;font-family:var(--mono);font-size:13px}
   .tgt{font-family:var(--mono);font-size:10px;color:#0c1a13;background:var(--green);border-radius:999px;padding:1px 7px;margin-left:6px;font-weight:700}
 
-  /* — repli mouvement réduit : plus de reflets ni d'éveil — */
+  /* ===== Vol-main 17 : nouveautés ===== */
+  /* bannières de lancement (cible atteinte / installation) */
+  .launch-banner{margin:10px 0 0;background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--brass-rim);border-radius:12px;padding:11px 14px;font-family:var(--mono);font-size:13px;color:var(--ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  .launch-banner b{color:var(--amber)}
+  .launch-banner.install{cursor:default;border-color:var(--line)}
+  .launch-banner .lb-actions{margin-left:auto;display:flex;gap:7px;align-items:center}
+  .launch-banner .lb-yes{background:var(--brass-face);color:#2a1c06;border:0;border-radius:8px;font-family:var(--mono);font-weight:700;font-size:12px;padding:6px 12px;cursor:pointer}
+  .launch-banner .lb-no{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;font-family:var(--mono);font-size:12px;padding:5px 10px;cursor:pointer}
+  /* panneau ★ Mes trajets (réutilise .radar-box) */
+  .trips-list{display:flex;flex-direction:column}
+  .trip-row{display:flex;align-items:center;border-bottom:1px solid var(--line)}
+  .trip-row:last-child{border-bottom:0}
+  .trip-open{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;background:none;border:0;text-align:left;padding:11px 8px 11px 4px;cursor:pointer;color:var(--ink)}
+  .trip-open:hover{background:var(--panel-2)}
+  .trip-route{font-family:var(--mono);font-size:14px} .trip-route b{color:var(--amber)} .trip-route small{color:var(--muted)}
+  .trip-when{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .trip-del{background:none;border:0;color:var(--muted);font-size:15px;padding:8px 10px;cursor:pointer}
+  .trip-del:hover{color:#e0846a}
+  /* conseil d'achat (dans l'historique perso) */
+  .buy-tip{margin-top:8px;font-family:var(--mono);font-size:12px;border-radius:9px;padding:7px 10px;border:1px solid var(--line);color:var(--ink)}
+  .buy-tip.good{background:rgba(91,199,162,.10);border-color:#2f5f52;color:#8fd9c0}
+  .buy-tip.wait{background:rgba(224,182,74,.08);border-color:#6d5a1e;color:#e7c25f}
+  /* flexible ±3 jours */
+  .flex3{margin-top:10px;font-family:var(--mono);font-size:12px;background:rgba(91,199,162,.08);border:1px solid #2f5f52;color:#8fd9c0;border-radius:10px;padding:8px 11px}
+  .flex3 b{color:var(--green)}
+  /* vue année : température + meilleur compromis */
+  .ycell .ytemp{font-family:var(--mono);font-size:10px;color:#0c1a13;opacity:.72}
+  .ycell.compromis{outline:2px solid var(--amber);outline-offset:-2px}
+  .ycell .ystar{position:absolute;top:2px;right:4px;font-size:10px}
+  .ylegend{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:8px;text-align:center}
+  /* départs voisins (premium) */
+  .nearby{margin-top:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+  .nearby-hd{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.05em;margin-bottom:5px}
+  .nearby-list{display:flex;flex-direction:column;gap:3px}
+  .nearby-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--ink)}
+  .nearby-row .nb-ap{min-width:0} .nearby-row .nb-ap b{color:var(--amber)}
+  .nb-km{color:var(--muted);font-size:10px;margin-left:4px}
+  .nb-tag{color:var(--muted);font-size:10px;font-style:italic;margin-left:4px}
+  .nb-p{font-weight:700;color:var(--green);white-space:nowrap}
+  .nb-best{background:var(--green);color:#0c1a13;border-radius:999px;padding:0 6px;font-size:10px;font-weight:700;margin-left:4px}
+  /* ===== Vol-main 20 : itinéraire + Polarsteps + date prioritaire ===== */
+  .polar-link{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:4px 11px;cursor:pointer;text-decoration:none}
+  .polar-link:hover{border-color:var(--brass-rim);color:var(--amber)}
+  .polar-link .pl-edit{opacity:.6;font-size:10px}
+  /* itinéraire */
+  .itin-controls{display:flex;gap:8px;margin-bottom:10px}
+  .itin-controls input{flex:1;min-width:0;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:9px 12px;font-family:var(--mono);font-size:14px}
+  .poi-hd{font-family:var(--mono);font-size:12px;color:var(--amber);margin:4px 0 8px}
+  .poi-row{display:flex;align-items:center;gap:9px;padding:8px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+  .poi-row input{width:18px;height:18px;accent-color:var(--amber);flex-shrink:0}
+  .poi-n{flex:1;font-size:13.5px;color:var(--ink)}
+  .poi-k{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:capitalize}
+  .itin-plan{margin-top:14px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px}
+  .itin-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .itin-row label{flex:1;min-width:130px;font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+  .itin-row select{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 8px;font-size:12.5px;font-family:var(--mono)}
+  .itin-modes{display:flex;gap:6px;margin-bottom:12px}
+  .itin-modes button{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--muted);font-family:var(--mono);font-size:12px;padding:8px 6px;border-radius:9px;cursor:pointer}
+  .itin-modes button.on{background:var(--brass-face);color:#2a0620;font-weight:700;border-color:transparent}
+  .itin-map{height:300px;border-radius:12px;overflow:hidden;margin-top:14px;border:1px solid var(--line)}
+  .leaflet-container{background:#12081f}
+  .itin-steps{margin-top:14px;counter-reset:stp}
+  .step-row{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+  .step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--brass-face);color:#2a0620;font-family:var(--mono);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .step-info{flex:1;min-width:0}
+  .step-name{font-size:14px;color:var(--ink);font-weight:600}
+  .step-leg{font-family:var(--mono);font-size:11px;color:var(--green);margin-top:2px}
+  .itin-total{margin-top:12px;font-family:var(--mono);font-size:12.5px;color:var(--amber);background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+  /* date prioritaire (Radar) */
+  .rd-pdate{margin-top:10px}
+  .rd-pdate input{background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:5px 8px;font-family:var(--mono);font-size:13px}
+  .pdate-card{margin:8px 0 12px;background:var(--panel-2);border:1px solid var(--brass-rim);border-radius:11px;padding:10px 12px}
+  .pdate-hd{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.05em;margin-bottom:6px}
+  .pdate-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;padding:3px 0;border-top:1px solid var(--line)}
+  .pdate-row:first-of-type{border-top:0}
+  .pdate-row .pr-d b{color:var(--amber)}
+  .pdate-p{font-weight:700;white-space:nowrap}
+  .pdate-p .up{color:#e0846a} .pdate-p .down{color:var(--green)}
+
+  /* — habillage néon coucher de soleil (esprit corsaire, couleurs façon Vice) — */
+  body{background:
+    radial-gradient(130% 85% at 50% -12%, rgba(255,94,168,.12) 0%, rgba(178,59,214,.07) 34%, transparent 62%),
+    var(--bg);
+    background-attachment:fixed}
+  h1{background:linear-gradient(92deg,#ffb0d4 0%,#ff5ea8 28%,#ff7a3d 60%,#c46bff 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+    font-weight:900;letter-spacing:-.02em}
+  h1 span{-webkit-text-fill-color:var(--muted);color:var(--muted);font-weight:600}
+  .eyebrow{color:#ff7eb8;text-shadow:0 0 14px rgba(255,94,168,.35)}
+  header .mark{box-shadow:0 0 20px rgba(255,94,168,.22)}
+  .toolpill.on{text-shadow:0 0 10px rgba(255,94,168,.35)}
+  /* liseré néon subtil sur les gros boutons dorés existants */
+  .go,.wstep.on b{box-shadow:0 3px 14px rgba(255,77,148,.28)}
+
   @media (prefers-reduced-motion:reduce){
     header::before,.go::after{display:none}
     header .mark{animation:none}
@@ -844,13 +940,24 @@
     <p class="sub">Aéroport, type de trajet, dates (n° de semaine + paire/impaire), filtre durée. Touche une destination pour le calendrier de prix couleur.</p>
   <p class="quotaline" id="headerQuota"></p>
   <button id="modeToggle" class="mode-toggle" type="button"></button>
+  <a id="polarLink" class="polar-link" role="button" tabindex="0">🧭 Lier mon Polarsteps</a>
     </div>
   </header>
+
+  <div id="targetBanner" class="launch-banner" hidden></div>
+  <div id="installBanner" class="launch-banner install" hidden></div>
 
   <!-- Radar : bloc repliable (fermé par défaut pour alléger l'accueil) -->
   <details id="radarBox" class="radar-box" hidden>
     <summary id="radarSum" class="radar-sum">✦ Radar</summary>
+    <div id="pdateBox"></div>
     <section id="radarSec" class="radar"></section>
+  </details>
+
+  <!-- ★ Mes trajets sauvegardés (masqué si vide) -->
+  <details id="tripsBox" class="radar-box" hidden>
+    <summary class="radar-sum">★ Mes trajets</summary>
+    <section id="tripsSec" class="radar"></section>
   </details>
 
   <nav class="tools" id="toolBar">
@@ -862,6 +969,7 @@
     <button class="toolpill" data-tool="car">Voiture</button>
     <button class="toolpill" data-tool="attr">Activités</button>
     <button class="toolpill" data-tool="see">À voir</button>
+    <button class="toolpill" data-tool="itin">🗺 Itinéraire</button>
   </nav>
 
   <div class="toolhint" id="toolHint"></div>
@@ -1097,6 +1205,28 @@
     <div class="carbar"><button class="hsearchbtn" id="seeSearch">À voir autour (gratuit)</button></div>
     <div id="seewhat"></div>
     </div><!--/see-->
+    <div data-sub="itin">
+      <div class="subhead">🗺️ Itinéraire de visite optimisé</div>
+      <div class="itin-controls">
+        <input id="itinCity" type="search" autocomplete="off" placeholder="Ville à visiter (ex. Lisbonne, Porto…)">
+        <button class="hsearchbtn" id="itinFetch">Trouver les lieux</button>
+      </div>
+      <div id="itinPois"></div>
+      <div id="itinPlan" class="itin-plan" hidden>
+        <div class="itin-row">
+          <label>Départ<select id="itinStart"></select></label>
+          <label>Arrivée<select id="itinEnd"></select></label>
+        </div>
+        <div class="itin-modes" id="itinModes">
+          <button data-mode="walk" class="on">🚶 À pied</button>
+          <button data-mode="transit">🚌 Transport</button>
+          <button data-mode="car">🚗 Voiture</button>
+        </div>
+        <button class="hsearchbtn" id="itinTrace">Tracer l'itinéraire (sans revenir sur ses pas)</button>
+      </div>
+      <div id="itinMap" class="itin-map" hidden></div>
+      <div id="itinResult"></div>
+    </div><!--/itin-->
     <div class="note">
       « <b>Privative uniquement</b> » écarte les auberges de jeunesse et dortoirs : on ne garde
       que les établissements classés (2★ et plus), donc chambre et salle de bain à toi.
@@ -1142,6 +1272,7 @@
     </div>
     <div id="ovWeather"></div>
     <div id="pgridWrap"></div>
+    <div id="ovNearby"></div>
     <div class="pleg">
       <span>moins cher</span><span class="grad"></span><span>plus cher</span>
       <span class="lg"><span class="dot"></span> vol direct</span>
@@ -1319,7 +1450,7 @@ let SOFT_MODE = (localStorage.getItem(SOFT_KEY)||"soft")!=="premium";
   const mt=document.getElementById("modeToggle"); if(!mt)return;
   mt.textContent = SOFT_MODE ? "◐ Mode SOFT · appuyer pour PREMIUM" : "● Mode PREMIUM · appuyer pour SOFT";
   mt.classList.toggle("premium", !SOFT_MODE);
-  mt.onclick=()=>{ const code=prompt("Code pour changer de mode :"); if(code===null)return; if(String(code).trim()!=="19871502"){alert("Code incorrect.");return;} localStorage.setItem(SOFT_KEY, SOFT_MODE?"premium":"soft"); location.reload(); };
+  mt.onclick=()=>{ if(SOFT_MODE){ const code=prompt("Phrase pour passer en premium :"); if(code===null)return; if(String(code).trim().toLowerCase()!=="je voyage avec tony"){alert("Phrase incorrecte.");return;} localStorage.setItem(SOFT_KEY,"premium"); } else { localStorage.setItem(SOFT_KEY,"soft"); } location.reload(); };
 })();
 // En mode soft : masque les boutons des features à token payant (hôtel Booking, voiture,
 // activités). Leurs sondes sont coupées, donc ils ne seraient sinon jamais masqués. Le reste
@@ -1952,9 +2083,17 @@ function histBlock(from,to,ow){
   const t=histTrend(from,to,ow); if(!t)return "";
   const dir = t.deltaPct<=-3?'<span class="down">▼ en baisse</span>' : (t.deltaPct>=3?'<span class="up">▲ en hausse</span>' : '≈ stable');
   const since = t.days<=0?"aujourd'hui":(t.days===1?"depuis hier":"depuis "+t.days+" j");
+  let advice="";
+  if(t.n>=3 && t.max>t.min){
+    const pos=(t.last-t.min)/(t.max-t.min);           // 0 = ton plus bas relevé, 1 = ton plus haut
+    if(pos<=0.25)      advice='<div class="buy-tip good">🟢 Plutôt un bon moment — proche de ton plus bas relevé.</div>';
+    else if(pos>=0.75) advice='<div class="buy-tip wait">🟠 Plutôt attendre — proche de ton plus haut relevé.</div>';
+    else               advice='<div class="buy-tip">⚪ Dans ta moyenne habituelle pour cette route.</div>';
+  }
   return '<div class="hist"><div class="hist-hd">📈 ton historique · '+dir+'</div>'
     +histSpark(t.series)
-    +'<div class="hist-cap">'+t.n+' relevés · de '+t.first+'€ à <b>'+t.last+'€</b> ('+(t.deltaPct>0?"+":"")+t.deltaPct+'%) '+since+' · creux vu : '+t.min+'€</div></div>';
+    +'<div class="hist-cap">'+t.n+' relevés · de '+t.first+'€ à <b>'+t.last+'€</b> ('+(t.deltaPct>0?"+":"")+t.deltaPct+'%) '+since+' · creux vu : '+t.min+'€</div>'
+    +advice+'</div>';
 }
 
 /* Météo « normales » à destination pour un mois (Open-Meteo archive : gratuit, sans clé). */
@@ -2023,6 +2162,70 @@ function applyDeepLink(){
   const o=p.get("o"); if(o&&findAirport(o))selectApt(o);   // en dernier : selectApt() relance refresh() avec dep déjà posé
   return p.get("t")||"simple";
 }
+
+/* ★ Mes trajets sauvegardés (localStorage) : origine + destination + dates, relançables en 1 tap. */
+const TRIPS_KEY="escale:trips:v1";
+function loadTrips(){ try{return JSON.parse(localStorage.getItem(TRIPS_KEY))||[];}catch(_){return [];} }
+function saveTrips(a){ try{localStorage.setItem(TRIPS_KEY,JSON.stringify(a));}catch(_){}}
+function tripId(t){ return [t.o,t.d,t.dep||"",t.ret||"",t.ow?1:0].join("|"); }
+function tripSaved(t){ const id=tripId(t); return loadTrips().some(x=>tripId(x)===id); }
+function addTrip(t){
+  const a=loadTrips(), id=tripId(t);
+  if(a.some(x=>tripId(x)===id))return false;
+  a.unshift({o:t.o,d:t.d,dep:t.dep||null,ret:t.ret||null,ow:!!t.ow,b:t.b||"all",tool:t.tool||"simple",ts:Date.now()});
+  saveTrips(a.slice(0,30)); renderTrips(); return true;
+}
+function removeTrip(id){ saveTrips(loadTrips().filter(x=>tripId(x)!==id)); renderTrips(); }
+function renderTrips(){
+  const box=document.getElementById("tripsBox"), sec=document.getElementById("tripsSec"); if(!box||!sec)return;
+  const a=loadTrips(); box.hidden=!a.length;
+  if(!a.length){ sec.innerHTML=""; return; }
+  sec.innerHTML='<div class="trips-list">'+a.map(t=>{
+    const nm=NAMES[t.d]||t.d;
+    const when=t.dep?frShort(t.dep)+(t.ret&&!t.ow?" → "+frShort(t.ret):""):"dates libres";
+    return '<div class="trip-row"><button class="trip-open" data-tid="'+tripId(t)+'">'
+      +'<span class="trip-route"><b>'+t.o+'</b> → '+nm+' <small>'+t.d+'</small></span>'
+      +'<span class="trip-when">'+when+(t.ow?" · aller simple":"")+'</span></button>'
+      +'<button class="trip-del" data-tdel="'+tripId(t)+'" title="Retirer">✕</button></div>';
+  }).join("")+'</div>';
+  sec.querySelectorAll(".trip-open").forEach(b=>b.onclick=()=>openTrip(b.dataset.tid));
+  sec.querySelectorAll(".trip-del").forEach(b=>b.onclick=()=>removeTrip(b.dataset.tdel));
+}
+function openTrip(id){
+  const t=loadTrips().find(x=>tripId(x)===id); if(!t)return;
+  oneWay=!!t.ow;
+  if(t.b)band=t.b;
+  if(t.dep){ dep=t.dep; view=new Date(+t.dep.slice(0,4),+t.dep.slice(5,7)-1,1); }
+  ret=(t.ret&&!t.ow)?t.ret:null;
+  if(t.o&&findAirport(t.o))selectApt(t.o);        // relance refresh() avec dep déjà posé
+  const tb=document.getElementById("tripsBox"); if(tb)tb.open=false;
+  showTool(t.tool||"simple");
+  const d=DESTS.find(x=>x.i===t.d)||CUSTOM_DEST.find(x=>x.i===t.d);   // ouvre le calendrier si on connaît la destination
+  if(d&&origin){ setTimeout(()=>{ try{openPriceCal(d);}catch(_){} },80); }
+}
+
+/* Invite d'installation PWA : capte l'événement (Chrome/Android) ou affiche l'astuce iOS. Rejet mémorisé. */
+let _deferredPrompt=null;
+function _isStandalone(){ return (window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true; }
+function _installDismissed(){ try{return localStorage.getItem("escale:install-dismiss")==="1";}catch(_){return false;} }
+function _dismissInstall(){ const b=document.getElementById("installBanner"); if(b)b.hidden=true; try{localStorage.setItem("escale:install-dismiss","1");}catch(_){}}
+function maybeShowInstall(){
+  const b=document.getElementById("installBanner"); if(!b)return;
+  if(_isStandalone()||_installDismissed()){ b.hidden=true; return; }
+  const iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(_deferredPrompt){
+    b.innerHTML='📲 Installe Escale pour un lancement direct <span class="lb-actions"><button class="lb-yes" id="instYes">Installer</button><button class="lb-no" id="instNo">Plus tard</button></span>';
+    b.hidden=false;
+    document.getElementById("instYes").onclick=async()=>{ b.hidden=true; try{ _deferredPrompt.prompt(); await _deferredPrompt.userChoice; }catch(_){} _deferredPrompt=null; };
+    document.getElementById("instNo").onclick=_dismissInstall;
+  } else if(iOS){
+    b.innerHTML='📲 Ajoute Escale à ton écran d\'accueil : <b>Partager</b> puis <b>Sur l\'écran d\'accueil</b> <span class="lb-actions"><button class="lb-no" id="instNo">OK</button></span>';
+    b.hidden=false;
+    document.getElementById("instNo").onclick=_dismissInstall;
+  }
+}
+window.addEventListener("beforeinstallprompt",(e)=>{ e.preventDefault(); _deferredPrompt=e; maybeShowInstall(); });
+window.addEventListener("appinstalled",()=>{ _deferredPrompt=null; const b=document.getElementById("installBanner"); if(b)b.hidden=true; });
 
 let priceReqId=0;
 async function fetchPrices(){
@@ -2128,6 +2331,7 @@ async function loadPriceCal(){
   const wrap=document.getElementById("pgridWrap");
   wrap.innerHTML=calSkeletonGrid();
   loadCalWeather();
+  { const _nb=document.getElementById("ovNearby"); if(_nb)_nb.innerHTML=""; }
   const myId=++pReqId,month=y+"-"+pad(m+1);
   const ck="cal:"+calFrom+":"+calDest.i+":"+month+":"+(oneWay?1:0);
   const cached=pxGet(ck);
@@ -2147,12 +2351,13 @@ async function loadPriceCal(){
 async function loadPriceCalYear(){
   document.getElementById("pLabel").textContent="12 mois";
   const box=document.getElementById("ovWeather"); if(box)box.innerHTML="";
+  { const nb=document.getElementById("ovNearby"); if(nb)nb.innerHTML=""; }
   const wrap=document.getElementById("pgridWrap");
   wrap.innerHTML=`<div class="ov-status">Analyse des 12 prochains mois…</div>`;
   const myId=++pReqId;
   const base=new Date(pView.getFullYear(),pView.getMonth(),1);
   const months=[]; for(let i=0;i<12;i++){ const d=new Date(base.getFullYear(),base.getMonth()+i,1); months.push({ym:iso(d).slice(0,7),d}); }
-  const mins={};
+  const mins={}, wx={};
   _pxAbort=()=>myId!==pReqId;
   await inBatches(months,4,async(mo)=>{
     const ck="cal:"+calFrom+":"+calDest.i+":"+mo.ym+":"+(oneWay?1:0);
@@ -2162,30 +2367,76 @@ async function loadPriceCalYear(){
         if(r.ok){ const j=await r.json(); days=j.days||{}; pxSet(ck,days); } }catch(_){}
     }
     if(days){ const ps=Object.values(days).map(o=>o.price).filter(x=>x!=null); if(ps.length)mins[mo.ym]=Math.min(...ps); }
+    try{ const w=await weatherFor(calDest.lat,calDest.lng,mo.d.getMonth()); if(w)wx[mo.ym]=w; }catch(_){}   // météo du mois (cache CDN 24 h)
   });
   _pxAbort=null;
   if(myId!==pReqId)return;
-  renderPriceCalYear(months,mins);
+  renderPriceCalYear(months,mins,wx);
 }
-function renderPriceCalYear(months,mins){
+function renderPriceCalYear(months,mins,wx){
+  wx=wx||{};
   const vals=Object.values(mins);
   const mn=vals.length?Math.min(...vals):0, mx=vals.length?Math.max(...vals):0;
   const bestYm=vals.length?Object.keys(mins).reduce((a,b)=>mins[b]<mins[a]?b:a):null;
+  // meilleur compromis prix/météo (mois avec prix ET météo)
+  let compromisYm=null, bestScore=Infinity, hasWx=false;
+  months.forEach(mo=>{ const p=mins[mo.ym], w=wx[mo.ym]; if(p==null||!w)return; hasWx=true;
+    const priceNorm=(mx>mn)?(p-mn)/(mx-mn):0, comfort=Math.min(1,Math.abs(w.hi-24)/16);
+    const score=priceNorm*0.6+comfort*0.4; if(score<bestScore){ bestScore=score; compromisYm=mo.ym; } });
   let html='<div class="ygrid">';
   months.forEach(mo=>{
-    const p=mins[mo.ym], lab=MOIS[mo.d.getMonth()].slice(0,4)+" "+String(mo.d.getFullYear()).slice(2);
+    const p=mins[mo.ym], w=wx[mo.ym], lab=MOIS[mo.d.getMonth()].slice(0,4)+" "+String(mo.d.getFullYear()).slice(2);
     if(p==null){ html+=`<div class="ycell nodata"><span class="ym">${lab}</span><span class="yp">—</span></div>`; return; }
     const bg=priceColor(p,mn,mx);
-    html+=`<div class="ycell${mo.ym===bestYm?" best":""}" style="background:${bg}" data-ym="${mo.ym}"><span class="ym">${lab}</span><span class="yp">${p}€</span></div>`;
+    const cls="ycell"+(mo.ym===bestYm?" best":"")+(mo.ym===compromisYm?" compromis":"");
+    html+=`<div class="${cls}" style="background:${bg}" data-ym="${mo.ym}">${mo.ym===compromisYm?'<span class="ystar">⭐</span>':""}<span class="ym">${lab}</span><span class="yp">${p}€</span>${w?`<span class="ytemp">${w.hi}°</span>`:""}</div>`;
   });
   html+='</div>';
-  if(!vals.length) html='<div class="ov-status">Pas de prix en cache sur les 12 prochains mois pour cette route.</div>';
-  else if(bestYm){ const bm=months.find(x=>x.ym===bestYm); html+=`<div class="cal-verdict"><b>🟢 Le moins cher</b> : ${MOIS[bm.d.getMonth()]} ${bm.d.getFullYear()} — dès ${mins[bestYm]}€. <span style="color:var(--muted);font-style:italic">Tape un mois pour voir le détail jour par jour.</span></div>`; }
+  if(!vals.length){ html='<div class="ov-status">Pas de prix en cache sur les 12 prochains mois pour cette route.</div>'; }
+  else{
+    if(bestYm){ const bm=months.find(x=>x.ym===bestYm); html+=`<div class="cal-verdict"><b>🟢 Le moins cher</b> : ${MOIS[bm.d.getMonth()]} ${bm.d.getFullYear()} — dès ${mins[bestYm]}€. <span style="color:var(--muted);font-style:italic">Tape un mois pour le détail jour par jour.</span></div>`; }
+    if(hasWx&&compromisYm){ const cm=months.find(x=>x.ym===compromisYm); html+=`<div class="ylegend">⭐ Meilleur compromis météo/prix : <b>${MOIS[cm.d.getMonth()]}</b> (≈ ${wx[compromisYm].hi}° · ${mins[compromisYm]}€) &nbsp;·&nbsp; 🟢 = le moins cher &nbsp;·&nbsp; ° = normale diurne</div>`; }
+  }
   const wrap=document.getElementById("pgridWrap");
   wrap.innerHTML=html;
   wrap.querySelectorAll(".ycell[data-ym]").forEach(el=>el.onclick=()=>{
     const p=el.dataset.ym.split("-"); pView=new Date(+p[0],+p[1]-1,1); calYearMode=false; syncCalViewBtns(); loadPriceCal();
   });
+}
+/* Départs voisins (PREMIUM) : compare le prix du mois affiché depuis les aéroports proches de ton origine. */
+function nearbyOrigins(code,maxN,maxKm){
+  const o=findAirport(code); if(!o||o.lat==null)return [];
+  return originPool().filter(a=>a.code!==code&&a.lat!=null)
+    .map(a=>({code:a.code,city:a.city,km:haversine(o,a)}))
+    .filter(a=>a.km<=maxKm).sort((x,y)=>x.km-y.km).slice(0,maxN);
+}
+async function loadNearbyOrigins(){
+  const box=document.getElementById("ovNearby"); if(!box)return;
+  if(SOFT_MODE||calYearMode||!calFrom||!calDest){ box.innerHTML=""; return; }   // premium + vue mois uniquement
+  const near=nearbyOrigins(calFrom,3,220);
+  if(!near.length){ box.innerHTML=""; return; }
+  const myId=pReqId, y=pView.getFullYear(), m=pView.getMonth(), month=y+"-"+pad(m+1);
+  const primMin=(pData&&Object.values(pData).length)?Math.min(...Object.values(pData).map(o=>o.price).filter(x=>x!=null)):null;
+  box.innerHTML='<div class="nearby"><div class="nearby-hd">✈️ Aussi depuis tes aéroports voisins…</div></div>';
+  const rows=[];
+  await inBatches(near,3,async(a)=>{
+    const ck="cal:"+a.code+":"+calDest.i+":"+month+":"+(oneWay?1:0);
+    let days=pxGet(ck);
+    if(!days){ try{ const r=await fetch(`${API_BASE}/api/calendar?origin=${a.code}&destination=${calDest.i}&month=${month}&oneway=${oneWay?1:0}`);
+      if(r.ok){ const j=await r.json(); days=j.days||{}; pxSet(ck,days); } }catch(_){} }
+    const ps=days?Object.values(days).map(o=>o.price).filter(x=>x!=null):[];
+    rows.push({code:a.code,city:a.city,km:Math.round(a.km),min:ps.length?Math.min(...ps):null});
+  });
+  if(myId!==pReqId)return;                                    // route/mois changés entre-temps
+  const all=[{code:calFrom,city:calFromCity,km:0,min:primMin,prim:true}].concat(rows);
+  const withP=all.filter(x=>x.min!=null), cheapest=withP.length?Math.min(...withP.map(x=>x.min)):null;
+  let html='<div class="nearby"><div class="nearby-hd">✈️ Aussi depuis tes aéroports voisins (ce mois)</div><div class="nearby-list">';
+  all.forEach(x=>{
+    const tag=x.prim?'<span class="nb-tag">ton départ</span>':'<span class="nb-km">'+x.km+' km</span>';
+    const best=(x.min!=null&&x.min===cheapest&&withP.length>1)?'<span class="nb-best">le moins cher</span>':'';
+    html+='<div class="nearby-row"><span class="nb-ap"><b>'+x.code+'</b> '+(x.city||'')+tag+'</span><span class="nb-p">'+(x.min!=null?'dès '+x.min+'€ '+best:'—')+'</span></div>';
+  });
+  box.innerHTML=html+'</div></div>';
 }
 function syncCalViewBtns(){
   const seg=document.getElementById("calView"); if(!seg)return;
@@ -2315,14 +2566,26 @@ function renderPriceCal(){
     // « dates flexibles » directement sur la page Kayak.
     if(kLink)html+=`<div class="ov-status" style="margin-top:12px;text-align:center">${kLink}</div>`;
     if(anomCount){ html+=`<div class="anom-note">⚡ <b>${anomCount} date${anomCount>1?"s":""} anormalement bas${anomCount>1?"ses":"se"}</b> ce mois (${anomCheapest.price}€ le ${frShort(anomCheapest.ds)}, &lt; moitié de la médiane ${median}€). Possible erreur tarifaire ou promo courte — à confirmer vite avec ⚡ ou un comparateur.</div>`; }
+    // flexible ±3 jours : jour le moins cher autour de la date choisie
+    if(dep && pData[dep]){
+      const depP=pData[dep].price; let bestF=null;
+      for(let off=-3;off<=3;off++){ if(off===0)continue;
+        const dd=new Date(+dep.slice(0,4),+dep.slice(5,7)-1,+dep.slice(8,10)+off), ds2=iso(dd);
+        if(pData[ds2]&&pData[ds2].price<(bestF?bestF.price:depP))bestF={ds:ds2,price:pData[ds2].price};
+      }
+      if(bestF&&bestF.price<depP) html+='<div class="flex3">💡 <b>−'+(depP-bestF.price)+'€</b> en partant le <b>'+frShort(bestF.ds)+'</b> (à ±3 j de ta date)</div>';
+    }
     html+=histBlock(calFrom,calDest.i,oneWay);
-    html+=`<div class="ovacts"><button class="ovact" id="ovShare">↗ Partager cette route</button>${dep?`<button class="ovact" id="ovIcs">📅 Ajouter au calendrier</button>`:``}</div>`;
+    const _tsaved=tripSaved({o:calFrom,d:calDest.i,dep,ret,ow:oneWay});
+    html+=`<div class="ovacts"><button class="ovact" id="ovSave">${_tsaved?"★ Trajet sauvegardé":"★ Sauvegarder ce trajet"}</button><button class="ovact" id="ovShare">↗ Partager cette route</button>${dep?`<button class="ovact" id="ovIcs">📅 Ajouter au calendrier</button>`:``}</div>`;
     if(prices.length)histRecord(calFrom,calDest.i,oneWay,min);   // relève le mini du mois dans l'historique perso
   }
   document.getElementById("pgridWrap").innerHTML=html;
   document.getElementById("pgridWrap").querySelectorAll(".pday[data-pick]").forEach(el=>el.onclick=()=>pickFromCal(el.dataset.pick));
+  const _sv=document.getElementById("ovSave"); if(_sv)_sv.onclick=()=>{ const ok=addTrip({o:calFrom,d:calDest.i,dep,ret,ow:oneWay,b:band,tool:currentTool}); _sv.textContent=ok?"★ Sauvegardé ✓":"★ Déjà sauvegardé"; };
   const _sh=document.getElementById("ovShare"); if(_sh)_sh.onclick=()=>shareRoute(calFrom,calDest.i,calDest.n,dep,(!oneWay?ret:null),min||null);
   const _ic=document.getElementById("ovIcs"); if(_ic)_ic.onclick=()=>icsDownload(calFrom,calDest.i,calDest.n,dep,(!oneWay&&ret&&ret>=dep?ret:null),(dep&&pData[dep])?pData[dep].price:(min||null));
+  try{ loadNearbyOrigins(); }catch(_){}
 }
 function pickFromCal(ds){
   const o=pData[ds];
@@ -3789,6 +4052,26 @@ window.Radar=(()=>{
     });
   }
 
+  let _tgtBanClosed=false;
+  // bannière de lancement : des vols surveillés sont-ils passés sous le prix cible ?
+  function updateTargetBanner(){
+    const b=document.getElementById("targetBanner"); if(!b)return;
+    if(_tgtBanClosed){ b.hidden=true; return; }
+    const t=(loadSet().target)||0;
+    if(!(t>0)||!_lastResults){ b.hidden=true; return; }
+    let hits=[];
+    (_lastResults.movers||[]).forEach(m=>{ if(m.price!=null&&m.price<=t)hits.push(m); });
+    (_lastResults.zones||[]).forEach(zr=>(zr.matches||[]).forEach(m=>{ if(m.price!=null&&m.price<=t)hits.push(m); }));
+    if(!hits.length){ b.hidden=true; return; }
+    hits.sort((a,c)=>a.price-c.price);
+    const best=hits[0], nm=NAMES[best.dest]||best.dest, dests=new Set(hits.map(h=>h.dest));
+    b.innerHTML='🎯 <b>'+dests.size+' destination'+(dests.size>1?'s':'')+' sous ta cible '+t+'€</b> — dès '+best.price+'€ vers '+nm+' <span class="lb-actions"><button class="lb-no" id="tgtBanX">✕</button></span>';
+    b.hidden=false;
+    b.onclick=(ev)=>{
+      if(ev.target&&ev.target.id==="tgtBanX"){ _tgtBanClosed=true; b.hidden=true; return; }
+      const box=document.getElementById("radarBox"); if(box){ box.hidden=false; box.open=true; box.scrollIntoView({behavior:"smooth",block:"start"}); }
+    };
+  }
   async function rescan(){
     if(_busy) return; _busy=true;
     const lanes=loadLanes(), zones=loadZones().filter(z=>z.enabled), set=loadSet();
@@ -3803,6 +4086,7 @@ window.Radar=(()=>{
     for(const z of zones){ const r=await scanZone(z); watched+=r.watched; allMovers=allMovers.concat(r.movers); zoneOut.push({zone:z,...r}); }
     _lastResults={movers:allMovers,watched,laneCount:lanes.length,zones:zoneOut};
     try{jset(RESULTS_KEY,_lastResults);}catch(_){}
+    try{updateTargetBanner();}catch(_){}
     // notifications : ne signale que du NEUF par rapport au dernier envoi
     if(set.notify){
       const drops=dedupeDrops(allMovers);
@@ -3921,6 +4205,7 @@ window.Radar=(()=>{
     html+='<div class="radar-foot">Cache gratuit ≤ 7 j · touche le ⚡ pour le prix réel avant de réserver.</div>';
     sec.innerHTML=html;
     bindHead(); bindResults(); applyPriceFilter(); markTargets();
+    try{ renderPriorityDate(); }catch(_){}
   }
   // surligne les vols sous ton seuil cible (post-rendu : toutes les lignes portent data-price)
   function markTargets(){
@@ -4025,6 +4310,7 @@ window.Radar=(()=>{
   /* ---------- réglages (zones) ---------- */
   function renderSettings(editorMode){
     const sec=document.getElementById("radarSec"); if(!sec) return;
+    { const pb=document.getElementById("pdateBox"); if(pb)pb.innerHTML=""; }
     if(editorMode && !_edit) return;                 // sécurité : mode éditeur sans zone en cours
     revealRadar("✦ Radar — réglages",true);
     const zones=loadZones(), set=loadSet();
@@ -4035,6 +4321,7 @@ window.Radar=(()=>{
     // (pendant l'édition, on n'affiche pas la recherche pour ne pas voler le focus / sauter le scroll).
     if(!editorMode){
       html+=targetHtml(set);
+      html+=pdateHtml(set);
       const watch=loadWatch();
       html+='<label class="rd-fld" style="margin-top:4px">★ Destinations surveillées <span style="font-weight:400;color:var(--muted)">— épinglées en tête des résultats</span></label>';
       html+='<div class="rd-chiprow" id="rdWatchChips">'
@@ -4057,6 +4344,52 @@ window.Radar=(()=>{
     const v=(set&&set.target>0)?set.target:"";
     return '<div class="rd-target"><label class="rd-fld">🎯 Seuil de prix cible <span style="font-weight:400;color:var(--muted)">— surligne les vols sous ce prix</span></label>'
       +'<input id="rdTarget" type="number" inputmode="numeric" min="0" step="10" placeholder="ex. 80" value="'+v+'"> €</div>';
+  }
+  function pdateHtml(set){
+    const v=(set&&set.priorityDate)||"";
+    return '<div class="rd-pdate"><label class="rd-fld">📌 Date prioritaire <span style="font-weight:400;color:var(--muted)">— pour CETTE date, montre où partir le moins cher (toutes destinations) et l\'évolution des prix</span></label>'
+      +'<input id="rdPDate" type="date" value="'+v+'"></div>';
+  }
+  // historique du prix d'une date précise (route + date) ; renvoie l'évolution vs dernier relevé
+  let _pdTok=0;
+  function pdateRecord(from,to,date,price){
+    const k="escale:pdate:"+from+"-"+to+":"+date;
+    let a; try{ a=JSON.parse(localStorage.getItem(k))||[]; }catch(_){ a=[]; }
+    const prev=a.length?a[a.length-1].p:null, today=iso(new Date());
+    if(a.length&&a[a.length-1].d===today)a[a.length-1].p=price; else a.push({d:today,p:price});
+    if(a.length>60)a=a.slice(a.length-60);
+    try{ localStorage.setItem(k,JSON.stringify(a)); }catch(_){}
+    return {delta:(prev!=null)?price-prev:0,n:a.length};
+  }
+  // carte "date prioritaire" : prix de la date choisie depuis ton origine vers chaque destination surveillée
+  async function renderPriorityDate(){
+    const box=document.getElementById("pdateBox"); if(!box)return;
+    const set=loadSet(), pd=set.priorityDate;
+    if(!pd||view!=="results"){ box.innerHTML=""; return; }
+    const rbox=document.getElementById("radarBox");
+    if(rbox && !rbox.open){ box.innerHTML=""; return; }     // scanne uniquement quand le Radar est ouvert (économie de quota)
+    if(!origin){ box.innerHTML='<div class="pdate-card"><div class="pdate-hd">📌 Date prioritaire — '+frShort(pd)+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Choisis une origine pour voir où partir le moins cher à cette date.</div></div>'; return; }
+    const month=pd.slice(0,7), _dests=allDests().slice(0,80), _pt=++_pdTok;
+    box.innerHTML='<div class="pdate-card"><div class="pdate-hd">📌 Date prioritaire — '+frShort(pd)+' · depuis '+origin.code+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">recherche des meilleures destinations pour cette date…</div></div>';
+    const rows=[];
+    await inBatches(_dests,6,async(d)=>{
+      const ck="cal:"+origin.code+":"+d.i+":"+month+":"+(oneWay?1:0);
+      let days=pxGet(ck);
+      if(!days){ try{ const r=await fetch(`${API_BASE}/api/calendar?origin=${origin.code}&destination=${d.i}&month=${month}&oneway=${oneWay?1:0}`); if(r.ok){ const j=await r.json(); days=j.days||{}; pxSet(ck,days); } }catch(_){} }
+      const price=(days&&days[pd])?days[pd].price:null;
+      rows.push({d:d.i,name:d.n,price,trend:price!=null?pdateRecord(origin.code,d.i,pd,price):null});
+    });
+    if(_pt!==_pdTok)return;                                  // relancé entre-temps (date/origine changée)
+    const withP=rows.filter(r=>r.price!=null).sort((a,b)=>a.price-b.price);
+    if(!withP.length){ box.innerHTML='<div class="pdate-card"><div class="pdate-hd">📌 Date prioritaire — '+frShort(pd)+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Aucun prix en cache pour cette date pour l\'instant — reviens un peu plus tard.</div></div>'; return; }
+    let html='<div class="pdate-card"><div class="pdate-hd">📌 Où partir le '+frShort(pd)+' · depuis '+origin.code+' <span style="color:var(--muted);font-weight:400">(les moins chers)</span></div>';
+    withP.slice(0,12).forEach(r=>{
+      const nm=r.name||NAMES[r.d]||r.d;
+      const arr=r.trend&&r.trend.delta<0?'<span class="down">▼</span> ':(r.trend&&r.trend.delta>0?'<span class="up">▲</span> ':'');
+      const dlt=(r.trend&&r.trend.delta)?'<span style="color:var(--muted);font-size:10px"> ('+(r.trend.delta>0?"+":"")+r.trend.delta+')</span>':'';
+      html+='<div class="pdate-row"><span class="pr-d"><b>'+r.d+'</b> '+nm+'</span><span class="pdate-p">'+arr+r.price+'€'+dlt+'</span></div>';
+    });
+    box.innerHTML=html+'</div>';
   }
   function zoneSummary(z){
     const mm=(z.months||[]).map(ym=>{const p=ym.split("-");return MOIS[(+p[1])-1].slice(0,4)+".";}).join(" ");
@@ -4154,8 +4487,10 @@ window.Radar=(()=>{
     // seuil de prix cible (les toggles notif/push ont été retirés — code mort supprimé)
     const tgt=document.getElementById("rdTarget");
     if(tgt)tgt.onchange=()=>{ const s=loadSet(); const n=parseInt(tgt.value,10); s.target=(n>0?n:0); saveSet(s); };
+    const pdel=document.getElementById("rdPDate");
+    if(pdel)pdel.onchange=()=>{ const s=loadSet(); s.priorityDate=pdel.value||""; saveSet(s); };
     const soft=document.getElementById("rdSoft");
-    if(soft)soft.onclick=()=>{ const code=prompt("Code pour changer de mode :"); if(code===null)return; if(code.trim()!=="19871502"){alert("Code incorrect.");return;} localStorage.setItem(SOFT_KEY, SOFT_MODE?"premium":"soft"); location.reload(); };
+    if(soft)soft.onclick=()=>{ if(SOFT_MODE){ const code=prompt("Phrase pour passer en premium :"); if(code===null)return; if(code.trim().toLowerCase()!=="je voyage avec tony"){alert("Phrase incorrecte.");return;} localStorage.setItem(SOFT_KEY,"premium"); } else { localStorage.setItem(SOFT_KEY,"soft"); } location.reload(); };
     const add=document.getElementById("rdAddZone"); if(add)add.onclick=()=>{ editing="new"; _edit=zoneDefault(); renderSettings(); };
     const back=document.getElementById("rdBackRes"); if(back)back.onclick=()=>{ editing=null;_edit=null; view="results"; renderResults(); rescan(); pushResync(); };
     // destinations surveillées : recherche mondiale (même moteur que les aéroports) + retrait
@@ -4270,7 +4605,7 @@ window.Radar=(()=>{
 
   const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-  return {note,rescan,clear:clearAll,openSettings:()=>{view="settings";renderSettings();}};
+  return {note,rescan,clear:clearAll,openSettings:()=>{view="settings";renderSettings();},priorityDate:renderPriorityDate};
 })();
 // lance la vérification après le premier rendu (laisse le temps aux noms de villes d'arriver)
 setTimeout(()=>{try{Radar.rescan();}catch(_){}} ,150);
@@ -4327,7 +4662,8 @@ const TOOL_HINT={
   hotels:"Hôtels — cache gratuit, photos Booking ou ⚡ Google, filtrés par tes critères.",
   car:"Voiture — location au meilleur prix (Booking), à la destination choisie.",
   attr:"Activités — que voir et réserver à destination.",
-  see:"À voir — musées, monuments, plages, nature autour (gratuit)."
+  see:"À voir — musées, monuments, plages, nature autour (gratuit).",
+  itin:"Itinéraire — coche les lieux à visiter, choisis départ/arrivée + mode, et je trace l'ordre optimal (sans revenir sur tes pas)."
 };
 function showTool(t){
   currentTool=t;
@@ -4351,12 +4687,130 @@ function showTool(t){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll(".toolpill").forEach(b=>b.onclick=()=>showTool(b.dataset.tool));
+/* ===================== VOL-MAIN 20 : itinéraire + Polarsteps ===================== */
+
+/* Polarsteps : lien vers ton voyage (URL mémorisée localement). */
+const POLAR_KEY="escale:polarsteps";
+function polarUrl(){ try{return localStorage.getItem(POLAR_KEY)||"";}catch(_){return "";} }
+function polarRefresh(){ const a=document.getElementById("polarLink"); if(a)a.innerHTML=polarUrl()?'🧭 Mon Polarsteps <span class="pl-edit">✎</span>':'🧭 Lier mon Polarsteps'; }
+function polarSet(){
+  const v=prompt("Colle le lien de ton voyage Polarsteps :", polarUrl()||"https://www.polarsteps.com/");
+  if(v===null)return; const u=v.trim();
+  try{ if(u)localStorage.setItem(POLAR_KEY,u); else localStorage.removeItem(POLAR_KEY); }catch(_){}
+  polarRefresh();
+}
+(function(){
+  const a=document.getElementById("polarLink"); if(!a)return; polarRefresh();
+  a.onclick=(e)=>{ const edit=e.target&&e.target.classList&&e.target.classList.contains("pl-edit"); const u=polarUrl();
+    if(edit||!u){ polarSet(); return; } window.open(u,"_blank","noopener"); };
+})();
+
+/* Chargement paresseux de Leaflet — uniquement quand on trace un itinéraire (n'alourdit pas le démarrage). */
+let _leafletP=null;
+function ensureLeaflet(){
+  if(window.L)return Promise.resolve(window.L);
+  if(_leafletP)return _leafletP;
+  _leafletP=new Promise((res,rej)=>{
+    const css=document.createElement("link"); css.rel="stylesheet"; css.href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"; document.head.appendChild(css);
+    const s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"; s.onload=()=>res(window.L); s.onerror=()=>rej(new Error("leaflet")); document.head.appendChild(s);
+  });
+  return _leafletP;
+}
+
+/* Itinéraire : POIs géolocalisés (OpenTripMap), ordre optimisé (plus proche voisin + 2-opt), carte. */
+let _itinPois=[], _itinCenter=null, _itinMode="walk", _itinMap=null, _itinLayer=null;
+function distLL(a,b){ const R=6371,rad=x=>x*Math.PI/180;
+  const dLat=rad(b.lat-a.lat),dLng=rad(b.lon-a.lon);
+  const s=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(s)); }
+function routeLen(r){ let d=0; for(let i=1;i<r.length;i++)d+=distLL(r[i-1],r[i]); return d; }
+function twoOpt(route,fixStart,fixEnd){
+  const lo=fixStart?1:0, n=route.length, hi=fixEnd?n-1:n; let best=route.slice(), improved=true;
+  while(improved){ improved=false;
+    for(let i=lo;i<hi-1;i++)for(let k=i+1;k<hi;k++){
+      const cand=best.slice(0,i).concat(best.slice(i,k+1).reverse(),best.slice(k+1));
+      if(routeLen(cand)<routeLen(best)-1e-6){ best=cand; improved=true; }
+    }
+  }
+  return best;
+}
+function optimizeRoute(chk,startXi,endXi){
+  const startP=startXi>=0?_itinPois[startXi]:null;
+  const endP=(endXi>=0&&endXi!==startXi)?_itinPois[endXi]:null;
+  let mid=chk.filter(p=>p!==startP&&p!==endP), route=[], cur;
+  if(startP)cur=startP; else cur=mid.shift();
+  route.push(cur);
+  while(mid.length){ let bi=0,bd=Infinity; mid.forEach((p,i)=>{const d=distLL(cur,p); if(d<bd){bd=d;bi=i;}}); cur=mid.splice(bi,1)[0]; route.push(cur); }
+  if(endP)route.push(endP);
+  return twoOpt(route,!!startP,!!endP);
+}
+const MODE_SPEED={walk:{kmh:4.5,det:1.35,emo:"🚶"},transit:{kmh:17,det:1.4,emo:"🚌"},car:{kmh:28,det:1.5,emo:"🚗"}};
+function legText(km){ const m=MODE_SPEED[_itinMode], real=km*m.det, min=Math.max(1,Math.round(real/m.kmh*60));
+  return m.emo+" "+(real<1?Math.round(real*1000)+" m":real.toFixed(1)+" km")+" · ~"+min+" min"; }
+function renderItinResult(route){
+  const box=document.getElementById("itinResult"); let html='<div class="itin-steps">', total=0;
+  route.forEach((p,i)=>{ let leg="";
+    if(i>0){ const km=distLL(route[i-1],p); total+=km*MODE_SPEED[_itinMode].det; leg='<div class="step-leg">'+legText(km)+'</div>'; }
+    html+='<div class="step-row"><div class="step-num">'+(i+1)+'</div><div class="step-info"><div class="step-name">'+p.name+'</div>'+leg+'</div></div>'; });
+  html+='</div>';
+  const m=MODE_SPEED[_itinMode], tmin=Math.round(total/m.kmh*60);
+  html+='<div class="itin-total">'+m.emo+' <b>'+route.length+' étapes</b> · ≈ '+(total<1?Math.round(total*1000)+" m":total.toFixed(1)+" km")+' · ~'+(tmin>=60?Math.floor(tmin/60)+"h"+String(tmin%60).padStart(2,"0"):tmin+" min")+' de trajet (hors temps de visite)</div>';
+  box.innerHTML=html;
+}
+function renderItinMap(route){
+  const wrap=document.getElementById("itinMap"); wrap.hidden=false;
+  ensureLeaflet().then(L=>{
+    if(!_itinMap){ _itinMap=L.map(wrap,{scrollWheelZoom:false}); L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(_itinMap); }
+    if(_itinLayer)_itinLayer.remove();
+    _itinLayer=L.layerGroup().addTo(_itinMap);
+    const latlngs=route.map(p=>[p.lat,p.lon]);
+    L.polyline(latlngs,{color:"#ff5ea8",weight:3,opacity:.9}).addTo(_itinLayer);
+    route.forEach((p,i)=>{ const ic=L.divIcon({className:"",html:'<div style="background:linear-gradient(157deg,#ff8fc2,#b23bd6);color:#2a0620;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 12px monospace;box-shadow:0 1px 4px rgba(0,0,0,.4)">'+(i+1)+'</div>',iconSize:[24,24],iconAnchor:[12,12]});
+      L.marker([p.lat,p.lon],{icon:ic}).addTo(_itinLayer).bindPopup((i+1)+". "+p.name); });
+    _itinMap.fitBounds(latlngs,{padding:[30,30]});
+    setTimeout(()=>{try{_itinMap.invalidateSize();}catch(_){}} ,120);
+  }).catch(()=>{ wrap.hidden=true; });
+}
+function itinChecked(){ return [...document.querySelectorAll(".poi-ck:checked")].map(c=>_itinPois[+c.dataset.i]); }
+function itinSyncPlan(){
+  const chk=itinChecked(), plan=document.getElementById("itinPlan");
+  if(chk.length<2){ plan.hidden=true; return; } plan.hidden=false;
+  const opt='<option value="-1">n\'importe lequel</option>'+chk.map(p=>'<option value="'+_itinPois.indexOf(p)+'">'+p.name+'</option>').join("");
+  document.getElementById("itinStart").innerHTML=opt; document.getElementById("itinEnd").innerHTML=opt;
+}
+async function itinFetch(){
+  const inp=document.getElementById("itinCity"), city=(inp&&inp.value||"").trim(); if(!city)return;
+  const box=document.getElementById("itinPois"); box.innerHTML='<div class="empty">recherche des lieux…</div>';
+  document.getElementById("itinPlan").hidden=true; document.getElementById("itinMap").hidden=true; document.getElementById("itinResult").innerHTML="";
+  try{
+    const j=await (await fetch(`${API_BASE}/api/poi?city=${encodeURIComponent(city)}`)).json();
+    if(j.error||!j.pois||!j.pois.length){ box.innerHTML='<div class="empty">'+(j.error||"Aucun lieu trouvé pour cette ville.")+'</div>'; return; }
+    _itinPois=j.pois; _itinCenter=j.center;
+    box.innerHTML='<div class="poi-hd">Coche ce que tu veux voir ('+j.pois.length+' lieux) :</div>'+j.pois.map((p,i)=>'<label class="poi-row"><input type="checkbox" class="poi-ck" data-i="'+i+'"><span class="poi-n">'+p.name+'</span>'+(p.kind?'<span class="poi-k">'+p.kind.replace(/_/g," ")+'</span>':'')+'</label>').join("");
+    box.querySelectorAll(".poi-ck").forEach(c=>c.onchange=itinSyncPlan);
+  }catch(_){ box.innerHTML='<div class="empty">Erreur réseau — réessaie.</div>'; }
+}
+(function(){
+  const f=document.getElementById("itinFetch"); if(f)f.onclick=itinFetch;
+  const ci=document.getElementById("itinCity"); if(ci)ci.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();itinFetch();} });
+  const tr=document.getElementById("itinTrace"); if(tr)tr.onclick=()=>{ const chk=itinChecked(); if(chk.length<2)return;
+    const s=+document.getElementById("itinStart").value, en=+document.getElementById("itinEnd").value;
+    const route=optimizeRoute(chk,s,en); renderItinResult(route); renderItinMap(route); };
+  const modes=document.getElementById("itinModes");
+  if(modes)modes.querySelectorAll("button").forEach(b=>b.onclick=()=>{ _itinMode=b.dataset.mode; modes.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+    const chk=itinChecked(); if(chk.length>=2 && document.getElementById("itinResult").innerHTML){ const s=+document.getElementById("itinStart").value, en=+document.getElementById("itinEnd").value; renderItinResult(optimizeRoute(chk,s,en)); } });
+})();
+
+(function(){ const rb=document.getElementById("radarBox"); if(rb)rb.addEventListener("toggle",()=>{ if(rb.open){ try{ window.Radar&&Radar.priorityDate&&Radar.priorityDate(); }catch(_){} } }); })();
+
 (function bootTool(){
   let t=null;
   try{ t=applyDeepLink(); }catch(_){ t=null; }                 // lien profond partagé (rouvre la même recherche)
   if(!t){ try{ const lt=localStorage.getItem("escale:lasttool"); if(lt)t=lt; }catch(_){} }  // sinon : dernier outil utilisé
   try{ drawCal(); refresh(); }catch(_){}
   showTool(t||"simple");
+  try{ renderTrips(); }catch(_){}                              // ★ mes trajets sauvegardés
+  setTimeout(()=>{ try{ maybeShowInstall(); }catch(_){} },2500);   // invite d'install (astuce iOS ; Chrome via l'événement)
 })();
 </script>
 </body>

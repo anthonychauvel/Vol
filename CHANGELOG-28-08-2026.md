@@ -1,3 +1,88 @@
+# Escale — Vol-main_20 (28/08/2026) — Itinéraire + Polarsteps + date prioritaire Radar
+
+Nouveau fichier backend : `functions/api/poi.js` (OpenTripMap → **clé `OPENTRIPMAP_KEY` à ajouter
+côté Cloudflare Pages**). SW bump **v82 → v83**.
+
+- **🗺 Onglet Itinéraire** — nouvel outil. Tape une ville → lieux géolocalisés (OpenTripMap),
+  coche ce que tu veux voir, choisis **départ / arrivée** (ou « n'importe lequel ») + **mode**
+  (🚶 à pied / 🚌 transport / 🚗 voiture) → **ordre optimisé** (plus proche voisin + 2-opt, donc
+  sans revenir sur ses pas) avec **carte Leaflet** (marqueurs numérotés + tracé), liste des étapes,
+  distances et temps estimés. Leaflet chargé en **lazy-load** (n'alourdit pas le démarrage ;
+  repli liste seule si la carte ne charge pas).
+  ⚠️ v1 : tracé en lignes directes entre points (pas encore le routage rue-par-rue). Estimations
+  de temps = distance × facteur détour / vitesse du mode.
+- **🧭 Lien Polarsteps** — dans le header : colle l'URL de ton voyage (mémorisée en local), un tap
+  l'ouvre, le ✎ la modifie.
+- **📌 Date prioritaire (Radar)** — dans les réglages du Radar, un champ date : le Radar suit le
+  prix de **cette date précise** depuis ton origine vers chaque **destination surveillée (★)**,
+  et affiche l'**évolution** (▲/▼ vs dernier relevé). Carte en tête des résultats. Borné à 8
+  destinations, mis en cache (mêmes clés `cal:`).
+
+## À tester sur appareil
+- **Clé OpenTripMap** obligatoire pour l'onglet Itinéraire (sinon message d'erreur clair).
+- Itinéraire : recherche de lieux, cochage, optimisation, carte Leaflet (nécessite le réseau
+  pour la carte + les tuiles OSM). Le lazy-load Leaflet via cdnjs.
+- Date prioritaire : mets une date + des ★, recharge → la carte doit lister les prix de cette date.
+
+---
+
+# Escale — Vol-main_19 (28/08/2026) — aéroports voisins (premium) + re-skin néon
+
+- **Aéroports voisins (PREMIUM uniquement)** — dans le calendrier d'une route (vue mois),
+  bloc auto « Aussi depuis tes aéroports voisins (ce mois) » : compare le prix mini du mois
+  depuis ton origine vs les 3 aéroports les plus proches (≤ 220 km), marque le moins cher.
+  Borné à la vue mois (pas la vue 12 mois → éviterait 36 appels) et mis en cache (mêmes clés
+  `cal:` → réchauffe la vue si tu ouvres ce voisin ensuite). Masqué en mode soft.
+- **Re-skin « corsaire au néon »** — palette coucher de soleil façon Vice (rose/magenta/violet/
+  orange + cyan néon), titres en dégradé façon lettrage, halo subtil. Identité pirate conservée.
+  Palette **originale** (aucun asset/police Rockstar). Tout via variables CSS.
+- SW bump **v81 → v82**.
+
+---
+
+# Escale — Vol-main_18 (28/08/2026) — 6 nouveautés
+
+Retrait complet du CO₂ (v16) + phrase premium « je voyage avec tony » soft→premium seulement (v17),
+puis ce gros lot de 6 améliorations. Toujours vanilla JS / localStorage, SW bump **v80 → v81**.
+
+1. **★ Mes trajets sauvegardés** — bouton « ★ Sauvegarder ce trajet » dans l'overlay calendrier.
+   Panneau repliable « ★ Mes trajets » (sous le Radar, masqué si vide) : chaque trajet (aéroport +
+   destination + dates) se relance en 1 tap (restaure l'état + ouvre le calendrier). localStorage
+   `escale:trips:v1`, max 30.
+2. **Invite d'installation PWA** — bannière discrète : bouton « Installer » via l'événement
+   `beforeinstallprompt` (Chrome/Android), ou astuce « Partager → Sur l'écran d'accueil » sur iOS.
+   Rejet mémorisé, jamais affichée si déjà installée. *Vise le point faible n°1 (installs à froid).*
+3. **Bannière « cible atteinte » au lancement** — si des vols surveillés (Radar) passent sous ton
+   prix cible 🎯, un bandeau s'affiche à l'ouverture (« X destinations sous ta cible Y€ — dès Z€ »).
+   Tap → ouvre le Radar. Fermable pour la session. Aucune notif Android.
+4. **Conseil d'achat** — dans l'historique perso : 🟢 bon moment / 🟠 plutôt attendre / ⚪ dans la
+   moyenne, selon la position du prix actuel vs ton historique (≥ 3 relevés).
+5. **Flexible ±3 jours** — dans le calendrier, quand une date est choisie : « −X€ en partant le … »
+   si un jour à ±3 j est moins cher.
+6. **Météo × prix (vue 12 mois)** — la heatmap année affiche la température par mois et surligne ⭐
+   le **meilleur compromis météo/prix** (prix bas + ~24° confortable). Météo via `/api/weather` (cache CDN).
+
+## À tester sur appareil
+Syntaxe validée (`node --check`). À vérifier en conditions réelles :
+- Sauvegarde/relance d'un trajet (restaure aéroport + dates + ouvre le calendrier).
+- Bannière install : sur iOS l'astuce doit apparaître ~2,5 s après l'ouverture (si non installé) ;
+  sur Chrome/Android le bouton « Installer » n'apparaît qu'après l'émission de l'événement.
+- Bannière cible : mets un seuil 🎯 dans le Radar avec des zones surveillées → au rechargement,
+  si un prix cache est sous le seuil, le bandeau doit sortir.
+- Vue 12 mois : les températures + ⭐ (12 appels météo en plus des 12 prix ; cachés ensuite).
+
+---
+
+# Escale — Vol-main_17 (28/08/2026) — phrase premium + retrait CO₂
+
+- **Premium** : la phrase est désormais **« je voyage avec tony »** (minuscules, insensible à la casse),
+  demandée uniquement pour **soft → premium** ; **premium → soft** est direct, sans phrase.
+  Corrigé aux deux endroits (bouton du header + Radar).
+- **CO₂ retiré** partout (pastille Ma sélection, verdict calendrier, fonctions, CSS) — le « trou »
+  après la durée disparaît. SW v79 → v80 (le retrait CO₂ était en v16, v79).
+
+---
+
 # Escale — Vol-main_15 (28/08/2026) — pastille CO₂ robuste
 
 Le « trou » après la durée du trajet = l'emplacement de la pastille CO₂, qui sortait
