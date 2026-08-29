@@ -794,8 +794,6 @@
   .pgrid-sk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
   .pgrid-sk .sk{aspect-ratio:1/1;border-radius:9px}
   @media (prefers-reduced-motion:reduce){ .sk{animation:none} }
-  /* empreinte carbone */
-  .co2{font-family:var(--mono);font-size:10.5px;color:#7fb3a2;border:1px solid #2f5f52;border-radius:999px;padding:1px 7px;margin-left:7px;white-space:nowrap}
   /* météo à destination (overlay calendrier) */
   .wx{margin:2px 0 10px;font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:8px 11px}
   .wx b{color:var(--amber);font-weight:700}
@@ -1861,7 +1859,7 @@ function renderDests(){
       <div class="info" data-open="${idx}">
         <div class="name">${d.n}<span class="iata">${d.i}</span><span class="rmdest" data-rm="${d.i}" title="Retirer cette ville">✕</span><span class="cal-ic">📅 prix/jour</span></div>
         <div class="meta">
-          ${d.min!=null?`<span class="dur">${fmtDur(d.min)}</span>${co2ChipFor(d)}`:`<span class="dur" style="color:var(--muted)">choisis un départ</span>`}
+          ${d.min!=null?`<span class="dur">${fmtDur(d.min)}</span>`:`<span class="dur" style="color:var(--muted)">choisis un départ</span>`}
           <span class="price" data-price="${d.i}"></span>
         </div>
         <span class="pricelive" data-livep="${d.i}"></span>
@@ -1979,26 +1977,6 @@ function wxLabel(w,monthIdx){
   if(!w)return "";
   const em=w.hi>=26?"☀️":(w.hi>=18?"🌤️":(w.hi>=10?"⛅":"🌧️"));
   return `<div class="wx">${em} <b>${MOIS[monthIdx]}</b> à destination : ≈ ${w.hi}° / ${w.lo}° · ~${w.rainDays} j de pluie <span class="wx-src">· normales ${w.year}</span></div>`;
-}
-
-/* Empreinte carbone estimée d'un vol (aller) à partir de la distance. Ordre de grandeur, éco. */
-function co2kg(km){
-  if(km==null||!isFinite(km))return null;
-  const f=km<1500?0.16:(km<4000?0.14:0.11);
-  return Math.round(km*f);
-}
-function _coordsOf(o){
-  if(!o)return null;
-  if(o.lat!=null&&o.lng!=null)return {lat:o.lat,lng:o.lng};
-  // repli : retrouve les coords par code (aéroport d'origine, ou destination connue)
-  const a=(o.code?findAirport(o.code):null)||(o.i?DESTS.find(x=>x.i===o.i):null);
-  return (a&&a.lat!=null)?{lat:a.lat,lng:a.lng}:null;
-}
-function co2ChipFor(destObj){
-  const o=_coordsOf(origin), d=_coordsOf(destObj);
-  if(!o||!d)return "";
-  const v=co2kg(haversine(o,d)); if(v==null)return "";
-  return `<span class="co2" title="Estimation aller, classe éco. — ordre de grandeur">≈ ${v} kg CO₂</span>`;
 }
 
 /* Export .ics : pose les dates du voyage dans le calendrier du téléphone (blob local). */
@@ -2320,9 +2298,7 @@ function renderPriceCal(){
       const sorted=[...prices].sort((a,b)=>a-b);
       const t1=sorted[Math.floor(sorted.length/3)], t2=sorted[Math.floor(sorted.length*2/3)];
       const verdict=p=> p<=t1?'🟢 bon prix':(p<=t2?'🟠 dans la moyenne':'🔴 cher');
-      const _fa=findAirport(calFrom);
-      const _km=(_fa&&_fa.lat!=null&&calDest.lat!=null)?haversine(_fa,calDest):null, _c=co2kg(_km);
-      let sv='<div class="cal-verdict"><b>💶 Ce mois</b> : '+min+'€ → '+max+'€ &nbsp;·&nbsp; 🟢 ≤'+t1+'€ &nbsp; 🔴 ≥'+t2+'€'+(_c!=null?' <span class="co2">≈ '+_c+' kg CO₂</span>':'');
+      let sv='<div class="cal-verdict"><b>💶 Ce mois</b> : '+min+'€ → '+max+'€ &nbsp;·&nbsp; 🟢 ≤'+t1+'€ &nbsp; 🔴 ≥'+t2+'€';
       const selo=(dep&&pData[dep])?pData[dep]:null;
       if(selo) sv+='<br><b>Ta date ('+dep.slice(8,10)+'/'+dep.slice(5,7)+')</b> : '+verdict(selo.price)+' — '+selo.price+'€ '+(selo.transfers===0?'(direct)':'');
       sv+=' <span style="color:var(--muted);font-style:italic">· comparé aux autres dates du mois</span></div>';
