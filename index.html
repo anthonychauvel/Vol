@@ -4707,7 +4707,7 @@ function polarSet(){
 (function(){
   const a=document.getElementById("polarLink"); if(!a)return; polarRefresh();
   a.onclick=(e)=>{ const edit=e.target&&e.target.classList&&e.target.classList.contains("pl-edit"); const u=polarUrl();
-    if(edit||!u){ polarSet(); return; } window.open(u,"_blank","noopener"); };
+    if(edit||!u){ polarSet(); return; } location.href=u; };
 })();
 
 /* Chargement paresseux de Leaflet — uniquement quand on trace un itinéraire (n'alourdit pas le démarrage). */
@@ -4883,7 +4883,7 @@ async function itinFetch(){
   btn.onclick=(e)=>{ e.stopPropagation(); if(menu.hidden){ syncMenu(); menu.hidden=false; } else menu.hidden=true; };
   toolItems.forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); showTool(b.dataset.tool); menu.hidden=true; });
   document.getElementById("miMode").onclick=(e)=>{ e.stopPropagation(); menu.hidden=true; const mt=document.getElementById("modeToggle"); if(mt)mt.click(); };
-  document.getElementById("miPolarOpen").onclick=(e)=>{ e.stopPropagation(); const u=polarUrl(); menu.hidden=true; if(!u)polarSet(); else window.open(u,"_blank","noopener"); };
+  document.getElementById("miPolarOpen").onclick=(e)=>{ e.stopPropagation(); const u=polarUrl(); menu.hidden=true; if(!u)polarSet(); else location.href=u; };
   document.getElementById("miPolarEdit").onclick=(e)=>{ e.stopPropagation(); menu.hidden=true; polarSet(); };
   document.addEventListener("click",(e)=>{ if(!menu.hidden && !menu.contains(e.target) && e.target!==btn) menu.hidden=true; });
 })();
