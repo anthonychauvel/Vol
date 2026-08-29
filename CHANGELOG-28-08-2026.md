@@ -1,3 +1,21 @@
+# Escale — Vol-main_15 (28/08/2026) — pastille CO₂ robuste
+
+Le « trou » après la durée du trajet = l'emplacement de la pastille CO₂, qui sortait
+vide. En isolé le calcul est correct — la cause la plus probable est un **shell servi
+en cache par le service worker** (ancien `index.html` sans la pastille), surtout en
+onglet privé maintenu ouvert entre deux déploiements.
+Par sécurité, `co2ChipFor` est maintenant **blindé** : il retrouve les coordonnées par
+**code d'aéroport** (`findAirport`/`DESTS`) même si l'objet origine/destination ne les
+porte pas en ligne → la pastille s'affiche dès que les codes sont connus. SW bump **v77 → v78**.
+
+> Si après **fermeture complète de l'onglet privé** puis réouverture le trou persiste sur
+> une ville par défaut, tape dans la console :
+> `document.querySelector('.dur').parentElement.innerHTML`
+> — s'il contient `class="co2"`, la pastille est bien là (souci d'affichage) ; sinon elle
+> sort vide et je creuse le cas précis.
+
+---
+
 # Escale — Vol-main_14 (28/08/2026) — correctif météo
 
 La météo ne s'affichait pas (test en mode simplifié). Cause : l'appel **direct** du

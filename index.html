@@ -1987,9 +1987,17 @@ function co2kg(km){
   const f=km<1500?0.16:(km<4000?0.14:0.11);
   return Math.round(km*f);
 }
+function _coordsOf(o){
+  if(!o)return null;
+  if(o.lat!=null&&o.lng!=null)return {lat:o.lat,lng:o.lng};
+  // repli : retrouve les coords par code (aéroport d'origine, ou destination connue)
+  const a=(o.code?findAirport(o.code):null)||(o.i?DESTS.find(x=>x.i===o.i):null);
+  return (a&&a.lat!=null)?{lat:a.lat,lng:a.lng}:null;
+}
 function co2ChipFor(destObj){
-  if(!origin||!destObj||destObj.lat==null||origin.lat==null)return "";
-  const v=co2kg(haversine(origin,destObj)); if(v==null)return "";
+  const o=_coordsOf(origin), d=_coordsOf(destObj);
+  if(!o||!d)return "";
+  const v=co2kg(haversine(o,d)); if(v==null)return "";
   return `<span class="co2" title="Estimation aller, classe éco. — ordre de grandeur">≈ ${v} kg CO₂</span>`;
 }
 
