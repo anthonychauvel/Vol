@@ -849,6 +849,12 @@
   .navmenu button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font-family:var(--serif);font-size:15px;padding:11px 13px;border-radius:9px;cursor:pointer}
   .navmenu button:hover{background:var(--panel-2)}
   .navmenu button.on{background:var(--brass-face);color:#2a1c06;font-weight:700}
+  header #modeToggle, header #polarLink{display:none}
+  .navmenu-sep{height:1px;background:var(--line);margin:6px 8px}
+  .navmenu-polar{display:flex;gap:4px;align-items:center}
+  .navmenu-polar #miPolarOpen{flex:1}
+  .navmenu-polar #miPolarEdit{flex:0 0 auto;width:40px;text-align:center;color:var(--muted);font-family:var(--mono)}
+  #miMode{font-family:var(--mono);font-size:12.5px}
   /* panneau ★ Mes trajets (réutilise .radar-box) */
   .trips-list{display:flex;flex-direction:column}
   .trip-row{display:flex;align-items:center;border-bottom:1px solid var(--line)}
@@ -4759,23 +4765,42 @@ function renderItinResult(route){
   box.innerHTML=html;
   const pb=document.getElementById("itinPdf"); if(pb)pb.onclick=exportItinPdf;
 }
-/* Export PDF de l'itinéraire (jsPDF en lazy-load). */
-let _jspdfP=null;
+/* Export PDF de l'itinéraire (jsPDF + capture carte via html2canvas, en lazy-load). */
+let _jspdfP=null,_h2cP=null;
 function ensureJsPDF(){
   if(window.jspdf&&window.jspdf.jsPDF)return Promise.resolve(window.jspdf.jsPDF);
   if(_jspdfP)return _jspdfP;
   _jspdfP=new Promise((res,rej)=>{ const s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"; s.onload=()=>res(window.jspdf&&window.jspdf.jsPDF); s.onerror=()=>rej(new Error("jspdf")); document.head.appendChild(s); });
   return _jspdfP;
 }
+function ensureH2C(){
+  if(window.html2canvas)return Promise.resolve(window.html2canvas);
+  if(_h2cP)return _h2cP;
+  _h2cP=new Promise((res,rej)=>{ const s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"; s.onload=()=>res(window.html2canvas); s.onerror=()=>rej(new Error("h2c")); document.head.appendChild(s); });
+  return _h2cP;
+}
 async function exportItinPdf(){
   if(!_itinRoute||!_itinRoute.length)return;
-  let JsPDF; try{ JsPDF=await ensureJsPDF(); if(!JsPDF)throw 0; }catch(_){ alert("Impossible de charger le générateur PDF (réseau ?)."); return; }
+  const btn=document.getElementById("itinPdf"), lbl=btn?btn.textContent:"";
+  if(btn){ btn.disabled=true; btn.textContent="Génération du PDF…"; }
+  const done=()=>{ if(btn){ btn.disabled=false; btn.textContent=lbl; } };
+  let JsPDF; try{ JsPDF=await ensureJsPDF(); if(!JsPDF)throw 0; }catch(_){ alert("Impossible de charger le générateur PDF (réseau ?)."); done(); return; }
+  // capture de la carte (si affichée) → image
+  let mapCanvas=null;
+  const mapEl=document.getElementById("itinMap");
+  if(mapEl && !mapEl.hidden){
+    try{ const h2c=await ensureH2C(); if(_itinMap){try{_itinMap.invalidateSize();}catch(_){}} await new Promise(r=>setTimeout(r,250));
+      mapCanvas=await h2c(mapEl,{useCORS:true,backgroundColor:"#0a141b",scale:2,logging:false}); }
+    catch(_){ mapCanvas=null; }
+  }
   const doc=new JsPDF({unit:"mm",format:"a4"});
   const ci=document.getElementById("itinCity"), city=((ci&&ci.value)||_itinCity||"").trim();
   const m=MODE_SPEED[_itinMode], modeLbl={walk:"à pied",transit:"transport",car:"voiture"}[_itinMode];
   let y=18;
   doc.setFontSize(18); doc.setTextColor(20,20,20); doc.text("Itineraire de visite"+(city?" - "+city:""),15,y); y+=8;
   doc.setFontSize(11); doc.setTextColor(90,90,90); doc.text("Mode : "+modeLbl+"  -  "+_itinRoute.length+" etapes",15,y); y+=9;
+  // image de la carte
+  if(mapCanvas){ try{ const img=mapCanvas.toDataURL("image/jpeg",0.85); const w=180, h=Math.min(120, w*mapCanvas.height/mapCanvas.width); doc.addImage(img,"JPEG",15,y,w,h); y+=h+8; }catch(_){} }
   doc.setDrawColor(200); doc.line(15,y,195,y); y+=8;
   let total=0;
   _itinRoute.forEach((p,i)=>{
@@ -4790,11 +4815,12 @@ async function exportItinPdf(){
   doc.setFontSize(12); doc.setTextColor(20,20,20); doc.text("Total : ~ "+(total<1?Math.round(total*1000)+" m":total.toFixed(1)+" km")+" - ~"+(tmin>=60?Math.floor(tmin/60)+"h"+String(tmin%60).padStart(2,"0"):tmin+" min")+" (hors visites)",15,y);
   doc.setFontSize(8); doc.setTextColor(150,150,150); doc.text("Genere par Escale",15,290);
   doc.save("itineraire"+(city?"-"+city.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""):"")+".pdf");
+  done();
 }
 function renderItinMap(route){
   const wrap=document.getElementById("itinMap"); wrap.hidden=false;
   ensureLeaflet().then(L=>{
-    if(!_itinMap){ _itinMap=L.map(wrap,{scrollWheelZoom:false}); L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(_itinMap); }
+    if(!_itinMap){ _itinMap=L.map(wrap,{scrollWheelZoom:false}); L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,crossOrigin:true,attribution:"© OpenStreetMap"}).addTo(_itinMap); }
     if(_itinLayer)_itinLayer.remove();
     _itinLayer=L.layerGroup().addTo(_itinMap);
     const latlngs=route.map(p=>[p.lat,p.lon]);
@@ -4837,16 +4863,28 @@ async function itinFetch(){
 
 (function(){ const rb=document.getElementById("radarBox"); if(rb)rb.addEventListener("toggle",()=>{ if(rb.open){ try{ window.Radar&&Radar.priorityDate&&Radar.priorityDate(); }catch(_){} } }); })();
 
-/* Menu outils : bouton haut-gauche → liste déroulante (remplace la barre de pills). */
+/* Menu outils : bouton haut-gauche → liste déroulante (outils + réglages : mode, Polarsteps). */
 (function(){
   const btn=document.getElementById("navMenuBtn"), menu=document.getElementById("navMenu");
   if(!btn||!menu)return;
   const pills=[...document.querySelectorAll("#toolBar .toolpill")];
-  menu.innerHTML='<div class="navmenu-title">Outils</div>'+pills.map(p=>'<button data-tool="'+p.dataset.tool+'">'+p.textContent.trim()+'</button>').join("");
-  const items=[...menu.querySelectorAll("button")];
-  const mark=()=>items.forEach(b=>b.classList.toggle("on",b.dataset.tool===currentTool));
-  btn.onclick=(e)=>{ e.stopPropagation(); if(menu.hidden){ mark(); menu.hidden=false; } else menu.hidden=true; };
-  items.forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); showTool(b.dataset.tool); menu.hidden=true; });
+  menu.innerHTML='<div class="navmenu-title">Outils</div>'
+    +pills.map(p=>'<button data-tool="'+p.dataset.tool+'">'+p.textContent.trim()+'</button>').join("")
+    +'<div class="navmenu-sep"></div><div class="navmenu-title">Réglages</div>'
+    +'<button id="miMode">Changer de mode</button>'
+    +'<div class="navmenu-polar"><button id="miPolarOpen">🧭 Mon Polarsteps</button><button id="miPolarEdit" title="Modifier le lien">✎</button></div>';
+  const toolItems=[...menu.querySelectorAll("button[data-tool]")];
+  function syncMenu(){
+    toolItems.forEach(b=>b.classList.toggle("on",b.dataset.tool===currentTool));
+    const mt=document.getElementById("modeToggle"), miMode=document.getElementById("miMode");
+    if(mt&&miMode&&mt.textContent)miMode.textContent=mt.textContent;
+    const po=document.getElementById("miPolarOpen"); if(po)po.textContent=polarUrl()?"🧭 Ouvrir mon Polarsteps":"🧭 Lier mon Polarsteps";
+  }
+  btn.onclick=(e)=>{ e.stopPropagation(); if(menu.hidden){ syncMenu(); menu.hidden=false; } else menu.hidden=true; };
+  toolItems.forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); showTool(b.dataset.tool); menu.hidden=true; });
+  document.getElementById("miMode").onclick=(e)=>{ e.stopPropagation(); menu.hidden=true; const mt=document.getElementById("modeToggle"); if(mt)mt.click(); };
+  document.getElementById("miPolarOpen").onclick=(e)=>{ e.stopPropagation(); const u=polarUrl(); menu.hidden=true; if(!u)polarSet(); else window.open(u,"_blank","noopener"); };
+  document.getElementById("miPolarEdit").onclick=(e)=>{ e.stopPropagation(); menu.hidden=true; polarSet(); };
   document.addEventListener("click",(e)=>{ if(!menu.hidden && !menu.contains(e.target) && e.target!==btn) menu.hidden=true; });
 })();
 
