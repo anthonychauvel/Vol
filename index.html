@@ -1691,6 +1691,7 @@ function saveFavs(){try{localStorage.setItem(LS_FAV,JSON.stringify(favs));}catch
 let aptRegion = "fav", aptQuery = "";
 const aptGroups=document.getElementById("aptGroups"), regionsBox=document.getElementById("regions");
 const searchEl=document.getElementById("aptSearch"), clearEl=document.getElementById("aptClear");
+let _aptAcDeb=null;   // anti-rebond recherche monde (déclaré ici : utilisé dès le tout premier rendu)
 const chips=document.getElementById("chips"),alBox=document.getElementById("airlines"),alHd=document.getElementById("alHd");
 
 function norm(x){return (x||"").toString().normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();}
@@ -1837,7 +1838,7 @@ let _acStore={};   // mémorise les objets lieu par code pour l'ajout
 function acStash(list){list.forEach(p=>_acStore[p.code]=p);}
 
 /* --- départ --- */
-let _acOrigTok=0,_aptAcDeb=null;
+let _acOrigTok=0;
 async function runOriginAc(localList){
   const box=document.getElementById("aptAc");
   const q=aptQuery.trim();
