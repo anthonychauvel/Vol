@@ -969,6 +969,10 @@
   .pd-arrow{color:var(--muted);font-family:var(--mono)}
   .pd-adddate{width:100%;background:var(--panel-2);border:1px dashed var(--line);color:var(--muted);font-family:var(--mono);font-size:12px;padding:8px;border-radius:9px;cursor:pointer}
   .pd-adddate:hover{border-color:var(--brass-rim);color:var(--amber)}
+  .pd-daterow2{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px;margin-bottom:8px}
+  .pd-orig-mini{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+  .pd-mini{position:relative;flex:1;min-width:130px}
+  .pd-mini input{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 9px;font-family:var(--mono);font-size:12px}
   .pdate-card{margin:8px 0 12px;background:var(--panel-2);border:1px solid var(--brass-rim);border-radius:11px;padding:10px 12px}
   .pdate-hd{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.05em;margin-bottom:6px}
   .pdate-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;padding:5px 0;border:0;border-top:1px solid var(--line);width:100%;background:none;color:inherit;cursor:pointer;text-align:left}
@@ -1746,7 +1750,7 @@ function renderAirports(){
   document.getElementById("aptCount").textContent=
     list.length+" aéroport"+(list.length>1?"s":"")+" · "+AIRPORTS.length+" en France"
     +(CUSTOM_ORIG.length?" · +"+CUSTOM_ORIG.length+" ajoutés":"");
-  runOriginAc(list);
+  clearTimeout(_aptAcDeb);_aptAcDeb=setTimeout(()=>runOriginAc(list),220);
 
   aptGroups.querySelectorAll(".star").forEach(el=>el.onclick=(ev)=>{
     ev.stopPropagation();
@@ -1827,7 +1831,7 @@ let _acStore={};   // mémorise les objets lieu par code pour l'ajout
 function acStash(list){list.forEach(p=>_acStore[p.code]=p);}
 
 /* --- départ --- */
-let _acOrigTok=0;
+let _acOrigTok=0,_aptAcDeb=null;
 async function runOriginAc(localList){
   const box=document.getElementById("aptAc");
   const q=aptQuery.trim();
@@ -4507,7 +4511,15 @@ window.Radar=(()=>{
     sec.innerHTML=html;
     bindHead(); bindSettings();
   }
-  function targetHtml(set){
+  // suggestions départ (dates prioritaires) : locale (originPool) + monde (acSearch)
+async function pdOrigSuggest(term){
+  const q=norm(term), res=[];
+  originPool().forEach(a=>{ if((norm(a.city).includes(q)||norm(a.code).includes(q))&&!res.some(r=>r.code===a.code))res.push({code:a.code,name:a.city}); });
+  let out=res.slice(0,6);
+  if(term.trim().length>=2){ try{ const w=await acSearch(term); w.forEach(p=>{ if(!out.some(r=>r.code===p.code))out.push({code:p.code,name:p.city}); }); }catch(_){} }
+  return out.slice(0,8);
+}
+function targetHtml(set){
     const v=(set&&set.target>0)?set.target:"";
     return '<div class="rd-target"><label class="rd-fld">🎯 Seuil de prix cible <span style="font-weight:400;color:var(--muted)">— surligne les vols sous ce prix</span></label>'
       +'<input id="rdTarget" type="number" inputmode="numeric" min="0" step="10" placeholder="ex. 80" value="'+v+'"> €</div>';
@@ -4515,18 +4527,21 @@ window.Radar=(()=>{
   function pdMigrate(set){
     if(set.priorityDate && !Array.isArray(set.pdDates)){ set.pdDates=[{d:set.priorityDate,r:""}]; }
     if(!Array.isArray(set.pdDates))set.pdDates=[];
-    if(!Array.isArray(set.pdOrigins))set.pdOrigins=[];
+    const _legacyO=Array.isArray(set.pdOrigins)?set.pdOrigins:[];
+    set.pdDates.forEach(dp=>{ if(!Array.isArray(dp.origins))dp.origins=_legacyO.slice(); });
+    delete set.pdOrigins;
     if(set.pdOriginNames&&typeof set.pdOriginNames==="object"){ try{Object.assign(_origNames,set.pdOriginNames);}catch(_){} }
     if(set.priorityDate)delete set.priorityDate;
   }
   function pdateHtml(set){
     pdMigrate(set);
-    const chips=set.pdOrigins.map(c=>'<span class="pd-chip"><b>'+(origName(c)||c)+'</b><button type="button" class="pd-x" data-po="'+c+'">✕</button></span>').join("");
-    const rows=set.pdDates.map((dp,i)=>'<div class="pd-daterow"><input type="date" class="pd-dep" data-i="'+i+'" value="'+(dp.d||"")+'"><span class="pd-arrow">→</span><input type="date" class="pd-ret" data-i="'+i+'" value="'+(dp.r||"")+'" title="retour (optionnel)"><button type="button" class="pd-x" data-pd="'+i+'">✕</button></div>').join("");
-    return '<div class="rd-pdate"><label class="rd-fld">📌 Dates prioritaires <span style="font-weight:400;color:var(--muted)">— où partir le moins cher sur TES dates, depuis TES aéroports</span></label>'
-      +'<div class="pd-orig"><span class="pd-lbl">Départs</span>'+chips
-      +(set.pdOrigins.length<4?'<input type="search" id="rdPDOrig" placeholder="+ ville ou aéroport" class="pd-addcity" autocomplete="off">':'')
-      +(set.pdOrigins.length?'':'<span class="pd-def">'+(origin?origin.code+' (par défaut)':'aucun')+'</span>')+'</div>'
+    const rows=set.pdDates.map((dp,i)=>{
+      const chips=(dp.origins||[]).map(c=>'<span class="pd-chip"><b>'+(origName(c)||c)+'</b><button type="button" class="pd-x" data-po="'+i+':'+c+'">✕</button></span>').join("");
+      const addInp=(dp.origins||[]).length<4?'<span class="opicker pd-mini"><input type="search" class="pd-addcity" data-pdorig="'+i+'" placeholder="+ ville ou aéroport" autocomplete="off"><div class="odrop" id="rdPDDrop'+i+'"></div></span>':"";
+      return '<div class="pd-daterow2"><div class="pd-daterow"><input type="date" class="pd-dep" data-i="'+i+'" value="'+(dp.d||"")+'"><span class="pd-arrow">→</span><input type="date" class="pd-ret" data-i="'+i+'" value="'+(dp.r||"")+'" title="retour (optionnel)"><button type="button" class="pd-x" data-pd="'+i+'" title="supprimer cette date">✕</button></div>'
+        +'<div class="pd-orig-mini"><span class="pd-lbl">Départs</span>'+chips+(chips||addInp?'':'<span class="pd-def">'+(origin?origin.code+' (par défaut)':'aucun')+'</span>')+addInp+'</div></div>';
+    }).join("");
+    return '<div class="rd-pdate"><label class="rd-fld">📌 Dates prioritaires <span style="font-weight:400;color:var(--muted)">— où partir le moins cher, avec les aéroports de TON choix pour CHAQUE date (ex. week-end → Bretagne, long séjour → Paris)</span></label>'
       +'<div class="pd-dates">'+rows+'</div>'
       +(set.pdDates.length<4?'<button type="button" id="rdPDAddDate" class="pd-adddate">+ Ajouter une date (aller + retour optionnel)</button>':'')
       +'</div>';
@@ -4551,12 +4566,12 @@ window.Radar=(()=>{
     if(rbox && !rbox.open){ box.innerHTML=""; return; }
     const dates=(set.pdDates||[]).filter(dp=>dp.d).slice(0,4);
     if(!dates.length){ box.innerHTML=""; return; }
-    const origins=(set.pdOrigins&&set.pdOrigins.length)?set.pdOrigins.slice(0,4):(origin?[origin.code]:[]);
-    if(!origins.length){ box.innerHTML='<div class="pdate-card"><div class="pdate-hd">📌 Dates prioritaires</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Choisis une origine ou ajoute un aéroport de départ.</div></div>'; return; }
+    const anyOrigins=dates.some(dp=>dp.origins&&dp.origins.length)||!!origin;
+    if(!anyOrigins){ box.innerHTML='<div class="pdate-card"><div class="pdate-hd">📌 Dates prioritaires</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Choisis une origine ou ajoute un aéroport de départ pour une date.</div></div>'; return; }
     const _pt=++_pdTok;
     box.innerHTML='<div class="pdate-card"><div class="pdate-hd">📌 Tes dates prioritaires</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">recherche des meilleures options…</div></div>';
-    // combinaisons origine × date (bornées à 12) — chacune = 1 appel /api/anywhere
-    let combos=[]; origins.forEach(o=>dates.forEach(dp=>combos.push({o,d:dp.d,r:dp.r||""}))); combos=combos.slice(0,12);
+    // combinaisons date × ses propres aéroports (bornées à 12) — chacune = 1 appel /api/anywhere
+    let combos=[]; dates.forEach(dp=>{ const os=(dp.origins&&dp.origins.length)?dp.origins.slice(0,4):(origin?[origin.code]:[]); os.forEach(o=>combos.push({o,d:dp.d,r:dp.r||""})); }); combos=combos.slice(0,12);
     const all=[];
     await inBatches(combos,4,async(c)=>{
       const ow=c.r?0:1, ck="pdw:"+c.o+":"+c.d+":"+(c.r||"")+":"+ow;
@@ -4676,18 +4691,30 @@ window.Radar=(()=>{
     // seuil de prix cible (les toggles notif/push ont été retirés — code mort supprimé)
     const tgt=document.getElementById("rdTarget");
     if(tgt)tgt.onchange=()=>{ const s=loadSet(); const n=parseInt(tgt.value,10); s.target=(n>0?n:0); saveSet(s); };
-    const poIn=document.getElementById("rdPDOrig");
-    if(poIn)poIn.onkeydown=(e)=>{ if(e.key==="Enter"){ e.preventDefault(); const v=(poIn.value||"").trim(); if(v.length<2)return;
-      acSearch(v).then(res=>{ if(res&&res.length){ const p=res[0]; const s=loadSet(); pdMigrate(s);
-        s.pdOriginNames=s.pdOriginNames||{}; s.pdOriginNames[p.code]=p.city; _origNames[p.code]=p.city;
-        if(!s.pdOrigins.includes(p.code)&&s.pdOrigins.length<4)s.pdOrigins.push(p.code); saveSet(s); renderSettings(); }
-        else alert("Ville ou aéroport introuvable."); }).catch(()=>alert("Recherche indisponible.")); } };
     const addD=document.getElementById("rdPDAddDate");
-    if(addD)addD.onclick=()=>{ const s=loadSet(); pdMigrate(s); if(s.pdDates.length<4)s.pdDates.push({d:"",r:""}); saveSet(s); renderSettings(); };
+    if(addD)addD.onclick=()=>{ const s=loadSet(); pdMigrate(s); if(s.pdDates.length<4)s.pdDates.push({d:"",r:"",origins:[]}); saveSet(s); renderSettings(); };
     document.querySelectorAll(".pd-dep").forEach(el=>el.onchange=()=>{ const s=loadSet(); pdMigrate(s); const i=+el.dataset.i; if(s.pdDates[i]){s.pdDates[i].d=el.value||"";saveSet(s);} });
     document.querySelectorAll(".pd-ret").forEach(el=>el.onchange=()=>{ const s=loadSet(); pdMigrate(s); const i=+el.dataset.i; if(s.pdDates[i]){s.pdDates[i].r=el.value||"";saveSet(s);} });
-    document.querySelectorAll(".pd-x[data-po]").forEach(b=>b.onclick=()=>{ const s=loadSet(); pdMigrate(s); s.pdOrigins=s.pdOrigins.filter(c=>c!==b.dataset.po); saveSet(s); renderSettings(); });
+    document.querySelectorAll(".pd-x[data-po]").forEach(b=>b.onclick=()=>{ const [ri,code]=b.dataset.po.split(":"); const s=loadSet(); pdMigrate(s); const dp=s.pdDates[+ri]; if(dp)dp.origins=(dp.origins||[]).filter(c=>c!==code); saveSet(s); renderSettings(); });
     document.querySelectorAll(".pd-x[data-pd]").forEach(b=>b.onclick=()=>{ const s=loadSet(); pdMigrate(s); s.pdDates.splice(+b.dataset.pd,1); saveSet(s); renderSettings(); });
+    document.querySelectorAll(".pd-addcity[data-pdorig]").forEach(inp=>{
+      const ri=inp.dataset.pdorig, drop=document.getElementById("rdPDDrop"+ri); if(!drop)return;
+      let deb=null;
+      inp.addEventListener("input",()=>{ clearTimeout(deb); deb=setTimeout(async()=>{
+        const q=inp.value.trim(); if(q.length<2){drop.classList.remove("show");drop.innerHTML="";return;}
+        const res=await pdOrigSuggest(q);
+        drop.innerHTML=res.map(r=>'<div class="odrow" data-code="'+r.code+'" data-name="'+r.name+'"><span class="ocode">'+r.code+'</span><span class="ocity">'+r.name+'</span></div>').join("")||'<div class="odrow"><span class="osub">rien trouvé</span></div>';
+        drop.classList.add("show");
+        drop.querySelectorAll(".odrow[data-code]").forEach(el=>el.onclick=()=>{
+          const code=el.dataset.code, name=el.dataset.name;
+          const s=loadSet(); pdMigrate(s); const dp=s.pdDates[+ri]; if(!dp)return;
+          s.pdOriginNames=s.pdOriginNames||{}; s.pdOriginNames[code]=name; _origNames[code]=name;
+          if(!dp.origins.includes(code)&&dp.origins.length<4)dp.origins.push(code);
+          saveSet(s); inp.value=""; drop.classList.remove("show"); drop.innerHTML=""; renderSettings();
+        });
+      },220); });
+      inp.addEventListener("blur",()=>setTimeout(()=>{drop.classList.remove("show");},180));
+    });
     const soft=document.getElementById("rdSoft");
     if(soft)soft.onclick=()=>{ if(SOFT_MODE){ const code=prompt("Phrase pour passer en premium :"); if(code===null)return; if(code.trim().toLowerCase()!=="je voyage avec tony"){alert("Phrase incorrecte.");return;} localStorage.setItem(SOFT_KEY,"premium"); } else { localStorage.setItem(SOFT_KEY,"soft"); } location.reload(); };
     const add=document.getElementById("rdAddZone"); if(add)add.onclick=()=>{ editing="new"; _edit=zoneDefault(); renderSettings(); };
