@@ -2018,7 +2018,7 @@ function kayakURL(from,to,noDate,depOv,retOv){
   if(noDate||!d)return `https://www.kayak.fr/flights/${from}-${to}`;
   let u=`https://www.kayak.fr/flights/${from}-${to}/${d}`;
   if(!oneWay&&r)u+=`/${r}`;
-  return u;
+  return u+"/1adults";
 }
 function bookingFlightURL(from,to,depOv,retOv){
   if(!from||!to)return null;
