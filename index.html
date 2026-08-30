@@ -64,6 +64,8 @@
   .airlines{margin-top:11px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:12px;padding:11px 13px;display:none}
   .airlines.show{display:block}
+  .allogo{width:15px;height:15px;object-fit:contain;vertical-align:-3px;margin-right:4px;border-radius:3px;background:#fff;padding:1px}
+  .alwrap{display:inline}
   .a-hd{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
     color:var(--amber);margin-bottom:6px}
   .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -1597,8 +1599,14 @@ function airlineChip(code){
   if(!code)return "";
   code=String(code).toUpperCase();
   const nm=AIRLINES[code]||code, url=AIRLINE_URL[code];
-  return url?'<span class="alnk" data-alurl="'+url+'" title="Site '+nm+'">'+nm+'</span>':nm;
+  const logo='<img class="allogo" src="https://pics.avs.io/27/27/'+code+'.png" alt="" loading="lazy" onerror="this.remove()">';
+  return url?'<span class="alnk" data-alurl="'+url+'" title="Site '+nm+'">'+logo+nm+'</span>':'<span class="alwrap">'+logo+nm+'</span>';
 }
+// Enrichissement gratuit : référentiel complet des compagnies Travelpayouts (chargé 1×, non bloquant)
+// → les compagnies hors liste codée en dur obtiennent quand même leur nom au lieu du code IATA.
+(function(){ try{ fetch("https://api.travelpayouts.com/data/fr/airlines.json").then(r=>r.json()).then(a=>{
+  if(Array.isArray(a))a.forEach(x=>{ const c=(x.code||"").toUpperCase(); if(c&&x.name&&!AIRLINES[c])AIRLINES[c]=x.name; });
+}).catch(()=>{}); }catch(_){} })();
 // un seul écouteur délégué (capture) : clic sur un nom de compagnie → ouvre son site,
 // sans déclencher le lien de la ligne qui l'entoure.
 document.addEventListener("click",function(e){
@@ -2023,16 +2031,19 @@ function bookingFlightURL(from,to,depOv,retOv){
 // lien commercial vol pointant DANS la recherche de vol de chaque site (plus Google).
 // Expedia : deep-link daté réel. Cdiscount : page-route (trajet pré-rempli, sans date).
 // Lastminute : page de recherche vol (SPA sans deep-link fiable → à compléter à la main).
-function flightSiteLink(from,to,dep,domain,label){
+function flightSiteLink(from,to,dp,rt,domain,label){
+  const rtTrip=!oneWay&&!!rt;
   let url;
   if(domain==="expedia.fr"){
-    const dpart=dep?((+dep.slice(5,7))+"/"+(+dep.slice(8,10))+"/"+dep.slice(0,4)+"TANYT"):"";
-    const leg1="from:"+from+",to:"+to+(dpart?",departure:"+dpart:"");
-    url="https://www.expedia.fr/Flights-Search?leg1="+encodeURIComponent(leg1)+"&trip=oneway&passengers="+encodeURIComponent("adults:1,children:0,infantinlap:N")+"&mode=search";
+    const fmt=x=>x?((+x.slice(5,7))+"/"+(+x.slice(8,10))+"/"+x.slice(0,4)+"TANYT"):"";
+    const leg1="from:"+from+",to:"+to+(dp?",departure:"+fmt(dp):"");
+    let u="https://www.expedia.fr/Flights-Search?trip="+(rtTrip?"roundtrip":"oneway")+"&leg1="+encodeURIComponent(leg1);
+    if(rtTrip){ const leg2="from:"+to+",to:"+from+(rt?",departure:"+fmt(rt):""); u+="&leg2="+encodeURIComponent(leg2); }
+    url=u+"&passengers="+encodeURIComponent("adults:1,children:0,infantinlap:N")+"&mode=search";
   } else if(domain==="cdiscount.com"){
     url="https://www.cdiscount.com/voyages/vol/fl-dep-fr/dep-"+from.toLowerCase()+"/"+from.toLowerCase()+"-"+to.toLowerCase()+".html";
   } else {
-    url="https://www.fr.lastminute.com/billet-avion";
+    url="https://www.fr.lastminute.com/vol"+(from&&to?"?from="+from+"&to="+to+(dp?"&depDate="+dp:"")+(rtTrip&&rt?"&retDate="+rt:""):"");
   }
   return '<a class="cgo alt" href="'+url+'" target="_blank" rel="noopener">'+label+'</a>';
 }
@@ -2046,9 +2057,9 @@ function cmpLinksHtml(from,to,aviaLink,withSky,depOv,retOv){
   if(aviaLink)items.push(`<a class="cgo" href="${aviaLink}" target="_blank" rel="noopener">Aviasales</a>`);
   const bk=bookingFlightURL(from,to,depOv,retOv);if(bk)items.push(`<a class="cgo alt" href="${bk}" target="_blank" rel="noopener">Booking</a>`);
   if(from&&to){ const dd=depOv!==undefined?depOv:dep, rr=retOv!==undefined?retOv:ret;
-    items.push(flightSiteLink(from,to,dd,"expedia.fr","Expedia"));
-    items.push(flightSiteLink(from,to,dd,"cdiscount.com","Cdiscount"));
-    items.push(flightSiteLink(from,to,dd,"lastminute.com","Lastminute"));
+    items.push(flightSiteLink(from,to,dd,rr,"expedia.fr","Expedia"));
+    items.push(flightSiteLink(from,to,dd,rr,"cdiscount.com","Cdiscount"));
+    items.push(flightSiteLink(from,to,dd,rr,"lastminute.com","Lastminute"));
     let tu=`https://fr.trip.com/flights/showfarefirst?dcity=${from}&acity=${to}&triptype=${oneWay?"ow":"rt"}&class=y&quantity=1`;
     if(dd)tu+=`&ddate=${dd}`; if(!oneWay&&rr)tu+=`&rdate=${rr}`;
     items.push(`<a class="cgo alt" href="${tu}" target="_blank" rel="noopener">Trip.com</a>`); }
@@ -2079,7 +2090,7 @@ function renderDests(){
           <span class="price" data-price="${d.i}"></span>
         </div>
         <span class="pricelive" data-livep="${d.i}"></span>
-        ${origin?`<span class="cmplinks" data-cmp="${d.i}">${cmpLinksHtml(origin.code,d.i,null,false)}</span>`:""}
+        ${origin?`<span class="cmplinks" data-cmp="${d.i}">${cmpLinksHtml(origin.code,d.i,null,true)}</span>`:""}
       </div>
       ${LIVE_OK?`<button class="live" data-live="${idx}" title="Prix réel pour tes dates" ${(!origin||!dep)?'disabled':''}>⚡</button>`:''}
       <button class="go" data-i="${idx}" ${(!origin||!dep)?'disabled':''}>Chercher</button>
@@ -2330,10 +2341,6 @@ async function fetchPrices(){
       const label="≈ "+j.price+" € · mois"+(aln?" · "+aln:"")+(trTxt?" · "+trTxt:"");
       el.innerHTML=j.link?`<a href="${j.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${label}</a>`:label;
       el.className="price show";
-      // #9 — liens comparateurs avec la VRAIE date du vol trouvé (au lieu de la date globale)
-      const cl=document.querySelector(`.cmplinks[data-cmp="${d.i}"]`);
-      if(cl){ const dd=j.departure_at?j.departure_at.slice(0,10):undefined, rr=j.return_at?j.return_at.slice(0,10):undefined;
-        cl.innerHTML=cmpLinksHtml(origin.code,d.i,null,true,dd,rr); }
       const row=el.closest(".dest"); if(row&&j.transfers===0)row.classList.add("direct");
     }else{ el.textContent="";el.className="price"; }
   };
@@ -2813,11 +2820,13 @@ const LS_HF="ESCALE_HFILTERS_V1";
 let HF={km:3,note:0,stars:2,priv:1,ad:2};
 try{const v=JSON.parse(localStorage.getItem(LS_HF)); if(v&&typeof v==="object")HF=Object.assign(HF,v);}catch(_){}
 function saveHF(){try{localStorage.setItem(LS_HF,JSON.stringify(HF));}catch(_){}}
+let _lastHotelSearch=null,_hotelFilterTimer=null;
+function rerunHotelSearch(){ if(!_lastHotelSearch)return; clearTimeout(_hotelFilterTimer); _hotelFilterTimer=setTimeout(()=>{ try{_lastHotelSearch();}catch(_){} },500); }
 
 function paintFilters(){
   document.querySelectorAll(".fo").forEach(el=>{
     el.classList.toggle("on",String(HF[el.dataset.f])===el.dataset.v);
-    el.onclick=()=>{HF[el.dataset.f]=parseFloat(el.dataset.v);saveHF();paintFilters();};
+    el.onclick=()=>{HF[el.dataset.f]=parseFloat(el.dataset.v);saveHF();paintFilters();rerunHotelSearch();};
   });
 }
 paintFilters();
@@ -2869,8 +2878,15 @@ function hotelCard(h,nights){
 // (les sites hôteliers n'ont pas de deep-link daté fiable ; le lien Booking daté ci-dessus reste
 // la voie pré-remplie). On cible le site via Google pour tomber sur la bonne fiche.
 function hotelSiteLink(h,domain,label){
-  const q=encodeURIComponent(h.name+" "+(h.city||"")+" site:"+domain);
-  return `<a class="hgo alt" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">${label} →</a>`;
+  const d=hotelDates(), ci=d.ci||"", co=d.co||"", ad=HF.ad||1;
+  const nm=encodeURIComponent((h.name||"")+" "+(h.city||"")), city=encodeURIComponent(h.city||h.name||"");
+  let url;
+  if(domain==="booking.com")        url=`https://www.booking.com/searchresults.html?ss=${nm}&checkin=${ci}&checkout=${co}&group_adults=${ad}&no_rooms=1`;
+  else if(domain==="expedia.fr")    url=`https://www.expedia.fr/Hotel-Search?destination=${nm}&startDate=${ci}&endDate=${co}&adults=${ad}`;
+  else if(domain==="lastminute.com")url=`https://www.fr.lastminute.com/hotels/search.html?searchString=${nm}&checkIn=${ci}&checkOut=${co}`;
+  else if(domain==="hotellook.com") url=`https://search.hotellook.com/?destination=${city}&checkIn=${ci}&checkOut=${co}&adults=${ad}`;
+  else url=`https://www.google.com/search?q=${encodeURIComponent((h.name||"")+" "+(h.city||"")+" "+ci+" au "+co)}`;
+  return `<a class="hgo alt" href="${url}" target="_blank" rel="noopener">${label} →</a>`;
 }
 function hotelPhotoCard(h,nights,cur){
   const sym=cur==="EUR"?"€":(cur==="USD"?"$":cur||"€");
@@ -2902,6 +2918,7 @@ function renderHotelsPhoto(list,nights,cur,meta){
   document.getElementById("hCount").textContent=list.length+" hôtel"+(list.length>1?"s":"")+(meta?" · "+meta:"");
 }
 async function searchHotelsBooking(){
+  _lastHotelSearch=searchHotelsBooking;
   const t=await hotelTargetGeo();
   if(!t){renderHotelsPhoto(null,0,"","Tape une ville, ou choisis une destination plus haut.");return;}
   const d=hotelDates(),nights=nightsBetween(d.ci,d.co),btn=document.getElementById("hBooking");
@@ -2957,6 +2974,7 @@ function hotelParams(t,d){
   return p;
 }
 async function searchHotelsCache(){
+  _lastHotelSearch=searchHotelsCache;
   const t=await hotelTargetGeo();
   if(!t){renderHotels(null,0,"Tape une ville, ou choisis une destination plus haut.");return;}
   const d=hotelDates(),nights=nightsBetween(d.ci,d.co);
@@ -2970,6 +2988,7 @@ async function searchHotelsCache(){
   }catch(_){renderHotels(null,0,"Recherche indisponible pour le moment.");}
 }
 async function searchHotelsLive(){
+  _lastHotelSearch=searchHotelsLive;
   const t=await hotelTargetGeo();
   if(!t){renderHotels(null,0,"Tape une ville, ou choisis une destination plus haut.");return;}
   const d=hotelDates(),nights=nightsBetween(d.ci,d.co),btn=document.getElementById("hLive");
