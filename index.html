@@ -849,6 +849,9 @@
   .navmenu button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font-family:var(--serif);font-size:15px;padding:11px 13px;border-radius:9px;cursor:pointer}
   .navmenu button:hover{background:var(--panel-2)}
   .navmenu button.on{background:var(--brass-face);color:#2a1c06;font-weight:700}
+  .navmenu-links{display:flex;flex-wrap:wrap;gap:5px;padding:2px 10px 8px}
+  .navmenu-links a{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:5px 9px;text-decoration:none}
+  .navmenu-links a:hover{border-color:var(--brass-rim);color:var(--amber)}
   header #modeToggle, header #polarLink{display:none}
   .navmenu-sep{height:1px;background:var(--line);margin:6px 8px}
   .navmenu-polar{display:flex;gap:4px;align-items:center}
@@ -867,7 +870,12 @@
   .trip-del:hover{color:#e0846a}
   /* 💎 derniers bons plans */
   .deals-list{display:flex;flex-direction:column}
-  .deal-row{display:flex;align-items:center;gap:8px;padding:9px 4px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+  .deals-ctrl{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center}
+  .deals-ctrl input{flex:1;min-width:120px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 9px;font-family:var(--mono);font-size:12px}
+  .deals-dur{display:flex;gap:4px;flex-wrap:wrap}
+  .deals-dur button{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);font-family:var(--mono);font-size:11px;padding:6px 9px;border-radius:8px;cursor:pointer}
+  .deals-dur button.on{background:var(--brass-face);color:#2a1c06;font-weight:700;border-color:transparent}
+  .deal-row{display:flex;align-items:center;gap:8px;padding:9px 4px;border:0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);width:100%;background:none;cursor:pointer;text-align:left;font:inherit}
   .deal-row:last-child{border-bottom:0}
   .deal-row:hover{background:var(--panel-2)}
   .deal-dest{flex:1;min-width:0} .deal-dest b{color:var(--amber)}
@@ -906,6 +914,17 @@
   .itin-io{display:flex;gap:8px;margin:0 0 10px}
   .itin-io button{flex:1;background:var(--panel-2);border:1px solid var(--line);color:var(--muted);font-family:var(--mono);font-size:12px;padding:7px;border-radius:9px;cursor:pointer}
   .itin-io button:hover{border-color:var(--brass-rim);color:var(--amber)}
+  .itin-saved{margin:0 0 10px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:6px;max-height:240px;overflow:auto}
+  .itin-saved[hidden]{display:none}
+  .itin-saved-empty{font-family:var(--mono);font-size:11px;color:var(--muted);padding:8px}
+  .itin-saved-row{display:flex;align-items:center;gap:8px;padding:8px 6px;border-bottom:1px solid var(--line)}
+  .itin-saved-row:last-child{border-bottom:0}
+  .its-name{flex:1;min-width:0;font-size:13px;color:var(--ink)}
+  .its-meta{font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .its-act{display:flex;gap:4px;flex-shrink:0}
+  .its-act button{background:var(--panel);border:1px solid var(--line);color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 8px;border-radius:7px;cursor:pointer}
+  .its-act button[data-load]{color:var(--amber);border-color:var(--brass-rim)}
+  .its-act button:hover{color:var(--ink)}
   .favbtn{background:none;border:0;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:0 4px;flex-shrink:0}
   .favbtn.on{color:var(--amber);text-shadow:0 0 8px rgba(243,195,96,.45)}
   .favbtn:hover{color:var(--gold-hi)}
@@ -950,7 +969,7 @@
   .pd-adddate:hover{border-color:var(--brass-rim);color:var(--amber)}
   .pdate-card{margin:8px 0 12px;background:var(--panel-2);border:1px solid var(--brass-rim);border-radius:11px;padding:10px 12px}
   .pdate-hd{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.05em;margin-bottom:6px}
-  .pdate-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;padding:3px 0;border-top:1px solid var(--line)}
+  .pdate-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;padding:5px 0;border:0;border-top:1px solid var(--line);width:100%;background:none;color:inherit;cursor:pointer;text-align:left}
   .pdate-row:first-of-type{border-top:0}
   .pdate-row .pr-d b{color:var(--amber)}
   .pdate-p{font-weight:700;white-space:nowrap}
@@ -1265,7 +1284,12 @@
       </div>
       <button id="itinFavBtn" class="hsearchbtn" style="width:100%;margin-bottom:8px">★ Mes lieux favoris (0)</button>
       <div class="itin-io">
-        <button id="itinExport">💾 Sauvegarder</button>
+        <button id="itinSaveBtn">💾 Sauvegarder</button>
+        <button id="itinTripsBtn">📂 Mes itinéraires (0)</button>
+      </div>
+      <div id="itinSaved" class="itin-saved" hidden></div>
+      <div class="itin-io">
+        <button id="itinExport">⬇ Fichier</button>
         <button id="itinImport">📁 Importer</button>
         <input type="file" id="itinImportFile" accept="application/json,.json" hidden>
       </div>
@@ -2021,8 +2045,13 @@ function cmpLinksHtml(from,to,aviaLink,withSky,depOv,retOv){
   const k=kayakURL(from,to,false,depOv,retOv);if(k)items.push(`<a class="cgo" href="${k}" target="_blank" rel="noopener">Kayak</a>`);
   if(aviaLink)items.push(`<a class="cgo" href="${aviaLink}" target="_blank" rel="noopener">Aviasales</a>`);
   const bk=bookingFlightURL(from,to,depOv,retOv);if(bk)items.push(`<a class="cgo alt" href="${bk}" target="_blank" rel="noopener">Booking</a>`);
-  if(from&&to){ const dd=depOv!==undefined?depOv:dep;
-    items.push(flightSiteLink(from,to,dd,"expedia.fr","Expedia")); }
+  if(from&&to){ const dd=depOv!==undefined?depOv:dep, rr=retOv!==undefined?retOv:ret;
+    items.push(flightSiteLink(from,to,dd,"expedia.fr","Expedia"));
+    items.push(flightSiteLink(from,to,dd,"cdiscount.com","Cdiscount"));
+    items.push(flightSiteLink(from,to,dd,"lastminute.com","Lastminute"));
+    let tu=`https://fr.trip.com/flights/showfarefirst?dcity=${from}&acity=${to}&triptype=${oneWay?"ow":"rt"}&class=y&quantity=1`;
+    if(dd)tu+=`&ddate=${dd}`; if(!oneWay&&rr)tu+=`&rdate=${rr}`;
+    items.push(`<a class="cgo alt" href="${tu}" target="_blank" rel="noopener">Trip.com</a>`); }
   if(from&&to)items.push(`<span class="cgo alt calpick" data-calfrom="${from}" data-calto="${to}">📅 dates flexibles</span>`);
   return items.length?`<div class="cmplinks">${items.join("")}</div>`:"";
 }
@@ -2873,13 +2902,14 @@ function renderHotelsPhoto(list,nights,cur,meta){
   document.getElementById("hCount").textContent=list.length+" hôtel"+(list.length>1?"s":"")+(meta?" · "+meta:"");
 }
 async function searchHotelsBooking(){
-  const t=hotelTarget();
+  const t=await hotelTargetGeo();
   if(!t){renderHotelsPhoto(null,0,"","Tape une ville, ou choisis une destination plus haut.");return;}
   const d=hotelDates(),nights=nightsBetween(d.ci,d.co),btn=document.getElementById("hBooking");
   btn.disabled=true;
   document.getElementById("hotels").innerHTML='<div class="empty">recherche photos + notes…</div>';
   const p=new URLSearchParams({q:t.q,checkIn:d.ci,checkOut:d.co,adults:String(HF.ad)});
-  if(HF.km)p.set("maxKm",String(HF.km));
+  const bkm=t.typed?Math.max(HF.km||0,30):HF.km;
+  if(bkm)p.set("maxKm",String(bkm));
   if(HF.stars)p.set("minStars",String(HF.stars));
   p.set("privateOnly",HF.priv?"1":"0");
   if(t.lat!=null&&t.lng!=null){p.set("lat",t.lat);p.set("lng",t.lng);}
@@ -2907,16 +2937,27 @@ function renderHotels(list,nights,meta){
   box.innerHTML=list.map(h=>hotelCard(h,nights)).join("");
   document.getElementById("hCount").textContent=list.length+" hôtel"+(list.length>1?"s":"")+(meta?" · "+meta:"");
 }
+const _hotelGeo={};   // cache lat/lng des villes tapées (évite de re-géocoder)
+async function hotelTargetGeo(){
+  const t=hotelTarget(); if(!t)return t;
+  if(t.lat!=null&&t.lng!=null)return t;                 // destination sélectionnée : coords déjà là
+  const key=(t.q||"").toLowerCase().trim(); if(!key)return t;
+  if(_hotelGeo[key]){ t.lat=_hotelGeo[key].lat; t.lng=_hotelGeo[key].lng; t.typed=true; return t; }
+  try{ const j=await (await fetch(`${API_BASE}/api/geocode?q=${encodeURIComponent(t.q)}`)).json();
+    if(j&&j.lat!=null){ _hotelGeo[key]={lat:j.lat,lng:j.lon}; t.lat=j.lat; t.lng=j.lon; t.typed=true; } }catch(_){}
+  return t;
+}
 function hotelParams(t,d){
   const p=new URLSearchParams({checkIn:d.ci,checkOut:d.co,adults:String(HF.ad),limit:"100"});
-  if(HF.km)p.set("maxKm",String(HF.km));
+  const km=t.typed?Math.max(HF.km||0,30):HF.km;         // ville tapée (petite ville) : rayon large
+  if(km)p.set("maxKm",String(km));
   if(HF.stars)p.set("minStars",String(HF.stars));
   p.set("privateOnly",HF.priv?"1":"0");
   if(t.lat!=null&&t.lng!=null){p.set("lat",t.lat);p.set("lng",t.lng);}
   return p;
 }
 async function searchHotelsCache(){
-  const t=hotelTarget();
+  const t=await hotelTargetGeo();
   if(!t){renderHotels(null,0,"Tape une ville, ou choisis une destination plus haut.");return;}
   const d=hotelDates(),nights=nightsBetween(d.ci,d.co);
   document.getElementById("hotels").innerHTML='<div class="empty">recherche des hébergements…</div>';
@@ -2929,7 +2970,7 @@ async function searchHotelsCache(){
   }catch(_){renderHotels(null,0,"Recherche indisponible pour le moment.");}
 }
 async function searchHotelsLive(){
-  const t=hotelTarget();
+  const t=await hotelTargetGeo();
   if(!t){renderHotels(null,0,"Tape une ville, ou choisis une destination plus haut.");return;}
   const d=hotelDates(),nights=nightsBetween(d.ci,d.co),btn=document.getElementById("hLive");
   btn.disabled=true;
@@ -3529,6 +3570,7 @@ function carLinksHtml(c){
   const vs=vendorSite(c.supplier);
   if(vs)items.push(`<a class="cgo" href="${vs}" target="_blank" rel="noopener">${c.supplier} · site officiel →</a>`);
   items.push(`<a class="cgo alt" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">DiscoverCars (dates à ressaisir) →</a>`);
+  items.push(`<a class="cgo alt" href="${rentalcarsURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Rentalcars →</a>`);
   return `<div class="cmplinks">${items.join("")}</div>`;
 }
 function carCard(c,nights,cur){
@@ -3620,7 +3662,7 @@ function seeCard(x){
     <div class="sbody"><div class="sn">${x.name}</div><div class="sc">${x.cat}</div></div>
     ${d}${fav}${link}</div>`;
 }
-const SEE_CACHE_KEY="escale:seecache:v1";
+const SEE_CACHE_KEY="escale:seecache:v2";
 function seeCacheGet(loc){ try{ const all=JSON.parse(localStorage.getItem(SEE_CACHE_KEY))||{}; const e=all[loc]; if(e&&Date.now()-e.t<30*864e5)return e.p; }catch(_){} return null; }
 function seeCacheSet(loc,places){ try{ const all=JSON.parse(localStorage.getItem(SEE_CACHE_KEY))||{}; all[loc]={t:Date.now(),p:places};
   const keys=Object.keys(all); if(keys.length>20){ keys.sort((a,b)=>all[a].t-all[b].t); delete all[keys[0]]; }
@@ -4274,7 +4316,7 @@ window.Radar=(()=>{
       const z=zr.zone;
       const mscan=zr.monthsScanned<zr.monthsTotal?(" · "+zr.monthsScanned+"/"+zr.monthsTotal+" mois auto"):"";
       html+='<div class="rdz-block"><div class="rdz-btitle">'+esc(z.label||"Zone")
-        +'<span class="rdz-meta">'+z.origins.join(", ")+" · "+(z.oneway?"aller simple":"A/R")+mscan+'</span></div>'
+        +'<span class="rdz-meta">'+z.origins.map(c=>origName(c)||c).join(", ")+" · "+(z.oneway?"aller simple":"A/R")+mscan+'</span></div>'
         +'<div class="rdz-filters">'+zoneFilters(z)+'</div>';
       if(zr.matches.length){
         const sorted=[...zr.matches].sort((a,b)=>(isWatched(b.dest)?1:0)-(isWatched(a.dest)?1:0));
@@ -4455,15 +4497,16 @@ window.Radar=(()=>{
     if(set.priorityDate && !Array.isArray(set.pdDates)){ set.pdDates=[{d:set.priorityDate,r:""}]; }
     if(!Array.isArray(set.pdDates))set.pdDates=[];
     if(!Array.isArray(set.pdOrigins))set.pdOrigins=[];
+    if(set.pdOriginNames&&typeof set.pdOriginNames==="object"){ try{Object.assign(_origNames,set.pdOriginNames);}catch(_){} }
     if(set.priorityDate)delete set.priorityDate;
   }
   function pdateHtml(set){
     pdMigrate(set);
-    const chips=set.pdOrigins.map(c=>'<span class="pd-chip"><b>'+c+'</b><button type="button" class="pd-x" data-po="'+c+'">✕</button></span>').join("");
+    const chips=set.pdOrigins.map(c=>'<span class="pd-chip"><b>'+(origName(c)||c)+'</b><button type="button" class="pd-x" data-po="'+c+'">✕</button></span>').join("");
     const rows=set.pdDates.map((dp,i)=>'<div class="pd-daterow"><input type="date" class="pd-dep" data-i="'+i+'" value="'+(dp.d||"")+'"><span class="pd-arrow">→</span><input type="date" class="pd-ret" data-i="'+i+'" value="'+(dp.r||"")+'" title="retour (optionnel)"><button type="button" class="pd-x" data-pd="'+i+'">✕</button></div>').join("");
     return '<div class="rd-pdate"><label class="rd-fld">📌 Dates prioritaires <span style="font-weight:400;color:var(--muted)">— où partir le moins cher sur TES dates, depuis TES aéroports</span></label>'
       +'<div class="pd-orig"><span class="pd-lbl">Départs</span>'+chips
-      +(set.pdOrigins.length<4?'<input type="text" id="rdPDOrig" maxlength="3" placeholder="+IATA" class="pd-addcode">':'')
+      +(set.pdOrigins.length<4?'<input type="search" id="rdPDOrig" placeholder="+ ville ou aéroport" class="pd-addcity" autocomplete="off">':'')
       +(set.pdOrigins.length?'':'<span class="pd-def">'+(origin?origin.code+' (par défaut)':'aucun')+'</span>')+'</div>'
       +'<div class="pd-dates">'+rows+'</div>'
       +(set.pdDates.length<4?'<button type="button" id="rdPDAddDate" class="pd-adddate">+ Ajouter une date (aller + retour optionnel)</button>':'')
@@ -4511,16 +4554,19 @@ window.Radar=(()=>{
     top.forEach(x=>{ const nm=NAMES[x.dest]||x.dest, when=frShort(x.d)+(x.r?"→"+frShort(x.r):"");
       const tr=pdateRecord(x.o,x.dest,x.d+(x.r?"_"+x.r:"_ow"),x.price);
       const arr=tr&&tr.delta<0?'<span class="down">▼</span> ':(tr&&tr.delta>0?'<span class="up">▲</span> ':'');
-      html+='<div class="pdate-row"><span class="pr-d"><b>'+x.dest+'</b> '+nm+' <span style="color:var(--muted);font-size:10px">'+x.o+' · '+when+'</span></span><span class="pdate-p">'+arr+x.price+'€</span></div>';
+      html+='<button type="button" class="pdate-row" data-dest="'+x.dest+'" data-from="'+x.o+'"><span class="pr-d"><b>'+x.dest+'</b> '+nm+' <span style="color:var(--muted);font-size:10px">'+x.o+' · '+when+'</span></span><span class="pdate-p">'+arr+x.price+'€</span></button>';
     });
     box.innerHTML=html+'</div>';
+    box.querySelectorAll(".pdate-row[data-dest]").forEach(b=>b.onclick=()=>{ const code=b.dataset.dest, fr=b.dataset.from;
+      const d=(typeof allDests==="function"?allDests().find(x=>x.i===code):null)||{i:code,n:NAMES[code]||code};
+      if(typeof openPriceCal==="function")openPriceCal(d, fr, NAMES[fr]||fr); });
   }
   function zoneSummary(z){
     const mm=(z.months||[]).map(ym=>{const p=ym.split("-");return MOIS[(+p[1])-1].slice(0,4)+".";}).join(" ");
     const dd=(z.dowOut&&z.dowOut.length)?z.dowOut.map(d=>DOW_LABELS[d]).join("/"):"tous jours";
     const par=z.parOut==="even"?"sem. paires":z.parOut==="odd"?"sem. impaires":"";
     const st=z.stops==="direct"?"direct":z.stops==="escale"?"avec escale":"direct+escale";
-    const bits=[z.origins.join(", ")||"—",(z.oneway?"aller simple":"A/R"),mm||"aucun mois",dd,par,st];
+    const bits=[z.origins.map(c=>origName(c)||c).join(", ")||"—",(z.oneway?"aller simple":"A/R"),mm||"aucun mois",dd,par,st];
     if(z.ponts)bits.push("ponts");
     return '<div class="rdzone'+(z.enabled?"":" off")+'"><div class="rdzone-head">'
       +'<b style="flex:1;color:var(--ink);font-size:13.5px">'+esc(z.label||"Zone")+'</b>'
@@ -4612,7 +4658,11 @@ window.Radar=(()=>{
     const tgt=document.getElementById("rdTarget");
     if(tgt)tgt.onchange=()=>{ const s=loadSet(); const n=parseInt(tgt.value,10); s.target=(n>0?n:0); saveSet(s); };
     const poIn=document.getElementById("rdPDOrig");
-    if(poIn)poIn.onkeydown=(e)=>{ if(e.key==="Enter"){ e.preventDefault(); const v=(poIn.value||"").toUpperCase().replace(/[^A-Z]/g,"").slice(0,3); if(v.length===3){ const s=loadSet(); pdMigrate(s); if(!s.pdOrigins.includes(v)&&s.pdOrigins.length<4)s.pdOrigins.push(v); saveSet(s); renderSettings(); } } };
+    if(poIn)poIn.onkeydown=(e)=>{ if(e.key==="Enter"){ e.preventDefault(); const v=(poIn.value||"").trim(); if(v.length<2)return;
+      acSearch(v).then(res=>{ if(res&&res.length){ const p=res[0]; const s=loadSet(); pdMigrate(s);
+        s.pdOriginNames=s.pdOriginNames||{}; s.pdOriginNames[p.code]=p.city; _origNames[p.code]=p.city;
+        if(!s.pdOrigins.includes(p.code)&&s.pdOrigins.length<4)s.pdOrigins.push(p.code); saveSet(s); renderSettings(); }
+        else alert("Ville ou aéroport introuvable."); }).catch(()=>alert("Recherche indisponible.")); } };
     const addD=document.getElementById("rdPDAddDate");
     if(addD)addD.onclick=()=>{ const s=loadSet(); pdMigrate(s); if(s.pdDates.length<4)s.pdDates.push({d:"",r:""}); saveSet(s); renderSettings(); };
     document.querySelectorAll(".pd-dep").forEach(el=>el.onchange=()=>{ const s=loadSet(); pdMigrate(s); const i=+el.dataset.i; if(s.pdDates[i]){s.pdDates[i].d=el.value||"";saveSet(s);} });
@@ -5050,11 +5100,54 @@ function itinImport(file){
   }catch(_){ alert("Impossible de lire le fichier."); } };
   rd.readAsText(file);
 }
+// #D — itinéraires sauvegardés en app (lister / ouvrir / renommer / supprimer)
+const ITIN_KEY="escale:itins:v1";
+function itinsLoad(){ try{ const a=JSON.parse(localStorage.getItem(ITIN_KEY)); return Array.isArray(a)?a:[]; }catch(_){ return []; } }
+function itinsStore(a){ try{ localStorage.setItem(ITIN_KEY,JSON.stringify(a.slice(0,50))); }catch(_){} itinSyncTripsBtn(); }
+function itinSyncTripsBtn(){ const b=document.getElementById("itinTripsBtn"); if(b)b.textContent="📂 Mes itinéraires ("+itinsLoad().length+")"; }
+function itinSaveTrip(){
+  const chk=itinChecked(), places=(chk.length?chk:_itinPois).map(p=>({name:p.name,lat:p.lat,lon:p.lon,kind:p.kind||""}));
+  if(!places.length){ alert("Rien à sauvegarder — cherche une ville ou ajoute des points."); return; }
+  const def=_itinCity||"Itinéraire", name=prompt("Nom de cet itinéraire :",def); if(name===null)return;
+  const a=itinsLoad(); a.unshift({id:"it"+Date.now(),name:(name.trim()||def),city:_itinCity||"",mode:_itinMode,places,savedAt:Date.now()});
+  itinsStore(a); itinRenderSaved(true);
+}
+function itinRenderSaved(forceOpen){
+  const box=document.getElementById("itinSaved"); if(!box)return;
+  if(forceOpen)box.hidden=false;
+  const a=itinsLoad();
+  if(!a.length){ box.innerHTML='<div class="itin-saved-empty">Aucun itinéraire enregistré. Coche des lieux puis « 💾 Sauvegarder ».</div>'; return; }
+  box.innerHTML=a.map(t=>'<div class="itin-saved-row"><span class="its-name">'+esc(t.name)+' <span class="its-meta">'+(t.places?t.places.length:0)+' lieux'+(t.city?' · '+esc(t.city):'')+'</span></span><span class="its-act"><button type="button" data-load="'+t.id+'">ouvrir</button><button type="button" data-ren="'+t.id+'" title="renommer">✎</button><button type="button" data-del="'+t.id+'" title="supprimer">🗑</button></span></div>').join("");
+  box.querySelectorAll("[data-load]").forEach(b=>b.onclick=()=>itinLoadTrip(b.dataset.load));
+  box.querySelectorAll("[data-ren]").forEach(b=>b.onclick=()=>itinRenameTrip(b.dataset.ren));
+  box.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>itinDeleteTrip(b.dataset.del));
+}
+function itinLoadTrip(id){
+  const t=itinsLoad().find(x=>x.id===id); if(!t)return;
+  _itinPois=(t.places||[]).filter(p=>p&&p.lat!=null&&p.lon!=null).map(p=>({xid:"sv-"+Math.random().toString(36).slice(2),name:p.name||"Lieu",lat:+p.lat,lon:+p.lon,kind:p.kind||"",rate:5,dist:0}));
+  _itinChecked=new Set(_itinPois); _itinCity=t.city||"";
+  if(t.mode&&MODE_SPEED[t.mode]){ _itinMode=t.mode; const modes=document.getElementById("itinModes"); if(modes)modes.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.mode===_itinMode)); }
+  const ci=document.getElementById("itinCity"); if(ci&&_itinCity)ci.value=_itinCity;
+  document.getElementById("itinMap").hidden=true; document.getElementById("itinResult").innerHTML="";
+  itinRenderPois();
+  const box=document.getElementById("itinSaved"); if(box)box.hidden=true;
+}
+function itinRenameTrip(id){
+  const a=itinsLoad(), t=a.find(x=>x.id===id); if(!t)return;
+  const name=prompt("Nouveau nom :",t.name); if(name===null)return;
+  t.name=name.trim()||t.name; itinsStore(a); itinRenderSaved();
+}
+function itinDeleteTrip(id){
+  if(!confirm("Supprimer cet itinéraire ?"))return;
+  itinsStore(itinsLoad().filter(x=>x.id!==id)); itinRenderSaved();
+}
 (function(){
   const f=document.getElementById("itinFetch"); if(f)f.onclick=itinFetch;
   const ci=document.getElementById("itinCity"); if(ci)ci.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();itinFetch();} });
   const am=document.getElementById("itinAddBtn"); if(am)am.onclick=itinAddManual;
   const fb=document.getElementById("itinFavBtn"); if(fb)fb.onclick=itinLoadFavs; favSyncItinBtn();
+  const sv=document.getElementById("itinSaveBtn"); if(sv)sv.onclick=itinSaveTrip;
+  const tb=document.getElementById("itinTripsBtn"); if(tb)tb.onclick=()=>{ const box=document.getElementById("itinSaved"); if(box){ box.hidden=!box.hidden; if(!box.hidden)itinRenderSaved(); } }; itinSyncTripsBtn();
   const mi=document.getElementById("itinManual"); if(mi)mi.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();itinAddManual();} });
   const ex=document.getElementById("itinExport"); if(ex)ex.onclick=itinExport;
   const im=document.getElementById("itinImport"); if(im)im.onclick=()=>{ const ff=document.getElementById("itinImportFile"); if(ff)ff.click(); };
@@ -5068,6 +5161,36 @@ function itinImport(file){
 })();
 
 /* 💎 Derniers bons plans (Travelpayouts get_latest_prices, cache) — chargé à l'ouverture du panneau. */
+let _dealsList=[], _dealsMax=0, _dealsDur="all";
+function dealDur(d){ if(!d.depart||!d.ret)return null; const a=new Date(d.depart), b=new Date(d.ret); const n=Math.round((b-a)/864e5); return isFinite(n)?n:null; }
+function dealPass(d){
+  if(_dealsMax>0 && d.price>_dealsMax)return false;
+  if(_dealsDur!=="all" && d.ret){ const dur=dealDur(d);
+    if(_dealsDur==="we"   && !(dur!=null&&dur<=3))return false;
+    if(_dealsDur==="week" && !(dur!=null&&dur>=4&&dur<=9))return false;
+    if(_dealsDur==="long" && !(dur!=null&&dur>=10))return false;
+  }
+  return true;
+}
+function renderDealsList(){
+  const sec=document.getElementById("dealsSec"); if(!sec)return;
+  const durs=[["all","Tout"],["we","Week-end"],["week","Semaine"],["long","Long séjour"]];
+  const ctrl='<div class="deals-ctrl"><input type="number" id="dealsMax" inputmode="numeric" placeholder="budget max €/pers" value="'+(_dealsMax||"")+'"><div class="deals-dur">'+durs.map(x=>'<button type="button" data-dur="'+x[0]+'" class="'+(_dealsDur===x[0]?"on":"")+'">'+x[1]+'</button>').join("")+'</div></div>';
+  const filtered=_dealsList.filter(dealPass);
+  let body;
+  if(!filtered.length) body='<div style="font-family:var(--mono);font-size:11px;color:var(--muted);padding:6px 4px">Aucun bon plan sous ces critères — élargis le budget ou la durée.</div>';
+  else body='<div class="deals-list">'+filtered.map(d=>{
+      const nm=NAMES[d.destination]||d.destination;
+      const when=d.depart?frShort(d.depart)+(d.ret?" → "+frShort(d.ret):""):"";
+      const dur=dealDur(d), durTxt=dur!=null?" · "+dur+"j":"";
+      const stops=d.transfers===0?"direct":(d.transfers!=null?d.transfers+" esc":"");
+      return '<button type="button" class="deal-row" data-dest="'+d.destination+'"><span class="deal-dest"><b>'+d.destination+'</b> '+nm+'<div class="deal-when">'+origin.code+' → '+d.destination+(when?" · "+when:"")+durTxt+(stops?" · "+stops:"")+'</div></span><span class="deal-price">'+d.price+'€<small>voir</small></span></button>';
+    }).join("")+'</div>';
+  sec.innerHTML=ctrl+body;
+  const mx=document.getElementById("dealsMax"); if(mx)mx.onchange=()=>{ _dealsMax=parseInt(mx.value,10)||0; renderDealsList(); };
+  sec.querySelectorAll(".deals-dur button").forEach(b=>b.onclick=()=>{ _dealsDur=b.dataset.dur; renderDealsList(); });
+  sec.querySelectorAll(".deal-row[data-dest]").forEach(b=>b.onclick=()=>{ const code=b.dataset.dest; const dd=(typeof allDests==="function"?allDests().find(x=>x.i===code):null)||{i:code,n:NAMES[code]||code}; if(typeof openPriceCal==="function")openPriceCal(dd, origin.code, (origin.city||origin.code)); });
+}
 async function loadDeals(){
   const box=document.getElementById("dealsBox"), sec=document.getElementById("dealsSec"); if(!box||!sec)return;
   if(!box.open)return;
@@ -5081,15 +5204,7 @@ async function loadDeals(){
   }
   if(!box.open)return;
   if(!list||!list.length){ sec.innerHTML=note("Aucun bon plan en cache depuis "+origin.code+" pour l'instant."); return; }
-  let html='<div class="deals-list">';
-  list.forEach(d=>{
-    const nm=NAMES[d.destination]||d.destination;
-    const when=d.depart?frShort(d.depart)+(d.ret?" → "+frShort(d.ret):""):"";
-    const stops=d.transfers===0?"direct":(d.transfers!=null?d.transfers+" esc":"");
-    const inner='<span class="deal-dest"><b>'+d.destination+'</b> '+nm+'<div class="deal-when">'+origin.code+' → '+d.destination+(when?" · "+when:"")+(stops?" · "+stops:"")+'</div></span><span class="deal-price">'+d.price+'€<small>voir</small></span>';
-    html+= d.link ? '<a class="deal-row" href="'+d.link+'" target="_blank" rel="noopener">'+inner+'</a>' : '<div class="deal-row">'+inner+'</div>';
-  });
-  sec.innerHTML=html+'</div>';
+  _dealsList=list; renderDealsList();
 }
 (function(){ const db=document.getElementById("dealsBox"); if(db)db.addEventListener("toggle",()=>{ if(db.open){ try{loadDeals();}catch(_){} } }); })();
 
@@ -5100,11 +5215,19 @@ async function loadDeals(){
   const btn=document.getElementById("navMenuBtn"), menu=document.getElementById("navMenu");
   if(!btn||!menu)return;
   const pills=[...document.querySelectorAll("#toolBar .toolpill")];
+  const QL={
+    "✈️ Compagnies":[["Air France","https://www.airfrance.fr"],["Transavia","https://www.transavia.com/fr-fr/"],["easyJet","https://www.easyjet.com/fr"],["Ryanair","https://www.ryanair.com/fr/fr"],["Vueling","https://www.vueling.com/fr"],["Volotea","https://www.volotea.com/fr/"],["KLM","https://www.klm.fr"],["Lufthansa","https://www.lufthansa.com/fr/fr/"],["Wizz Air","https://wizzair.com/fr-fr"]],
+    "🔎 Comparateurs / résa":[["Skyscanner","https://www.skyscanner.fr"],["Kayak","https://www.kayak.fr"],["Google Flights","https://www.google.com/travel/flights"],["Aviasales","https://www.aviasales.com"],["Booking","https://www.booking.com"],["Expedia","https://www.expedia.fr"],["Trip.com","https://fr.trip.com"],["Cdiscount","https://www.cdiscount.com/voyages/"],["Lastminute","https://www.fr.lastminute.com"]],
+    "🚗 Loueurs":[["DiscoverCars","https://www.discovercars.com"],["Rentalcars","https://www.rentalcars.com"],["Europcar","https://www.europcar.fr"],["Sixt","https://www.sixt.fr"],["Hertz","https://www.hertz.fr"],["Avis","https://www.avis.fr"]]
+  };
+  let qlHtml='<div class="navmenu-sep"></div><div class="navmenu-title" style="color:var(--gold-hi)">Accès rapide aux sites</div>';
+  Object.keys(QL).forEach(cat=>{ qlHtml+='<div class="navmenu-title">'+cat+'</div><div class="navmenu-links">'+QL[cat].map(l=>'<a href="'+l[1]+'" target="_blank" rel="noopener">'+l[0]+'</a>').join("")+'</div>'; });
   menu.innerHTML='<div class="navmenu-title">Outils</div>'
     +pills.map(p=>'<button data-tool="'+p.dataset.tool+'">'+p.textContent.trim()+'</button>').join("")
     +'<div class="navmenu-sep"></div><div class="navmenu-title">Réglages</div>'
     +'<button id="miMode">Changer de mode</button>'
-    +'<div class="navmenu-polar"><button id="miPolarOpen">🧭 Mon Polarsteps</button><button id="miPolarEdit" title="Modifier le lien">✎</button></div>';
+    +'<div class="navmenu-polar"><button id="miPolarOpen">🧭 Mon Polarsteps</button><button id="miPolarEdit" title="Modifier le lien">✎</button></div>'
+    +qlHtml;
   const toolItems=[...menu.querySelectorAll("button[data-tool]")];
   function syncMenu(){
     toolItems.forEach(b=>b.classList.toggle("on",b.dataset.tool===currentTool));
