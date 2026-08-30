@@ -2006,7 +2006,11 @@ function inBand(min){if(band==="all"||min==null)return true;const[a,b]=band.spli
 function currentList(){let l=withDur().filter(d=>inBand(d.min));
   if(typeof destQuery==="string"&&destQuery){const q=norm(destQuery);
     l=l.filter(d=>norm(d.n).includes(q)||norm(d.i).includes(q));}
-  if(origin)l.sort((a,b)=>a.min-b.min);return l;}
+  if(origin){
+    const added=new Set(CUSTOM_DEST.map(d=>d.i));
+    l.sort((a,b)=>{ const ca=added.has(a.i),cb=added.has(b.i); if(ca!==cb)return ca?-1:1; return a.min-b.min; });
+  }
+  return l;}
 function skyURL(to){const yy=s=>s.slice(2,4)+s.slice(5,7)+s.slice(8,10);
   let u=`https://www.skyscanner.fr/transport/vols/${origin.code.toLowerCase()}/${to.toLowerCase()}/`;
   if(dep)u+=yy(dep)+"/";if(!oneWay&&dep&&ret)u+=yy(ret)+"/";return u;}
