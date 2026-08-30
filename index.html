@@ -865,6 +865,15 @@
   .trip-when{font-family:var(--mono);font-size:11px;color:var(--muted)}
   .trip-del{background:none;border:0;color:var(--muted);font-size:15px;padding:8px 10px;cursor:pointer}
   .trip-del:hover{color:#e0846a}
+  /* 💎 derniers bons plans */
+  .deals-list{display:flex;flex-direction:column}
+  .deal-row{display:flex;align-items:center;gap:8px;padding:9px 4px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+  .deal-row:last-child{border-bottom:0}
+  .deal-row:hover{background:var(--panel-2)}
+  .deal-dest{flex:1;min-width:0} .deal-dest b{color:var(--amber)}
+  .deal-when{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .deal-price{font-family:var(--mono);font-weight:700;color:var(--green);white-space:nowrap;text-align:right}
+  .deal-price small{color:var(--muted);font-weight:400;font-size:10px;display:block}
   /* conseil d'achat (dans l'historique perso) */
   .buy-tip{margin-top:8px;font-family:var(--mono);font-size:12px;border-radius:9px;padding:7px 10px;border:1px solid var(--line);color:var(--ink)}
   .buy-tip.good{background:rgba(91,199,162,.10);border-color:#2f5f52;color:#8fd9c0}
@@ -894,6 +903,13 @@
   /* itinéraire */
   .itin-controls{display:flex;gap:8px;margin-bottom:10px}
   .itin-controls input{flex:1;min-width:0;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:9px 12px;font-family:var(--mono);font-size:14px}
+  .itin-io{display:flex;gap:8px;margin:0 0 10px}
+  .itin-io button{flex:1;background:var(--panel-2);border:1px solid var(--line);color:var(--muted);font-family:var(--mono);font-size:12px;padding:7px;border-radius:9px;cursor:pointer}
+  .itin-io button:hover{border-color:var(--brass-rim);color:var(--amber)}
+  .favbtn{background:none;border:0;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:0 4px;flex-shrink:0}
+  .favbtn.on{color:var(--amber);text-shadow:0 0 8px rgba(243,195,96,.45)}
+  .favbtn:hover{color:var(--gold-hi)}
+  .an .favbtn{font-size:15px;vertical-align:middle}
   .poi-hd{font-family:var(--mono);font-size:12px;color:var(--amber);margin:4px 0 8px}
   .poi-row{display:flex;align-items:center;gap:9px;padding:8px 4px;border-bottom:1px solid var(--line);cursor:pointer}
   .poi-row input{width:18px;height:18px;accent-color:var(--amber);flex-shrink:0}
@@ -918,6 +934,20 @@
   /* date prioritaire (Radar) */
   .rd-pdate{margin-top:10px}
   .rd-pdate input{background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:5px 8px;font-family:var(--mono);font-size:13px}
+  .pd-orig{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0}
+  .pd-lbl{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .pd-def{font-family:var(--mono);font-size:11px;color:var(--muted);opacity:.8}
+  .pd-chip{display:inline-flex;align-items:center;gap:5px;background:var(--panel);border:1px solid var(--brass-rim);border-radius:999px;padding:3px 5px 3px 9px;font-family:var(--mono);font-size:12px}
+  .pd-chip b{color:var(--amber)}
+  .pd-x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:11px;padding:0 2px}
+  .pd-x:hover{color:var(--oxblood)}
+  .pd-addcode{width:70px;text-transform:uppercase}
+  .pd-dates{display:flex;flex-direction:column;gap:6px;margin:6px 0}
+  .pd-daterow{display:flex;align-items:center;gap:6px}
+  .pd-daterow .pd-dep,.pd-daterow .pd-ret{flex:1;min-width:0}
+  .pd-arrow{color:var(--muted);font-family:var(--mono)}
+  .pd-adddate{width:100%;background:var(--panel-2);border:1px dashed var(--line);color:var(--muted);font-family:var(--mono);font-size:12px;padding:8px;border-radius:9px;cursor:pointer}
+  .pd-adddate:hover{border-color:var(--brass-rim);color:var(--amber)}
   .pdate-card{margin:8px 0 12px;background:var(--panel-2);border:1px solid var(--brass-rim);border-radius:11px;padding:10px 12px}
   .pdate-hd{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.05em;margin-bottom:6px}
   .pdate-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;padding:3px 0;border-top:1px solid var(--line)}
@@ -925,6 +955,13 @@
   .pdate-row .pr-d b{color:var(--amber)}
   .pdate-p{font-weight:700;white-space:nowrap}
   .pdate-p .up{color:#e0846a} .pdate-p .down{color:var(--green)}
+  /* #13 — destinations suggérées (Radar) */
+  .sugg-hd{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.04em;margin:10px 0 6px}
+  .sugg-list{display:flex;flex-direction:column;gap:2px}
+  .sugg-row{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:8px 11px;cursor:pointer;font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+  .sugg-row:hover{border-color:var(--brass-rim)}
+  .sugg-n b{color:var(--amber)}
+  .sugg-p{color:var(--green);font-weight:700;white-space:nowrap}
 
   /* — repli mouvement réduit : plus de reflets ni d'éveil — */
   @media (prefers-reduced-motion:reduce){
@@ -963,6 +1000,12 @@
   <details id="tripsBox" class="radar-box" hidden>
     <summary class="radar-sum">★ Mes trajets</summary>
     <section id="tripsSec" class="radar"></section>
+  </details>
+
+  <!-- 💎 Derniers bons plans (chargé à l'ouverture) -->
+  <details id="dealsBox" class="radar-box">
+    <summary class="radar-sum">💎 Derniers bons plans</summary>
+    <section id="dealsSec" class="radar"></section>
   </details>
 
   <nav class="tools" id="toolBar">
@@ -1081,7 +1124,7 @@
     </div>
 
     <div id="xPanel" style="display:none">
-      <div class="ochint">2 à 3 voyageurs, chacun son départ — les destinations que <b>tous</b> peuvent rejoindre.</div>
+      <div class="ochint">jusqu'à 10 voyageurs, chacun son départ — les destinations que <b>tous</b> peuvent rejoindre.</div>
       <div class="opicker">
         <input id="xInput" type="search" inputmode="search" autocomplete="off" placeholder="Ajouter un voyageur (son aéroport de départ)">
         <div class="odrop" id="xDrop"></div>
@@ -1215,6 +1258,16 @@
       <div class="itin-controls">
         <input id="itinCity" type="search" autocomplete="off" placeholder="Ville à visiter (ex. Lisbonne, Porto…)">
         <button class="hsearchbtn" id="itinFetch">Trouver les lieux</button>
+      </div>
+      <div class="itin-controls">
+        <input id="itinManual" type="search" autocomplete="off" placeholder="Ajouter un point : adresse ou GPS (48.85, 2.35)">
+        <button class="hsearchbtn" id="itinAddBtn">Ajouter</button>
+      </div>
+      <button id="itinFavBtn" class="hsearchbtn" style="width:100%;margin-bottom:8px">★ Mes lieux favoris (0)</button>
+      <div class="itin-io">
+        <button id="itinExport">💾 Sauvegarder</button>
+        <button id="itinImport">📁 Importer</button>
+        <input type="file" id="itinImportFile" accept="application/json,.json" hidden>
       </div>
       <div id="itinPois"></div>
       <div id="itinPlan" class="itin-plan" hidden>
@@ -1969,9 +2022,7 @@ function cmpLinksHtml(from,to,aviaLink,withSky,depOv,retOv){
   if(aviaLink)items.push(`<a class="cgo" href="${aviaLink}" target="_blank" rel="noopener">Aviasales</a>`);
   const bk=bookingFlightURL(from,to,depOv,retOv);if(bk)items.push(`<a class="cgo alt" href="${bk}" target="_blank" rel="noopener">Booking</a>`);
   if(from&&to){ const dd=depOv!==undefined?depOv:dep;
-    items.push(flightSiteLink(from,to,dd,"expedia.fr","Expedia"));
-    items.push(flightSiteLink(from,to,dd,"lastminute.com","Lastminute"));
-    items.push(flightSiteLink(from,to,dd,"cdiscount.com","Cdiscount")); }
+    items.push(flightSiteLink(from,to,dd,"expedia.fr","Expedia")); }
   if(from&&to)items.push(`<span class="cgo alt calpick" data-calfrom="${from}" data-calto="${to}">📅 dates flexibles</span>`);
   return items.length?`<div class="cmplinks">${items.join("")}</div>`:"";
 }
@@ -1999,7 +2050,7 @@ function renderDests(){
           <span class="price" data-price="${d.i}"></span>
         </div>
         <span class="pricelive" data-livep="${d.i}"></span>
-        ${origin?cmpLinksHtml(origin.code,d.i,null,false):""}
+        ${origin?`<span class="cmplinks" data-cmp="${d.i}">${cmpLinksHtml(origin.code,d.i,null,false)}</span>`:""}
       </div>
       ${LIVE_OK?`<button class="live" data-live="${idx}" title="Prix réel pour tes dates" ${(!origin||!dep)?'disabled':''}>⚡</button>`:''}
       <button class="go" data-i="${idx}" ${(!origin||!dep)?'disabled':''}>Chercher</button>
@@ -2250,6 +2301,10 @@ async function fetchPrices(){
       const label="≈ "+j.price+" € · mois"+(aln?" · "+aln:"")+(trTxt?" · "+trTxt:"");
       el.innerHTML=j.link?`<a href="${j.link}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">${label}</a>`:label;
       el.className="price show";
+      // #9 — liens comparateurs avec la VRAIE date du vol trouvé (au lieu de la date globale)
+      const cl=document.querySelector(`.cmplinks[data-cmp="${d.i}"]`);
+      if(cl){ const dd=j.departure_at?j.departure_at.slice(0,10):undefined, rr=j.return_at?j.return_at.slice(0,10):undefined;
+        cl.innerHTML=cmpLinksHtml(origin.code,d.i,null,true,dd,rr); }
       const row=el.closest(".dest"); if(row&&j.transfers===0)row.classList.add("direct");
     }else{ el.textContent="";el.className="price"; }
   };
@@ -2869,7 +2924,7 @@ async function searchHotelsCache(){
   try{
     const j=await (await fetch(`${API_BASE}/api/hotels?${p}`)).json();
     if(j.error&&/TP_TOKEN/.test(j.error)){renderHotels(null,0,"","Hôtels non configurés (token Travelpayouts manquant côté serveur).");}
-    else if(j.hotels&&j.hotels.length){renderHotels(j.hotels,nights,`${t.label} · ${d.ci} → ${d.co} · cache`);}
+    else if(j.hotels&&j.hotels.length){ const far=(j.nearestKm!=null&&j.nearestKm>(HF.km||3)+1)?` · le + proche à ~${Math.round(j.nearestKm)} km`:""; renderHotels(j.hotels,nights,`${t.label} · ${d.ci} → ${d.co} · cache${far}`);}
     else{renderHotels(null,0,"",`Aucun tarif en cache pour ${t.label} à ces dates. Essaie « ⚡ Live + notes » pour une recherche en temps réel.`);}
   }catch(_){renderHotels(null,0,"Recherche indisponible pour le moment.");}
 }
@@ -3015,7 +3070,7 @@ function chipsHtml(list){return list.map(o=>
   `<span class="ochip">${o.code} · ${o.city}<span class="ox" data-rm="${o.code}">×</span></span>`).join("");}
 
 makeOriginPicker("cmpInput","cmpDrop",()=>cmpOrigins,v=>{cmpOrigins=v;saveArr(LS_CMP,v);},5,()=>{renderCmpChips();renderCompare();});
-makeOriginPicker("xInput","xDrop",()=>xOrigins,v=>{xOrigins=v;saveArr(LS_X,v);},3,()=>{renderXChips();renderCross();});
+makeOriginPicker("xInput","xDrop",()=>xOrigins,v=>{xOrigins=v;saveArr(LS_X,v);},10,()=>{renderXChips();renderCross();});
 makeOriginPicker("clInput","clDrop",()=>clOrigins,v=>{clOrigins=v;saveArr(LS_CL,v);},4,()=>{renderClChips();runCapLibre();});
 function renderClChips(){const el=document.getElementById("clChips");if(!el)return;el.innerHTML=chipsHtml(clOrigins);
   el.querySelectorAll(".ox").forEach(x=>x.onclick=()=>{clOrigins=clOrigins.filter(o=>o.code!==x.dataset.rm);saveArr(LS_CL,clOrigins);renderClChips();runCapLibre();});}
@@ -3194,7 +3249,7 @@ function clOriginCodes(){
   if(codes.length) return codes.slice(0,5);
   // repli si rien à l'étape I ni en supplément : réutilise les départs du mode Croisé
   if(typeof xOrigins!=="undefined" && xOrigins && xOrigins.length)
-    return xOrigins.map(o=>o.code).filter(Boolean).slice(0,5);
+    return xOrigins.map(o=>o.code).filter(Boolean).slice(0,10);
   return [];
 }
 // destinations à balayer : le réseau RÉEL desservi par l'aéroport de départ noté —
@@ -3340,7 +3395,7 @@ async function clLive(from,dest,depDate,retDate,btn){
 async function renderCross(){
   const box=document.getElementById("dests");
   document.getElementById("destCount").textContent=xOrigins.length+" voyageur"+(xOrigins.length>1?"s":"");
-  if(xOrigins.length<2){box.innerHTML='<div class="empty">Ajoute 2 à 3 voyageurs (chacun son aéroport) pour trouver un point de rendez-vous.</div>';return;}
+  if(xOrigins.length<2){box.innerHTML='<div class="empty">Ajoute de 2 à 10 voyageurs (chacun son aéroport) pour trouver un point de rendez-vous.</div>';return;}
   box.innerHTML='<div class="empty">recherche des destinations communes…</div>';
   const maps=await Promise.all(xOrigins.map(o=>anywhereFor(o.code)));
   let common;
@@ -3474,7 +3529,6 @@ function carLinksHtml(c){
   const vs=vendorSite(c.supplier);
   if(vs)items.push(`<a class="cgo" href="${vs}" target="_blank" rel="noopener">${c.supplier} · site officiel →</a>`);
   items.push(`<a class="cgo alt" href="${carURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">DiscoverCars (dates à ressaisir) →</a>`);
-  items.push(`<a class="cgo alt" href="${rentalcarsURL(_carBook.city,_carBook.ci,_carBook.co)}" target="_blank" rel="noopener">Rentalcars →</a>`);
   return `<div class="cmplinks">${items.join("")}</div>`;
 }
 function carCard(c,nights,cur){
@@ -3534,7 +3588,8 @@ function attrCard(a,cur){
   const free=a.freeCancellation?`<span class="abadge free">annulation gratuite</span>`:"";
   const price=a.price!=null?`<span class="ap">dès ${Math.round(a.price)} ${sym}</span>`:"";
   const pic=a.photo?`<img class="api" src="${a.photo}" alt="" loading="lazy">`:"";
-  return `<div class="attr">${pic}<div class="ain"><div class="an">${a.name}</div>
+  const fav=favBtn({name:a.name,lat:a.lat,lon:a.lng,kind:"activité",city:_attrCity||""});
+  return `<div class="attr">${pic}<div class="ain"><div class="an">${a.name} ${fav}</div>
     ${a.desc?`<div class="ad">${a.desc}</div>`:""}
     <div class="am">${best}${note}${free}${price}</div>
     ${a.url?`<a class="ago" href="${a.url}" target="_blank" rel="noopener">Réserver →</a>`:""}</div></div>`;
@@ -3542,6 +3597,7 @@ function attrCard(a,cur){
 async function searchAttractions(){
   const dst=hotelTarget();
   if(!dst){document.getElementById("attractions").innerHTML='<div class="empty">Choisis une destination plus haut.</div>';return;}
+  _attrCity=dst.q||"";
   const btn=document.getElementById("attrSearch");btn.disabled=true;
   document.getElementById("attractions").innerHTML='<div class="empty">recherche des activités…</div>';
   try{const j=await (await fetch(`${API_BASE}/api/attractions?q=${encodeURIComponent(dst.q)}${dst.code?`&code=${encodeURIComponent(dst.code)}`:""}`)).json();
@@ -3559,24 +3615,50 @@ function seeCard(x){
   const link=x.wiki?`<a class="slink" href="${x.wiki}" target="_blank" rel="noopener">wiki ↗</a>`
             :(x.site?`<a class="slink" href="${x.site}" target="_blank" rel="noopener">site ↗</a>`
             :`<a class="slink" href="${x.osm}" target="_blank" rel="noopener">carte ↗</a>`);
+  const fav=favBtn({name:x.name,lat:x.lat,lon:x.lng,kind:x.cat||"lieu",city:_seeCity||""});
   return `<div class="see"><span class="semo">${x.emo}</span>
     <div class="sbody"><div class="sn">${x.name}</div><div class="sc">${x.cat}</div></div>
-    ${d}${link}</div>`;
+    ${d}${fav}${link}</div>`;
+}
+const SEE_CACHE_KEY="escale:seecache:v1";
+function seeCacheGet(loc){ try{ const all=JSON.parse(localStorage.getItem(SEE_CACHE_KEY))||{}; const e=all[loc]; if(e&&Date.now()-e.t<30*864e5)return e.p; }catch(_){} return null; }
+function seeCacheSet(loc,places){ try{ const all=JSON.parse(localStorage.getItem(SEE_CACHE_KEY))||{}; all[loc]={t:Date.now(),p:places};
+  const keys=Object.keys(all); if(keys.length>20){ keys.sort((a,b)=>all[a].t-all[b].t); delete all[keys[0]]; }
+  localStorage.setItem(SEE_CACHE_KEY,JSON.stringify(all)); }catch(_){} }
+function renderSeePlaces(places,cached){
+  const box=document.getElementById("seewhat"); if(!box)return;
+  if(places&&places.length) box.innerHTML=`<div class="hnote">${places.length} lieux · OpenStreetMap + OpenTripMap${cached?" · en cache ⚡":""}</div>`+places.map(seeCard).join("");
+  else box.innerHTML=`<div class="empty">Aucun lieu trouvé autour.</div>`;
 }
 async function searchSeeWhat(){
   const dst=hotelTarget();
   if(!dst){document.getElementById("seewhat").innerHTML='<div class="empty">Choisis une destination plus haut.</div>';return;}
-  const btn=document.getElementById("seeSearch");btn.disabled=true;
+  const btn=document.getElementById("seeSearch");btn.disabled=true; _seeCity=dst.q||"";
+  const loc=dst.q||((dst.lat!=null&&dst.lng!=null)?(dst.lat.toFixed(2)+","+dst.lng.toFixed(2)):"");
+  const cached=loc?seeCacheGet(loc):null;
+  if(cached&&cached.length){ renderSeePlaces(cached,true); btn.disabled=false; return; }   // #4 — instantané depuis le cache local
   document.getElementById("seewhat").innerHTML='<div class="empty">recherche des lieux à voir…</div>';
   const p=new URLSearchParams({radius:"8000"});
   if(dst.lat!=null&&dst.lng!=null){p.set("lat",dst.lat);p.set("lng",dst.lng);}
   else p.set("q",dst.q);
   try{
-    const j=await (await fetch(`${API_BASE}/api/seewhat?${p}`)).json();
-    const box=document.getElementById("seewhat");
-    if(j.places&&j.places.length)
-      box.innerHTML=`<div class="hnote">${j.total} lieux dans un rayon de ${j.radiusKm||8} km · cartographie ouverte (gratuit)</div>`+j.places.map(seeCard).join("");
-    else box.innerHTML=`<div class="empty">${j.note||"Aucun lieu trouvé autour."}</div>`;
+    // 2 sources fusionnées : Overpass (seewhat) + OpenTripMap (poi) → remplit les zones blanches
+    const [seeR,poiR]=await Promise.all([
+      fetch(`${API_BASE}/api/seewhat?${p}`).then(r=>r.json()).catch(()=>({})),
+      dst.q?fetch(`${API_BASE}/api/poi?city=${encodeURIComponent(dst.q)}`).then(r=>r.json()).catch(()=>({})):Promise.resolve({})
+    ]);
+    let places=(seeR&&Array.isArray(seeR.places))?seeR.places.slice():[];
+    const seen=new Set(places.map(x=>(x.name||"").toLowerCase()));
+    if(poiR&&Array.isArray(poiR.pois)){
+      poiR.pois.forEach(q=>{ const k=(q.name||"").toLowerCase(); if(k&&!seen.has(k)){ seen.add(k);
+        places.push({name:q.name,cat:(q.kind||"lieu").replace(/_/g," "),emo:"📍",lat:q.lat,lng:q.lon,
+          distanceKm:q.dist!=null?Math.round(q.dist/100)/10:null,
+          osm:`https://www.openstreetmap.org/?mlat=${q.lat}&mlon=${q.lon}#map=17/${q.lat}/${q.lon}`}); }
+      });
+    }
+    places.sort((a,b)=>(a.distanceKm==null?9999:a.distanceKm)-(b.distanceKm==null?9999:b.distanceKm));
+    if(places.length&&loc)seeCacheSet(loc,places);
+    renderSeePlaces(places,false);
   }catch(_){document.getElementById("seewhat").innerHTML='<div class="empty">Cartographie momentanément indisponible, réessaie.</div>';}
   btn.disabled=false;
 }
@@ -3585,7 +3667,7 @@ const _sw=document.getElementById("seeSearch"); if(_sw)_sw.onclick=searchSeeWhat
 function refreshCarLink(){
   const el=document.getElementById("carLink"); if(!el)return;
   const t=hotelTarget(),d=hotelDates();
-  el.href=rentalcarsURL(t?t.q:"",d.ci,d.co);
+  el.href=carURL(t?t.q:"",d.ci,d.co);
 }
 
 /* ================= MODE SÉJOUR (vol + hôtel) ================= */
@@ -4135,8 +4217,30 @@ window.Radar=(()=>{
     const sec=document.getElementById("radarSec"); if(!sec) return;
     revealRadar("✦ Radar");
     sec.innerHTML=headHTML("aucune zone — appuie sur ⚙ pour surveiller tes bons plans")
-      +'<div class="radar-foot">Définis des zones (aéroports, mois, jours/semaines, ponts, direct/escale) et Escale te remonte les baisses à chaque ouverture.</div>';
+      +'<div class="radar-foot">Définis des zones (aéroports, mois, jours/semaines, ponts, direct/escale) et Escale te remonte les baisses à chaque ouverture.</div>'
+      +'<div id="raSugg"></div>';
     bindHead();
+    loadRadarSuggestions();
+  }
+  // #13 — propose une liste de destinations pas chères depuis l'origine (1 appel /api/anywhere)
+  async function loadRadarSuggestions(){
+    const box=document.getElementById("raSugg"); if(!box)return;
+    const rbox=document.getElementById("radarBox"); if(rbox && !rbox.open){ box.innerHTML=""; return; }
+    if(!origin){ box.innerHTML=""; return; }
+    const month=dep?dep.slice(0,7):"";
+    box.innerHTML='<div class="sugg-hd">💡 Destinations pas chères depuis '+origin.code+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted);padding:4px">recherche…</div>';
+    const ck="anysugg:"+origin.code+":"+month+":"+(oneWay?1:0);
+    let results=pxGet(ck);
+    if(!results){ try{ let u=`${API_BASE}/api/anywhere?origin=${origin.code}&oneway=${oneWay?1:0}`; if(month)u+=`&month=${month}`; const r=await fetch(u); if(r.ok){ const j=await r.json(); results=j.results||[]; pxSet(ck,results); } }catch(_){ results=null; } }
+    if(!results||!results.length){ box.innerHTML=""; return; }
+    let html='<div class="sugg-hd">💡 Où partir pas cher depuis '+origin.code+(month?' · '+month:'')+'</div><div class="sugg-list">';
+    results.slice(0,15).forEach(r=>{ const nm=NAMES[r.destination]||r.destination;
+      const esc=r.transfers===0?'direct':(r.transfers!=null?r.transfers+' esc':'');
+      html+='<button type="button" class="sugg-row" data-dest="'+r.destination+'"><span class="sugg-n"><b>'+r.destination+'</b> '+nm+(esc?' <span style="color:var(--muted);font-size:10px">· '+esc+'</span>':'')+'</span><span class="sugg-p">dès '+r.price+'€</span></button>'; });
+    box.innerHTML=html+'</div>';
+    box.querySelectorAll(".sugg-row").forEach(b=>b.onclick=()=>{ const code=b.dataset.dest;
+      const d=(typeof allDests==="function"?allDests().find(x=>x.i===code):null)||{i:code,n:NAMES[code]||code};
+      if(typeof openPriceCal==="function")openPriceCal(d, origin.code, (origin.city||origin.code)); });
   }
 
   function renderResults(){
@@ -4347,10 +4451,23 @@ window.Radar=(()=>{
     return '<div class="rd-target"><label class="rd-fld">🎯 Seuil de prix cible <span style="font-weight:400;color:var(--muted)">— surligne les vols sous ce prix</span></label>'
       +'<input id="rdTarget" type="number" inputmode="numeric" min="0" step="10" placeholder="ex. 80" value="'+v+'"> €</div>';
   }
+  function pdMigrate(set){
+    if(set.priorityDate && !Array.isArray(set.pdDates)){ set.pdDates=[{d:set.priorityDate,r:""}]; }
+    if(!Array.isArray(set.pdDates))set.pdDates=[];
+    if(!Array.isArray(set.pdOrigins))set.pdOrigins=[];
+    if(set.priorityDate)delete set.priorityDate;
+  }
   function pdateHtml(set){
-    const v=(set&&set.priorityDate)||"";
-    return '<div class="rd-pdate"><label class="rd-fld">📌 Date prioritaire <span style="font-weight:400;color:var(--muted)">— pour CETTE date, montre où partir le moins cher (toutes destinations) et l\'évolution des prix</span></label>'
-      +'<input id="rdPDate" type="date" value="'+v+'"></div>';
+    pdMigrate(set);
+    const chips=set.pdOrigins.map(c=>'<span class="pd-chip"><b>'+c+'</b><button type="button" class="pd-x" data-po="'+c+'">✕</button></span>').join("");
+    const rows=set.pdDates.map((dp,i)=>'<div class="pd-daterow"><input type="date" class="pd-dep" data-i="'+i+'" value="'+(dp.d||"")+'"><span class="pd-arrow">→</span><input type="date" class="pd-ret" data-i="'+i+'" value="'+(dp.r||"")+'" title="retour (optionnel)"><button type="button" class="pd-x" data-pd="'+i+'">✕</button></div>').join("");
+    return '<div class="rd-pdate"><label class="rd-fld">📌 Dates prioritaires <span style="font-weight:400;color:var(--muted)">— où partir le moins cher sur TES dates, depuis TES aéroports</span></label>'
+      +'<div class="pd-orig"><span class="pd-lbl">Départs</span>'+chips
+      +(set.pdOrigins.length<4?'<input type="text" id="rdPDOrig" maxlength="3" placeholder="+IATA" class="pd-addcode">':'')
+      +(set.pdOrigins.length?'':'<span class="pd-def">'+(origin?origin.code+' (par défaut)':'aucun')+'</span>')+'</div>'
+      +'<div class="pd-dates">'+rows+'</div>'
+      +(set.pdDates.length<4?'<button type="button" id="rdPDAddDate" class="pd-adddate">+ Ajouter une date (aller + retour optionnel)</button>':'')
+      +'</div>';
   }
   // historique du prix d'une date précise (route + date) ; renvoie l'évolution vs dernier relevé
   let _pdTok=0;
@@ -4366,30 +4483,35 @@ window.Radar=(()=>{
   // carte "date prioritaire" : prix de la date choisie depuis ton origine vers chaque destination surveillée
   async function renderPriorityDate(){
     const box=document.getElementById("pdateBox"); if(!box)return;
-    const set=loadSet(), pd=set.priorityDate;
-    if(!pd||view!=="results"){ box.innerHTML=""; return; }
+    const set=loadSet(); pdMigrate(set);
+    if(view!=="results"){ box.innerHTML=""; return; }
     const rbox=document.getElementById("radarBox");
-    if(rbox && !rbox.open){ box.innerHTML=""; return; }     // scanne uniquement quand le Radar est ouvert (économie de quota)
-    if(!origin){ box.innerHTML='<div class="pdate-card"><div class="pdate-hd">📌 Date prioritaire — '+frShort(pd)+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Choisis une origine pour voir où partir le moins cher à cette date.</div></div>'; return; }
-    const month=pd.slice(0,7), _dests=allDests().slice(0,80), _pt=++_pdTok;
-    box.innerHTML='<div class="pdate-card"><div class="pdate-hd">📌 Date prioritaire — '+frShort(pd)+' · depuis '+origin.code+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">recherche des meilleures destinations pour cette date…</div></div>';
-    const rows=[];
-    await inBatches(_dests,6,async(d)=>{
-      const ck="cal:"+origin.code+":"+d.i+":"+month+":"+(oneWay?1:0);
-      let days=pxGet(ck);
-      if(!days){ try{ const r=await fetch(`${API_BASE}/api/calendar?origin=${origin.code}&destination=${d.i}&month=${month}&oneway=${oneWay?1:0}`); if(r.ok){ const j=await r.json(); days=j.days||{}; pxSet(ck,days); } }catch(_){} }
-      const price=(days&&days[pd])?days[pd].price:null;
-      rows.push({d:d.i,name:d.n,price,trend:price!=null?pdateRecord(origin.code,d.i,pd,price):null});
+    if(rbox && !rbox.open){ box.innerHTML=""; return; }
+    const dates=(set.pdDates||[]).filter(dp=>dp.d).slice(0,4);
+    if(!dates.length){ box.innerHTML=""; return; }
+    const origins=(set.pdOrigins&&set.pdOrigins.length)?set.pdOrigins.slice(0,4):(origin?[origin.code]:[]);
+    if(!origins.length){ box.innerHTML='<div class="pdate-card"><div class="pdate-hd">📌 Dates prioritaires</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Choisis une origine ou ajoute un aéroport de départ.</div></div>'; return; }
+    const _pt=++_pdTok;
+    box.innerHTML='<div class="pdate-card"><div class="pdate-hd">📌 Tes dates prioritaires</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">recherche des meilleures options…</div></div>';
+    // combinaisons origine × date (bornées à 12) — chacune = 1 appel /api/anywhere
+    let combos=[]; origins.forEach(o=>dates.forEach(dp=>combos.push({o,d:dp.d,r:dp.r||""}))); combos=combos.slice(0,12);
+    const all=[];
+    await inBatches(combos,4,async(c)=>{
+      const ow=c.r?0:1, ck="pdw:"+c.o+":"+c.d+":"+(c.r||"")+":"+ow;
+      let results=pxGet(ck);
+      if(!results){ try{ let u=`${API_BASE}/api/anywhere?origin=${c.o}&depart=${c.d}&oneway=${ow}`; if(c.r)u+=`&return=${c.r}`; const r=await fetch(u); if(r.ok){ const j=await r.json(); results=j.results||[]; pxSet(ck,results); } }catch(_){} }
+      (results||[]).slice(0,8).forEach(x=>all.push({dest:x.destination,price:x.price,o:c.o,d:c.d,r:c.r}));
     });
-    if(_pt!==_pdTok)return;                                  // relancé entre-temps (date/origine changée)
-    const withP=rows.filter(r=>r.price!=null).sort((a,b)=>a.price-b.price);
-    if(!withP.length){ box.innerHTML='<div class="pdate-card"><div class="pdate-hd">📌 Date prioritaire — '+frShort(pd)+'</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Aucun prix en cache pour cette date pour l\'instant — reviens un peu plus tard.</div></div>'; return; }
-    let html='<div class="pdate-card"><div class="pdate-hd">📌 Où partir le '+frShort(pd)+' · depuis '+origin.code+' <span style="color:var(--muted);font-weight:400">(les moins chers)</span></div>';
-    withP.slice(0,12).forEach(r=>{
-      const nm=r.name||NAMES[r.d]||r.d;
-      const arr=r.trend&&r.trend.delta<0?'<span class="down">▼</span> ':(r.trend&&r.trend.delta>0?'<span class="up">▲</span> ':'');
-      const dlt=(r.trend&&r.trend.delta)?'<span style="color:var(--muted);font-size:10px"> ('+(r.trend.delta>0?"+":"")+r.trend.delta+')</span>':'';
-      html+='<div class="pdate-row"><span class="pr-d"><b>'+r.d+'</b> '+nm+'</span><span class="pdate-p">'+arr+r.price+'€'+dlt+'</span></div>';
+    if(_pt!==_pdTok)return;
+    if(!all.length){ box.innerHTML='<div class="pdate-card"><div class="pdate-hd">📌 Dates prioritaires</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">Aucun prix en cache pour tes dates — reviens un peu plus tard.</div></div>'; return; }
+    all.sort((a,b)=>a.price-b.price);
+    const seen=new Set(), top=[];
+    for(const x of all){ const k=x.dest+"|"+x.o+"|"+x.d; if(!seen.has(k)){ seen.add(k); top.push(x); } if(top.length>=15)break; }
+    let html='<div class="pdate-card"><div class="pdate-hd">📌 Où partir le moins cher sur tes dates</div>';
+    top.forEach(x=>{ const nm=NAMES[x.dest]||x.dest, when=frShort(x.d)+(x.r?"→"+frShort(x.r):"");
+      const tr=pdateRecord(x.o,x.dest,x.d+(x.r?"_"+x.r:"_ow"),x.price);
+      const arr=tr&&tr.delta<0?'<span class="down">▼</span> ':(tr&&tr.delta>0?'<span class="up">▲</span> ':'');
+      html+='<div class="pdate-row"><span class="pr-d"><b>'+x.dest+'</b> '+nm+' <span style="color:var(--muted);font-size:10px">'+x.o+' · '+when+'</span></span><span class="pdate-p">'+arr+x.price+'€</span></div>';
     });
     box.innerHTML=html+'</div>';
   }
@@ -4489,8 +4611,14 @@ window.Radar=(()=>{
     // seuil de prix cible (les toggles notif/push ont été retirés — code mort supprimé)
     const tgt=document.getElementById("rdTarget");
     if(tgt)tgt.onchange=()=>{ const s=loadSet(); const n=parseInt(tgt.value,10); s.target=(n>0?n:0); saveSet(s); };
-    const pdel=document.getElementById("rdPDate");
-    if(pdel)pdel.onchange=()=>{ const s=loadSet(); s.priorityDate=pdel.value||""; saveSet(s); };
+    const poIn=document.getElementById("rdPDOrig");
+    if(poIn)poIn.onkeydown=(e)=>{ if(e.key==="Enter"){ e.preventDefault(); const v=(poIn.value||"").toUpperCase().replace(/[^A-Z]/g,"").slice(0,3); if(v.length===3){ const s=loadSet(); pdMigrate(s); if(!s.pdOrigins.includes(v)&&s.pdOrigins.length<4)s.pdOrigins.push(v); saveSet(s); renderSettings(); } } };
+    const addD=document.getElementById("rdPDAddDate");
+    if(addD)addD.onclick=()=>{ const s=loadSet(); pdMigrate(s); if(s.pdDates.length<4)s.pdDates.push({d:"",r:""}); saveSet(s); renderSettings(); };
+    document.querySelectorAll(".pd-dep").forEach(el=>el.onchange=()=>{ const s=loadSet(); pdMigrate(s); const i=+el.dataset.i; if(s.pdDates[i]){s.pdDates[i].d=el.value||"";saveSet(s);} });
+    document.querySelectorAll(".pd-ret").forEach(el=>el.onchange=()=>{ const s=loadSet(); pdMigrate(s); const i=+el.dataset.i; if(s.pdDates[i]){s.pdDates[i].r=el.value||"";saveSet(s);} });
+    document.querySelectorAll(".pd-x[data-po]").forEach(b=>b.onclick=()=>{ const s=loadSet(); pdMigrate(s); s.pdOrigins=s.pdOrigins.filter(c=>c!==b.dataset.po); saveSet(s); renderSettings(); });
+    document.querySelectorAll(".pd-x[data-pd]").forEach(b=>b.onclick=()=>{ const s=loadSet(); pdMigrate(s); s.pdDates.splice(+b.dataset.pd,1); saveSet(s); renderSettings(); });
     const soft=document.getElementById("rdSoft");
     if(soft)soft.onclick=()=>{ if(SOFT_MODE){ const code=prompt("Phrase pour passer en premium :"); if(code===null)return; if(code.trim().toLowerCase()!=="je voyage avec tony"){alert("Phrase incorrecte.");return;} localStorage.setItem(SOFT_KEY,"premium"); } else { localStorage.setItem(SOFT_KEY,"soft"); } location.reload(); };
     const add=document.getElementById("rdAddZone"); if(add)add.onclick=()=>{ editing="new"; _edit=zoneDefault(); renderSettings(); };
@@ -4607,7 +4735,7 @@ window.Radar=(()=>{
 
   const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-  return {note,rescan,clear:clearAll,openSettings:()=>{view="settings";renderSettings();},priorityDate:renderPriorityDate};
+  return {note,rescan,clear:clearAll,openSettings:()=>{view="settings";renderSettings();},priorityDate:renderPriorityDate,suggestions:loadRadarSuggestions};
 })();
 // lance la vérification après le premier rendu (laisse le temps aux noms de villes d'arriver)
 setTimeout(()=>{try{Radar.rescan();}catch(_){}} ,150);
@@ -4658,7 +4786,7 @@ applyWiz();
 let currentTool="simple";
 const TOOL_HINT={
   compare:"Comparateur — ajoute jusqu'à 5 aéroports, compare les dessertes (ou verrouille une destination).",
-  cross:"Croisé — 2 à 3 voyageurs, chacun son départ : trouve un point de rendez-vous commun.",
+  cross:"Croisé — jusqu'à 10 voyageurs, chacun son départ : trouve un point de rendez-vous commun.",
   stay:"Séjour — vol + hôtel combinés : le coût total du voyage par destination.",
   caplibre:"Cap Libre — dis-moi seulement l'aéroport et le mois : je balaie TOUT ce qui décolle de là (direct + correspondance) et je trie par meilleures fenêtres de départ (ponts, week-ends longs, semaines paires/impaires).",
   hotels:"Hôtels — cache gratuit, photos Booking ou ⚡ Google, filtrés par tes critères.",
@@ -4828,9 +4956,42 @@ function renderItinMap(route){
     setTimeout(()=>{try{_itinMap.invalidateSize();}catch(_){}} ,120);
   }).catch(()=>{ wrap.hidden=true; });
 }
-function itinChecked(){ return [...document.querySelectorAll(".poi-ck:checked")].map(c=>_itinPois[+c.dataset.i]); }
+let _itinChecked=new Set();   // POIs cochés (par référence) → survit au re-rendu de la liste
+/* ===== Favoris de lieux — base perso pour l'Itinéraire (#5) ===== */
+const FAV_KEY="escale:favplaces:v1"; let _seeCity="", _attrCity="";
+function favLoad(){ try{ const a=JSON.parse(localStorage.getItem(FAV_KEY)); return Array.isArray(a)?a:[]; }catch(_){ return []; } }
+function favSave(a){ try{ localStorage.setItem(FAV_KEY,JSON.stringify(a.slice(0,300))); }catch(_){} }
+function favKey(pl){ return (pl.name||"").toLowerCase().trim()+"@"+(+pl.lat).toFixed(4)+","+(+pl.lon).toFixed(4); }
+function favHas(pl){ const k=favKey(pl); return favLoad().some(x=>favKey(x)===k); }
+function favToggle(pl){ const k=favKey(pl), a=favLoad(), i=a.findIndex(x=>favKey(x)===k);
+  if(i>=0)a.splice(i,1); else a.push({name:pl.name,lat:+pl.lat,lon:+pl.lon,kind:pl.kind||"",city:pl.city||""});
+  favSave(a); return i<0; }
+function favBtn(pl){ if(pl==null||pl.lat==null||pl.lon==null||!isFinite(+pl.lat)||!isFinite(+pl.lon))return "";
+  const d=encodeURIComponent(JSON.stringify({n:pl.name,a:+pl.lat,o:+pl.lon,k:pl.kind||"",c:pl.city||""}));
+  return `<button type="button" class="favbtn${favHas(pl)?" on":""}" data-fav="${d}" title="Ajouter à mes lieux favoris">★</button>`; }
+function favSyncItinBtn(){ const b=document.getElementById("itinFavBtn"); if(b)b.textContent="★ Mes lieux favoris ("+favLoad().length+")"; }
+document.addEventListener("click",(e)=>{ const b=e.target&&e.target.closest?e.target.closest(".favbtn"):null; if(!b)return;
+  e.preventDefault(); e.stopPropagation();
+  let d; try{ d=JSON.parse(decodeURIComponent(b.dataset.fav)); }catch(_){ return; }
+  const added=favToggle({name:d.n,lat:d.a,lon:d.o,kind:d.k,city:d.c}); b.classList.toggle("on",added); favSyncItinBtn(); });
+function itinLoadFavs(){
+  const favs=favLoad(); if(!favs.length){ alert("Aucun lieu favori pour l'instant. Ajoute des ★ depuis Activités, À voir, ou l'itinéraire."); return; }
+  favs.forEach(f=>{ const poi={xid:"fav-"+favKey(f),name:f.name,lat:+f.lat,lon:+f.lon,kind:f.kind||"favori",rate:8,dist:0,fav:true};
+    if(!_itinPois.some(p=>p.name===poi.name&&Math.abs(p.lat-poi.lat)<1e-4&&Math.abs(p.lon-poi.lon)<1e-4)){ _itinPois.push(poi); _itinChecked.add(poi); } });
+  itinRenderPois();
+}
+
+function itinRenderPois(){
+  const box=document.getElementById("itinPois"); if(!box)return;
+  if(!_itinPois.length){ box.innerHTML=""; itinSyncPlan(); return; }
+  box.innerHTML='<div class="poi-hd">Coche ce que tu veux voir ('+_itinPois.length+' lieux) :</div>'+
+    _itinPois.map((p,i)=>'<label class="poi-row"><input type="checkbox" class="poi-ck" data-i="'+i+'"'+(_itinChecked.has(p)?" checked":"")+'><span class="poi-n">'+p.name+'</span>'+(p.kind?'<span class="poi-k">'+String(p.kind).replace(/_/g," ")+'</span>':'')+favBtn({name:p.name,lat:p.lat,lon:p.lon,kind:p.kind||"",city:_itinCity||""})+'</label>').join("");
+  box.querySelectorAll(".poi-ck").forEach(c=>c.onchange=()=>{ const p=_itinPois[+c.dataset.i]; if(c.checked)_itinChecked.add(p); else _itinChecked.delete(p); itinSyncPlan(); });
+  itinSyncPlan();
+}
+function itinChecked(){ return _itinPois.filter(p=>_itinChecked.has(p)); }
 function itinSyncPlan(){
-  const chk=itinChecked(), plan=document.getElementById("itinPlan");
+  const chk=itinChecked(), plan=document.getElementById("itinPlan"); if(!plan)return;
   if(chk.length<2){ plan.hidden=true; return; } plan.hidden=false;
   const opt='<option value="-1">n\'importe lequel</option>'+chk.map(p=>'<option value="'+_itinPois.indexOf(p)+'">'+p.name+'</option>').join("");
   document.getElementById("itinStart").innerHTML=opt; document.getElementById("itinEnd").innerHTML=opt;
@@ -4842,14 +5003,62 @@ async function itinFetch(){
   try{
     const j=await (await fetch(`${API_BASE}/api/poi?city=${encodeURIComponent(city)}`)).json();
     if(j.error||!j.pois||!j.pois.length){ box.innerHTML='<div class="empty">'+(j.error||"Aucun lieu trouvé pour cette ville.")+'</div>'; return; }
-    _itinPois=j.pois; _itinCenter=j.center;
-    box.innerHTML='<div class="poi-hd">Coche ce que tu veux voir ('+j.pois.length+' lieux) :</div>'+j.pois.map((p,i)=>'<label class="poi-row"><input type="checkbox" class="poi-ck" data-i="'+i+'"><span class="poi-n">'+p.name+'</span>'+(p.kind?'<span class="poi-k">'+p.kind.replace(/_/g," ")+'</span>':'')+'</label>').join("");
-    box.querySelectorAll(".poi-ck").forEach(c=>c.onchange=itinSyncPlan);
+    _itinPois=j.pois.slice(); _itinCenter=j.center; _itinCity=city; _itinChecked=new Set();
+    itinRenderPois();
   }catch(_){ box.innerHTML='<div class="empty">Erreur réseau — réessaie.</div>'; }
+}
+// #8 — point manuel : GPS "lat,lng" ou adresse (géocodée via Nominatim)
+async function itinAddManual(){
+  const inp=document.getElementById("itinManual"), v=(inp&&inp.value||"").trim(); if(!v)return;
+  const btn=document.getElementById("itinAddBtn");
+  let lat=null,lon=null,name=v;
+  const gps=v.match(/^\s*(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)\s*$/);
+  if(gps){ lat=parseFloat(gps[1]); lon=parseFloat(gps[2]); name="📍 "+lat.toFixed(4)+", "+lon.toFixed(4); }
+  else {
+    if(btn){btn.disabled=true;btn.textContent="…";}
+    try{ const j=await (await fetch(`${API_BASE}/api/geocode?q=${encodeURIComponent(v)}`)).json();
+      if(j&&j.lat!=null){ lat=j.lat; lon=j.lon; name="📍 "+v; } else { alert("Adresse introuvable."); } }
+    catch(_){ alert("Géocodage indisponible."); }
+    if(btn){btn.disabled=false;btn.textContent="Ajouter";}
+  }
+  if(lat==null||lon==null||!isFinite(lat)||!isFinite(lon))return;
+  const poi={xid:"manual-"+Date.now(), name, lat, lon, kind:"point", rate:9, dist:0, manual:true};
+  _itinPois.push(poi); _itinChecked.add(poi); itinRenderPois();
+  if(inp)inp.value="";
+}
+// #7 — export / import de l'itinéraire (JSON)
+function itinExport(){
+  const chk=itinChecked(), places=(chk.length?chk:_itinPois).map(p=>({name:p.name,lat:p.lat,lon:p.lon,kind:p.kind||""}));
+  if(!places.length){ alert("Rien à sauvegarder — cherche une ville ou ajoute des points."); return; }
+  const data={ v:1, city:_itinCity||"", mode:_itinMode, places };
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:"application/json"}));
+  a.download="itineraire"+(data.city?"-"+data.city.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""):"")+".json";
+  document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+}
+function itinImport(file){
+  const rd=new FileReader();
+  rd.onload=()=>{ try{
+    const d=JSON.parse(rd.result);
+    if(!d||!Array.isArray(d.places)||!d.places.length){ alert("Fichier invalide."); return; }
+    _itinPois=d.places.filter(p=>p&&p.lat!=null&&p.lon!=null).map(p=>({xid:"imp-"+Math.random().toString(36).slice(2),name:p.name||"Lieu",lat:+p.lat,lon:+p.lon,kind:p.kind||"",rate:5,dist:0}));
+    _itinChecked=new Set(_itinPois);
+    _itinCity=d.city||"";
+    if(d.mode&&MODE_SPEED[d.mode]){ _itinMode=d.mode; const modes=document.getElementById("itinModes"); if(modes)modes.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.mode===_itinMode)); }
+    const ci=document.getElementById("itinCity"); if(ci&&_itinCity)ci.value=_itinCity;
+    document.getElementById("itinMap").hidden=true; document.getElementById("itinResult").innerHTML="";
+    itinRenderPois();
+  }catch(_){ alert("Impossible de lire le fichier."); } };
+  rd.readAsText(file);
 }
 (function(){
   const f=document.getElementById("itinFetch"); if(f)f.onclick=itinFetch;
   const ci=document.getElementById("itinCity"); if(ci)ci.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();itinFetch();} });
+  const am=document.getElementById("itinAddBtn"); if(am)am.onclick=itinAddManual;
+  const fb=document.getElementById("itinFavBtn"); if(fb)fb.onclick=itinLoadFavs; favSyncItinBtn();
+  const mi=document.getElementById("itinManual"); if(mi)mi.addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();itinAddManual();} });
+  const ex=document.getElementById("itinExport"); if(ex)ex.onclick=itinExport;
+  const im=document.getElementById("itinImport"); if(im)im.onclick=()=>{ const ff=document.getElementById("itinImportFile"); if(ff)ff.click(); };
+  const iff=document.getElementById("itinImportFile"); if(iff)iff.onchange=(e)=>{ if(e.target.files&&e.target.files[0])itinImport(e.target.files[0]); e.target.value=""; };
   const tr=document.getElementById("itinTrace"); if(tr)tr.onclick=()=>{ const chk=itinChecked(); if(chk.length<2)return;
     const s=+document.getElementById("itinStart").value, en=+document.getElementById("itinEnd").value;
     const route=optimizeRoute(chk,s,en); renderItinResult(route); renderItinMap(route); };
@@ -4858,7 +5067,33 @@ async function itinFetch(){
     const chk=itinChecked(); if(chk.length>=2 && document.getElementById("itinResult").innerHTML){ const s=+document.getElementById("itinStart").value, en=+document.getElementById("itinEnd").value; renderItinResult(optimizeRoute(chk,s,en)); } });
 })();
 
-(function(){ const rb=document.getElementById("radarBox"); if(rb)rb.addEventListener("toggle",()=>{ if(rb.open){ try{ window.Radar&&Radar.priorityDate&&Radar.priorityDate(); }catch(_){} } }); })();
+/* 💎 Derniers bons plans (Travelpayouts get_latest_prices, cache) — chargé à l'ouverture du panneau. */
+async function loadDeals(){
+  const box=document.getElementById("dealsBox"), sec=document.getElementById("dealsSec"); if(!box||!sec)return;
+  if(!box.open)return;
+  const note=(t)=>'<div style="font-family:var(--mono);font-size:11px;color:var(--muted);padding:6px 4px">'+t+'</div>';
+  if(!origin){ sec.innerHTML=note("Choisis un aéroport de départ pour voir les meilleurs prix trouvés récemment."); return; }
+  const ck="deals:"+origin.code+":"+(oneWay?1:0);
+  let list=pxGet(ck);
+  if(!list){
+    sec.innerHTML=note("recherche des bons plans…");
+    try{ const r=await fetch(`${API_BASE}/api/deals?origin=${origin.code}&oneway=${oneWay?1:0}`); if(r.ok){ const j=await r.json(); list=j.list||[]; pxSet(ck,list); } }catch(_){ list=null; }
+  }
+  if(!box.open)return;
+  if(!list||!list.length){ sec.innerHTML=note("Aucun bon plan en cache depuis "+origin.code+" pour l'instant."); return; }
+  let html='<div class="deals-list">';
+  list.forEach(d=>{
+    const nm=NAMES[d.destination]||d.destination;
+    const when=d.depart?frShort(d.depart)+(d.ret?" → "+frShort(d.ret):""):"";
+    const stops=d.transfers===0?"direct":(d.transfers!=null?d.transfers+" esc":"");
+    const inner='<span class="deal-dest"><b>'+d.destination+'</b> '+nm+'<div class="deal-when">'+origin.code+' → '+d.destination+(when?" · "+when:"")+(stops?" · "+stops:"")+'</div></span><span class="deal-price">'+d.price+'€<small>voir</small></span>';
+    html+= d.link ? '<a class="deal-row" href="'+d.link+'" target="_blank" rel="noopener">'+inner+'</a>' : '<div class="deal-row">'+inner+'</div>';
+  });
+  sec.innerHTML=html+'</div>';
+}
+(function(){ const db=document.getElementById("dealsBox"); if(db)db.addEventListener("toggle",()=>{ if(db.open){ try{loadDeals();}catch(_){} } }); })();
+
+(function(){ const rb=document.getElementById("radarBox"); if(rb)rb.addEventListener("toggle",()=>{ if(rb.open){ try{ window.Radar&&Radar.priorityDate&&Radar.priorityDate(); window.Radar&&Radar.suggestions&&Radar.suggestions(); }catch(_){} } }); })();
 
 /* Menu outils : bouton haut-gauche → liste déroulante (outils + réglages : mode, Polarsteps). */
 (function(){
