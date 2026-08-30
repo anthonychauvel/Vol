@@ -61,6 +61,8 @@ export async function onRequest(context) {
       airline: best ? best.airline : null,
       transfers: best ? (best.transfers ?? null) : null,   // 0 = direct
       duration_to: best ? (best.duration_to ?? null) : null, // durée réelle aller (min)
+      departure_at: best ? (best.departure_at || null) : null,  // vraie date du vol le moins cher
+      return_at: best ? (best.return_at || null) : null,
       link: best && best.link ? "https://www.aviasales.com" + best.link : null,
       note: best ? "indicatif (cache Aviasales, ≤ 7 j)" : "aucun tarif en cache pour cette route/période"
     }), { headers: cors });

@@ -33,8 +33,8 @@ export async function onRequest(context) {
     const gj = await g.json();
     if (!gj || gj.lat == null || gj.lon == null) return json({ error: "Ville introuvable." }, 404);
 
-    // 2) lieux notables dans un rayon, triés par importance
-    const r = await fetch(`https://api.opentripmap.com/0.1/en/places/radius?radius=6000&lon=${gj.lon}&lat=${gj.lat}&kinds=interesting_places&rate=2&format=json&limit=60&apikey=${key}`);
+    // 2) lieux notables dans un rayon large (grand pool → on trie par notoriété ensuite)
+    const r = await fetch(`https://api.opentripmap.com/0.1/en/places/radius?radius=12000&lon=${gj.lon}&lat=${gj.lat}&kinds=interesting_places&rate=1&format=json&limit=500&apikey=${key}`);
     if (!r.ok) throw new Error("radius " + r.status);
     const list = await r.json();
 
@@ -50,7 +50,7 @@ export async function onRequest(context) {
       .sort((a, b) => b.rate - a.rate)
       .forEach(p => { const k = p.name.toLowerCase(); if (!seen.has(k)) { seen.add(k); pois.push(p); } });
 
-    return json({ city: gj.name || city, center: { lat: gj.lat, lon: gj.lon }, pois: pois.slice(0, 30) });
+    return json({ city: gj.name || city, center: { lat: gj.lat, lon: gj.lon }, pois: pois.slice(0, 50) });
   } catch (e) {
     return json({ error: String((e && e.message) || e) }, 502);
   }

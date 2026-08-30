@@ -12,6 +12,8 @@ export async function onRequest(context) {
 
   const origin = (p.get("origin") || "").toUpperCase();
   const month  = p.get("month") || "";        // YYYY-MM (optionnel)
+  const depart = p.get("depart") || "";        // YYYY-MM-DD exact (prioritaire sur month)
+  const ret    = p.get("return") || "";        // YYYY-MM-DD exact (retour)
   const oneway = p.get("oneway") === "1";
   const direct = p.get("direct") === "1" || p.get("direct") === "true";
 
@@ -41,7 +43,10 @@ export async function onRequest(context) {
   api.searchParams.set("direct", direct ? "true" : "false");
   api.searchParams.set("currency", "eur");
   api.searchParams.set("limit", "1000");
-  if (month) {
+  if (depart) {                                  // dates exactes prioritaires
+    api.searchParams.set("departure_at", depart);
+    if (!oneway && ret) api.searchParams.set("return_at", ret);
+  } else if (month) {
     api.searchParams.set("departure_at", month);
     if (!oneway) api.searchParams.set("return_at", month);
   }

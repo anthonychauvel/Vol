@@ -41,12 +41,21 @@ export async function onRequest(context) {
     return json({ error: "location, checkIn et checkOut requis" }, 400);
 
   const lat = parseFloat(p.get("lat")), lng = parseFloat(p.get("lng"));
-  const centre = (isFinite(lat) && isFinite(lng)) ? { lat, lng } : null;
+  let centre = (isFinite(lat) && isFinite(lng)) ? { lat, lng } : null;
   const maxKm       = parseFloat(p.get("maxKm") || "0") || 0;
   const minStars    = parseInt(p.get("minStars") || "0", 10) || 0;
   const privateOnly = p.get("privateOnly") !== "0";      // exclut les dortoirs par défaut
   const limit       = Math.min(parseInt(p.get("limit") || "40", 10) || 40, 100);
   const adults      = parseInt(p.get("adults") || "2", 10) || 2;
+
+  // Géocodage serveur si pas de coords (ex. ville tapée « Camaret-sur-Mer ») : permet de
+  // situer les hôtels et d'écarter/étiqueter ceux d'une grande ville voisine (Brest).
+  if (!centre && location && env.OPENTRIPMAP_KEY) {
+    try {
+      const g = await fetch(`https://api.opentripmap.com/0.1/en/places/geoname?name=${encodeURIComponent(location)}&apikey=${env.OPENTRIPMAP_KEY}`);
+      if (g.ok) { const gj = await g.json(); if (gj && gj.lat != null && gj.lon != null) centre = { lat: gj.lat, lng: gj.lon }; }
+    } catch (_) {}
+  }
 
   const cache = caches.default;
   const ckey = new Request(`https://escale.cache/hotels/${encodeURIComponent(location)}-${checkIn}-${checkOut}`);
@@ -113,16 +122,30 @@ export async function onRequest(context) {
   .filter(h => {
     if (privateOnly && DORM_RE.test(h.name)) { excludedDorm++; return false; }
     if (minStars && h.stars < minStars)      { excludedStars++; return false; }
-    if (maxKm && h.distanceKm != null && h.distanceKm > maxKm) { excludedFar++; return false; }
-    return true;
-  })
-  .filter(h => h.pricePerNight != null)
-  .sort((a, b) => a.pricePerNight - b.pricePerNight)
-  .slice(0, limit);
+    return h.pricePerNight != null;
+  });
+
+  // Rayon adaptatif : si peu d'hôtels dans maxKm, on élargit (jusqu'à 50 km) pour ne pas
+  // renvoyer une liste vide. La distance est renvoyée → le client l'affiche (ex. « 52 km »).
+  let radiusKm = maxKm || null, nearestKm = null;
+  let list = hotels;
+  if (centre) {
+    const withKm = hotels.filter(h => h.distanceKm != null);
+    if (withKm.length) nearestKm = Math.min(...withKm.map(h => h.distanceKm));
+    if (maxKm) {
+      let rad = maxKm;
+      const inRad = () => hotels.filter(h => h.distanceKm == null || h.distanceKm <= rad);
+      let cur = inRad();
+      while (cur.filter(h => h.distanceKm != null).length < 8 && rad < 50) { rad = Math.min(50, rad * 3); cur = inRad(); }
+      radiusKm = rad; list = cur;
+      excludedFar = hotels.length - list.length;
+    }
+  }
+  list = list.sort((a, b) => a.pricePerNight - b.pricePerNight).slice(0, limit);
 
   return json({
     source: "hotellook_cache", location, checkIn, checkOut, nights,
-    hotels, total: hotels.length,
+    hotels: list, total: list.length, radiusKm, nearestKm,
     filtered: { dortoirs: excludedDorm, tropLoin: excludedFar, categorie: excludedStars },
     note: "prix en cache, indicatifs · notes voyageurs disponibles via ⚡"
   });
