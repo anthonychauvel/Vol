@@ -136,7 +136,7 @@ export async function onRequest(context) {
       let rad = maxKm;
       const inRad = () => hotels.filter(h => h.distanceKm == null || h.distanceKm <= rad);
       let cur = inRad();
-      while (cur.filter(h => h.distanceKm != null).length < 8 && rad < 50) { rad = Math.min(50, rad * 3); cur = inRad(); }
+      while (cur.filter(h => h.distanceKm != null).length < 8 && rad < 80) { rad = Math.min(80, rad * 3); cur = inRad(); }
       radiusKm = rad; list = cur;
       excludedFar = hotels.length - list.length;
     }

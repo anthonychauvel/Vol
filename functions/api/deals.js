@@ -28,7 +28,7 @@ export async function onRequest(context) {
   if (origin) api.searchParams.set("origin", origin);
   api.searchParams.set("period_type", "year");
   api.searchParams.set("page", "1");
-  api.searchParams.set("limit", "30");
+  api.searchParams.set("limit", "100");
   api.searchParams.set("one_way", oneway ? "true" : "false");
   api.searchParams.set("sorting", "price");
   api.searchParams.set("trip_class", "0");
@@ -48,7 +48,7 @@ export async function onRequest(context) {
       ret: (x.return_at || x.return_date || "").slice(0, 10),
       airline: x.airline || null,
       link: x.link ? ("https://www.aviasales.com" + x.link) : null
-    })).filter(x => x.price != null).slice(0, 20);
+    })).filter(x => x.price != null).slice(0, 60);
     return new Response(JSON.stringify({ origin, list }), { headers: cors });
   } catch (e) {
     return new Response(JSON.stringify({ error: "échec appel Travelpayouts", detail: String(e) }),
