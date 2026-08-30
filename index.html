@@ -344,6 +344,9 @@
   #modeSeg button.on{background:var(--brass-face);color:#2c1d06;border-color:var(--brass-rim);
     box-shadow:0 1px 0 rgba(255,244,214,.55) inset,0 -5px 8px rgba(90,58,16,.28) inset;
     text-shadow:0 1px 0 rgba(255,240,200,.35)}
+  .mode-hint{font-family:var(--mono);font-size:11px;color:var(--amber);background:var(--amber-dim);
+    border:1px solid var(--brass-rim);border-radius:9px;padding:7px 11px;margin:-4px 0 12px;line-height:1.4}
+  .mode-hint:empty{display:none;padding:0;border:0;margin:0}
 
   /* calendrier */
   .cal{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
@@ -877,6 +880,8 @@
   .deals-dur{display:flex;gap:4px;flex-wrap:wrap}
   .deals-dur button{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);font-family:var(--mono);font-size:11px;padding:6px 9px;border-radius:8px;cursor:pointer}
   .deals-dur button.on{background:var(--brass-face);color:#2a1c06;font-weight:700;border-color:transparent}
+  .deals-warn{background:var(--amber-dim);border:1px solid var(--brass-rim);border-radius:9px;padding:8px 11px;margin-bottom:10px;font-family:var(--mono);font-size:11px;color:var(--amber);line-height:1.4}
+  .radar-sum-note{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:400}
   .deal-row{display:flex;align-items:center;gap:8px;padding:9px 4px;border:0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);width:100%;background:none;cursor:pointer;text-align:left;font:inherit}
   .deal-row:last-child{border-bottom:0}
   .deal-row:hover{background:var(--panel-2)}
@@ -1029,7 +1034,7 @@
 
   <!-- 💎 Derniers bons plans (chargé à l'ouverture) -->
   <details id="dealsBox" class="radar-box">
-    <summary class="radar-sum">💎 Derniers bons plans</summary>
+    <summary class="radar-sum">💎 Derniers bons plans <span class="radar-sum-note">(dates variées)</span></summary>
     <section id="dealsSec" class="radar"></section>
   </details>
 
@@ -1125,6 +1130,7 @@
       <button data-mode="caplibre">✦ Cap Libre</button>
       <button data-mode="cross">Croisé</button>
     </div>
+    <div id="modeHint" class="mode-hint"></div>
 
     <div id="cmpPanel" style="display:none">
       <div class="ochint">Jusqu'à 5 aéroports de départ — vue d'ensemble des villes desservies au meilleur prix / plus court.</div>
@@ -1913,6 +1919,12 @@ document.getElementById("modeSeg").querySelectorAll("button").forEach(b=>{b.oncl
   document.querySelectorAll("#modeSeg button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
   mode=b.dataset.mode;renderDispatch();refresh();};});
 function renderDispatch(){
+  const MODE_DATE_HINT={
+    anywhere:"💡 Pour chaque destination, ce mode cherche le jour le moins cher DU MOIS affiché — pas forcément tes dates 23-25.",
+    caplibre:"💡 Cap Libre trouve la meilleure fenêtre PAR destination — chaque résultat a sa propre date, pas une date fixe.",
+    compare:"", cross:"", list:"", stay:""
+  };
+  const mh=document.getElementById("modeHint"); if(mh)mh.textContent=MODE_DATE_HINT[mode]||"";
   const dsw=document.getElementById("destSearchWrap");
   if(dsw)dsw.style.display=(mode==="list")?"block":"none";
   if(mode!=="list")document.getElementById("destAc").innerHTML="";
@@ -5220,6 +5232,7 @@ function dealPass(d){
 }
 function renderDealsList(){
   const sec=document.getElementById("dealsSec"); if(!sec)return;
+  const warn='<div class="deals-warn">⚠️ Bonnes affaires trouvées sur des dates variées (pas forcément les tiennes) — regarde bien la date affichée sous chaque destination avant de comparer.</div>';
   const durs=[["all","Tout"],["we","Week-end"],["week","Semaine"],["long","Long séjour"]];
   const ctrl='<div class="deals-ctrl"><input type="number" id="dealsMax" inputmode="numeric" placeholder="budget max €/pers" value="'+(_dealsMax||"")+'"><div class="deals-dur">'+durs.map(x=>'<button type="button" data-dur="'+x[0]+'" class="'+(_dealsDur===x[0]?"on":"")+'">'+x[1]+'</button>').join("")+'</div></div>';
   const filtered=_dealsList.filter(dealPass);
@@ -5232,7 +5245,7 @@ function renderDealsList(){
       const stops=d.transfers===0?"direct":(d.transfers!=null?d.transfers+" esc":"");
       return '<button type="button" class="deal-row" data-dest="'+d.destination+'"><span class="deal-dest"><b>'+d.destination+'</b> '+nm+'<div class="deal-when">'+origin.code+' → '+d.destination+(when?" · "+when:"")+durTxt+(stops?" · "+stops:"")+'</div></span><span class="deal-price">'+d.price+'€<small>voir</small></span></button>';
     }).join("")+'</div>';
-  sec.innerHTML=ctrl+body;
+  sec.innerHTML=warn+ctrl+body;
   const mx=document.getElementById("dealsMax"); if(mx)mx.onchange=()=>{ _dealsMax=parseInt(mx.value,10)||0; renderDealsList(); };
   sec.querySelectorAll(".deals-dur button").forEach(b=>b.onclick=()=>{ _dealsDur=b.dataset.dur; renderDealsList(); });
   sec.querySelectorAll(".deal-row[data-dest]").forEach(b=>b.onclick=()=>{ const code=b.dataset.dest; const dd=(typeof allDests==="function"?allDests().find(x=>x.i===code):null)||{i:code,n:NAMES[code]||code}; if(typeof openPriceCal==="function")openPriceCal(dd, origin.code, (origin.city||origin.code)); });
