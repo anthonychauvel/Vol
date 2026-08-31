@@ -1922,13 +1922,16 @@ document.getElementById("tripSeg").querySelectorAll("button").forEach(b=>{b.oncl
 document.getElementById("modeSeg").querySelectorAll("button").forEach(b=>{b.onclick=()=>{
   document.querySelectorAll("#modeSeg button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
   mode=b.dataset.mode;renderDispatch();refresh();};});
-function renderDispatch(){
+function updateModeHint(){
   const MODE_DATE_HINT={
     anywhere: dep ? "" : "💡 Choisis tes dates (étape 2) pour voir le prix de TOUTES les destinations sur CES dates précises — en attendant, exploration du mois affiché.",
     caplibre:"💡 Cap Libre trouve la meilleure fenêtre PAR destination — chaque résultat a sa propre date, pas une date fixe.",
     compare:"", cross:"", list:"", stay:""
   };
   const mh=document.getElementById("modeHint"); if(mh)mh.textContent=MODE_DATE_HINT[mode]||"";
+}
+function renderDispatch(){
+  updateModeHint();
   const dsw=document.getElementById("destSearchWrap");
   if(dsw)dsw.style.display=(mode==="list")?"block":"none";
   if(mode!=="list")document.getElementById("destAc").innerHTML="";
@@ -3837,7 +3840,7 @@ async function stayLive(code,nights,btn){
 }
 
 /* ================= MODE « N'IMPORTE OÙ » ================= */
-let anywhereData=[], anywhereKey="", anywhereLoading=false, anyReqId=0;
+let anywhereData=[], anywhereKey="", anywhereLoading=false, anyReqId=0, anywhereProgress="";
 function monthForAnywhere(){ return dep ? dep.slice(0,7) : iso(view).slice(0,7); }  // utilisé aussi par compare/cross (météo)
 function anywhereParams(){
   // dates choisies (comme Ma sélection) → prix pour CES dates précises, sinon exploration du mois affiché
@@ -3849,20 +3852,40 @@ function maybeFetchAnywhere(){
   const p=anywhereParams();
   const key=origin.code+"|"+p.depart+"|"+p.ret+"|"+(oneWay?1:0);
   if(key===anywhereKey && anywhereData.length){ renderAnywhere(); return; }
-  anywhereKey=key; anywhereLoading=true; renderAnywhere();
+  anywhereKey=key; anywhereLoading=true; anywhereProgress=""; renderAnywhere();
   const myId=++anyReqId;
-  let u=`${API_BASE}/api/anywhere?origin=${origin.code}&depart=${p.depart}&oneway=${oneWay?1:0}`;
-  if(!oneWay&&p.ret)u+=`&return=${p.ret}`;
-  fetch(u)
+  // 1) découverte large sur le MOIS (catalogue de destinations connu de Travelpayouts pour cette période)
+  const month=p.exact?p.depart.slice(0,7):p.depart;
+  fetch(`${API_BASE}/api/anywhere?origin=${origin.code}&depart=${month}&oneway=${oneWay?1:0}`)
     .then(r=>{if(!r.ok)throw 0;return r.json();})
-    .then(j=>{if(myId!==anyReqId)return;anywhereData=j.results||[];anywhereLoading=false;renderAnywhere();})
+    .then(async j=>{
+      if(myId!==anyReqId)return;
+      const broad=j.results||[];
+      if(!p.exact){ anywhereData=broad; anywhereLoading=false; renderAnywhere(); return; }
+      // 2) affine CHAQUE destination sur LA date exacte choisie (comme Ma sélection) — ne garde que celles qui ont un prix ce jour-là
+      const candidates=broad.slice(0,120), exact=[];
+      let done=0;
+      await inBatches(candidates,6,async(o)=>{
+        if(myId!==anyReqId)return;
+        try{
+          let u=`${API_BASE}/api/prices?origin=${origin.code}&destination=${o.destination}&depart=${p.depart}`;
+          if(!oneWay&&p.ret)u+=`&return=${p.ret}`;
+          const r=await fetch(u); if(r.ok){ const pj=await r.json();
+            if(pj&&pj.price!=null) exact.push({destination:o.destination,price:pj.price,link:pj.link||null,
+              transfers:(pj.transfers??o.transfers??null),airline:pj.airline||o.airline||null,duration_to:(pj.duration_to??o.duration_to??null)}); }
+        }catch(_){}
+        done++; if(myId===anyReqId){ anywhereProgress=done+"/"+candidates.length; if(!exact.length)renderAnywhere(); }
+      });
+      if(myId!==anyReqId)return;
+      anywhereData=exact; anywhereLoading=false; anywhereProgress=""; renderAnywhere();
+    })
     .catch(_=>{if(myId!==anyReqId)return;anywhereData=[];anywhereLoading=false;renderAnywhere();});
 }
 function renderAnywhere(){
   const box=document.getElementById("dests"), p=anywhereParams();
   document.getElementById("destCount").textContent=origin?("depuis "+origin.city+" · "+(p.exact?frShort(p.depart)+(p.ret?" → "+frShort(p.ret):""):p.depart)):"";
   if(!origin){box.innerHTML=`<div class="empty">Choisis d'abord un aéroport de départ.</div>`;return;}
-  if(anywhereLoading){box.innerHTML=`<div class="empty">Recherche des prix vers toutes les destinations…</div>`;return;}
+  if(anywhereLoading){box.innerHTML=`<div class="empty">Recherche des prix vers toutes les destinations${anywhereProgress?" · "+anywhereProgress:""}…</div>`;return;}
   let list=anywhereData.filter(o=>o.duration_to==null?true:inBand(o.duration_to));
   list=list.filter(o=>passStops(o.transfers));
   list.sort((a,b)=>stopRank(a.transfers)-stopRank(b.transfers));   // directs en tête, prix conservé sinon
@@ -3903,6 +3926,7 @@ function renderAnywhere(){
 /* ================= RAFRAÎCHISSEMENT ================= */
 function refresh(){
   syncButtons();
+  updateModeHint();
   document.getElementById("dateHint").classList.toggle("show",!(origin&&dep));
   const dv=document.getElementById("depV"),rv=document.getElementById("retV"),dw=document.getElementById("depW"),rw=document.getElementById("retW");
   if(dep){const[Y,M,D]=dep.split("-");const w=isoWeek(new Date(+Y,+M-1,+D));dv.textContent=frShort(dep);dw.textContent="S"+w+"·"+(w%2?"imp":"pr");}
