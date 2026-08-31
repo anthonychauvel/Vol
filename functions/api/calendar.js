@@ -54,6 +54,8 @@ export async function onRequest(context) {
           duration: o.duration ?? null,       // durée en minutes
           airline: o.airline ?? null,
           return_at: o.return_at || null,
+          seen_at: o.found_at || o.expires_at || null,
+          seen_kind: o.found_at ? "found" : (o.expires_at ? "expires" : null),
           link: o.link ? "https://www.aviasales.com" + o.link : null
         };
       }

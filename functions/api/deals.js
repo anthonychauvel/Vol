@@ -47,6 +47,8 @@ export async function onRequest(context) {
       depart: (x.departure_at || x.depart_date || "").slice(0, 10),
       ret: (x.return_at || x.return_date || "").slice(0, 10),
       airline: x.airline || null,
+      seen_at: x.found_at || x.expires_at || null,
+      seen_kind: x.found_at ? "found" : (x.expires_at ? "expires" : null),
       link: x.link ? ("https://www.aviasales.com" + x.link) : null
     })).filter(x => x.price != null).slice(0, 60);
     return new Response(JSON.stringify({ origin, list }), { headers: cors });

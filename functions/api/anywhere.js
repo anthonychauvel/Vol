@@ -64,6 +64,8 @@ export async function onRequest(context) {
       duration_to: o.duration_to ?? null,   // durée aller (min) — pour le filtre durée
       departure_at: o.departure_at || null,
       return_at: o.return_at || null,
+      seen_at: o.found_at || o.expires_at || null,
+      seen_kind: o.found_at ? "found" : (o.expires_at ? "expires" : null),
       link: o.link ? "https://www.aviasales.com" + o.link : null
     })).filter(o => typeof o.price === "number")
        .sort((a, b) => a.price - b.price);
