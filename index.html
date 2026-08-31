@@ -1898,12 +1898,14 @@ async function runDestAc(){
     +add.map(p=>acRow(p,"ajouter à ma liste")).join("")+`</div>`;
   box.querySelectorAll(".acrow").forEach(el=>el.onclick=()=>addDest(el.dataset.code));
 }
+function pinToFront(code){ PIN_DEST=[code,...PIN_DEST.filter(c=>c!==code)]; saveArr(LS_PINDEST,PIN_DEST); }
 function addDest(code){
   const p=_acStore[code]; if(!p)return;
   if(!CUSTOM_DEST.some(d=>d.i===code)){
     CUSTOM_DEST.unshift({n:p.city,i:p.code,lat:p.lat,lng:p.lng,world:1});
     saveArr(LS_DESTC,CUSTOM_DEST);NAMES[p.code]=p.city;
   }
+  pinToFront(code);   // la dernière ville ajoutée passe toujours en tête absolue
   DEST_HIDE=DEST_HIDE.filter(c=>c!==code);saveArr(LS_DESTHIDE,DEST_HIDE);
   destSearchEl.value="";destQuery="";destClearEl.classList.remove("show");
   document.getElementById("destAc").innerHTML="";
@@ -2013,8 +2015,14 @@ function currentList(){let l=withDur().filter(d=>inBand(d.min));
   if(typeof destQuery==="string"&&destQuery){const q=norm(destQuery);
     l=l.filter(d=>norm(d.n).includes(q)||norm(d.i).includes(q));}
   if(origin){
-    const added=new Set([...CUSTOM_DEST.map(d=>d.i),...PIN_DEST]);
-    l.sort((a,b)=>{ const ca=added.has(a.i),cb=added.has(b.i); if(ca!==cb)return ca?-1:1; return a.min-b.min; });
+    const pinIdx=(code)=>{ const i=PIN_DEST.indexOf(code); return i<0?Infinity:i; };
+    const isPinned=(code)=>PIN_DEST.includes(code)||CUSTOM_DEST.some(d=>d.i===code);
+    l.sort((a,b)=>{
+      const pa=isPinned(a.i), pb=isPinned(b.i);
+      if(pa!==pb) return pa?-1:1;
+      if(pa&&pb){ const ia=pinIdx(a.i), ib=pinIdx(b.i); if(ia!==ib) return ia-ib; }
+      return a.min-b.min;
+    });
   }
   return l;}
 function skyURL(to){const yy=s=>s.slice(2,4)+s.slice(5,7)+s.slice(8,10);
@@ -2127,8 +2135,8 @@ function renderDests(){
   box.querySelectorAll(".live").forEach(b=>b.onclick=()=>runLiveRow(list[+b.dataset.live],b));
   box.querySelectorAll(".pindest").forEach(el=>el.onclick=(ev)=>{ev.stopPropagation();
     const code=el.dataset.pin;
-    if(PIN_DEST.includes(code))PIN_DEST=PIN_DEST.filter(c=>c!==code); else PIN_DEST.push(code);
-    saveArr(LS_PINDEST,PIN_DEST); renderDispatch();refresh();});
+    if(PIN_DEST.includes(code)){PIN_DEST=PIN_DEST.filter(c=>c!==code);saveArr(LS_PINDEST,PIN_DEST);} else pinToFront(code);
+    renderDispatch();refresh();});
   box.querySelectorAll(".rmdest").forEach(el=>el.onclick=(ev)=>{ev.stopPropagation();
     const code=el.dataset.rm;
     if(CUSTOM_DEST.some(d=>d.i===code)){CUSTOM_DEST=CUSTOM_DEST.filter(d=>d.i!==code);saveArr(LS_DESTC,CUSTOM_DEST);}
