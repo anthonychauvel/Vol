@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>/* iPhone : pas de zoom automatique quand on touche un champ. iOS ne zoome que sur un champ écrit en moins de 16 px ; le zoom à deux doigts reste possible. */@supports(-webkit-touch-callout:none){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select,textarea{font-size:max(16px,1em)!important}}</style>
 <meta name="theme-color" content="#0e1b24">
 <link rel="manifest" href="manifest.json">
@@ -1014,7 +1014,11 @@
 </style>
 <style>
   /* encoche iPhone : bande opaque sous la barre d'état */
-  .cv-statusbar{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:2500;pointer-events:none}
+  /* Encoche iPhone : la page occupe tout l'écran (viewport-fit=cover) et une bande OPAQUE de la hauteur de
+     l'encoche masque ce qui défile dessous → plus de flou ni de dégradé gris sous la barre d'état. */
+  html{background:var(--bg)}
+  .cv-statusbar{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:9999;pointer-events:none;
+    -webkit-backdrop-filter:none;backdrop-filter:none}
   .wiz{top:env(safe-area-inset-top,0px)!important}
 </style>
 </head>
