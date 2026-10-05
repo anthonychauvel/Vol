@@ -724,6 +724,15 @@
   .rd-watch.on{color:var(--amber)}
   .alnk{color:var(--amber);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
   .radar-box{margin:0 0 14px}
+  .rd-tpl{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+  .rd-tpl-h{font-size:13px;color:var(--ink);line-height:1.45}
+  .rd-tpl-b{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--brass-rim);background:var(--panel-2);color:var(--ink);font:inherit;cursor:pointer}
+  .rd-tpl-b .ic{font-size:22px;width:28px;text-align:center}
+  .rd-tpl-b b{display:block;font-size:14px;color:var(--amber)}
+  .rd-tpl-b small{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+  .rd-tpl-b.alt b{color:var(--ink)}
+  .rd-tpl-b:disabled{opacity:.45}
+  .rd-tpl-f{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
   .radar-sum{list-style:none;cursor:pointer;background:var(--panel-2);border:1px solid var(--brass-rim);border-radius:14px;padding:12px 15px;font-family:var(--serif);font-size:16px;color:var(--brass-face);font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:10px}
   .radar-sum::-webkit-details-marker{display:none}
   .radar-sum::after{content:"▾ déplier";color:var(--muted);font-size:11px;font-family:var(--mono);font-weight:400;letter-spacing:.04em;white-space:nowrap}
@@ -1002,8 +1011,14 @@
     header .mark{animation:none}
   }
 </style>
+<style>
+  /* encoche iPhone : bande opaque sous la barre d'état */
+  .cv-statusbar{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:2500;pointer-events:none}
+  .wiz{top:env(safe-area-inset-top,0px)!important}
+</style>
 </head>
 <body>
+<div class="cv-statusbar"></div>
 <div class="wrap">
   <button id="navMenuBtn" class="navmenu-btn" type="button" aria-label="Menu des outils">☰</button>
   <nav id="navMenu" class="navmenu" hidden aria-label="Outils"></nav>
@@ -4005,7 +4020,10 @@ window.Radar=(()=>{
   const laneId=(o,m,ow)=>o+"|"+m+"|"+(ow?"1":"0");
   const loadLanes=()=>jget(LANES_KEY,[]);
   const saveLanes=a=>jset(LANES_KEY,a);
+  const LANES_BLOCK_KEY="escale:radar:lanes:block:v1";   // voies retirées à la main : ne reviennent plus
   function note(mode){
+    if(loadSet().auto===false) return;                   // suivi automatique désactivé dans ⚙
+    const blocked=jget(LANES_BLOCK_KEY,[]);
     let origins=[], month="", ow=oneWay;
     if(mode==="caplibre"){ origins=clOriginCodes(); month=clMonth||""; }
     else if(mode==="compare"){ origins=(typeof cmpOrigins!=="undefined"?cmpOrigins:[]).map(o=>o.code); month=monthForAnywhere(); }
@@ -4016,6 +4034,7 @@ window.Radar=(()=>{
     let lanes=loadLanes(); const t=now();
     origins.forEach(code=>{
       const id=laneId(code,month,ow), ex=lanes.find(l=>l.id===id);
+      if(blocked.includes(id)) return;
       if(ex) ex.seen=t; else lanes.push({id,origin:code,month,oneway:!!ow,seen:t,added:t});
     });
     lanes.sort((a,b)=>b.seen-a.seen);
@@ -4035,6 +4054,53 @@ window.Radar=(()=>{
   const loadSet=()=>Object.assign({notify:false,push:false},jget(SET_KEY,{}));
   const saveSet=s=>jset(SET_KEY,s);
   function newId(){return "z"+Math.random().toString(36).slice(2,8);}
+  // efface une zone pour de bon : définition, historiques de prix, résultats affichés, abonnement serveur
+  function purgeZone(id){
+    saveZones(loadZones().filter(z=>z.id!==id));
+    try{ const pre=SNAP_KEY("z:"+id+":"); Object.keys(localStorage).filter(k=>k.indexOf(pre)===0||k===SNAP_KEY("z:"+id)).forEach(k=>localStorage.removeItem(k)); }catch(_){}
+    if(_lastResults&&_lastResults.zones){ _lastResults.zones=_lastResults.zones.filter(zr=>zr.zone&&zr.zone.id!==id); jset(RESULTS_KEY,_lastResults); }
+    try{ pushResync(); }catch(_){}
+  }
+  // retire une voie automatique et l'empêche de revenir
+  function dropLane(id){
+    saveLanes(loadLanes().filter(l=>l.id!==id));
+    const b=jget(LANES_BLOCK_KEY,[]); if(!b.includes(id)){ b.push(id); jset(LANES_BLOCK_KEY,b.slice(-200)); }
+    try{ localStorage.removeItem(SNAP_KEY(id)); }catch(_){}
+    if(_lastResults&&_lastResults.movers){ const [o,m]=id.split("|"); _lastResults.movers=_lastResults.movers.filter(x=>!(x.from===o&&x.month===m)); _lastResults.laneCount=loadLanes().length; jset(RESULTS_KEY,_lastResults); }
+  }
+  // zones encore actives (les résultats d'une zone supprimée ou éteinte ne s'affichent plus)
+  const liveZoneIds=()=>new Set(loadZones().filter(z=>z.enabled).map(z=>z.id));
+  // ── modèles prêts à l'emploi pour démarrer sans régler 10 options ──
+  const ZONE_TPL={
+    we:  {icon:"🌍",label:"Week-ends pas chers",   desc:"départ ven./sam., retour dim./lun., 3 prochains mois"},
+    ete: {icon:"☀️",label:"Vacances d'été",        desc:"juillet et août, tous les jours"},
+    trim:{icon:"🗓️",label:"Les 3 prochains mois",  desc:"tous les jours, direct ou escale"},
+    pont:{icon:"🇫🇷",label:"Ponts et jours fériés", desc:"départs autour des fériés, 6 prochains mois"}
+  };
+  function zoneFromTpl(k){
+    const z=zoneDefault(), ml=monthsList();
+    z.label=ZONE_TPL[k].label; z.oneway=false;
+    if(k==="we"){ z.months=ml.slice(0,3).map(m=>m.ym); z.dowOut=[4,5]; z.dowRet=[6,0]; }
+    else if(k==="ete"){ z.months=ml.filter(m=>/-0[78]$/.test(m.ym)).slice(0,2).map(m=>m.ym); }
+    else if(k==="trim"){ z.months=ml.slice(0,3).map(m=>m.ym); }
+    else if(k==="pont"){ z.months=ml.slice(0,6).map(m=>m.ym); z.ponts=true; }
+    return z;
+  }
+  function tplHTML(){
+    const o=origin?('depuis <b>'+(origin.city||origin.code)+'</b>'):'<b>choisis d\'abord ton aéroport</b> à l\'étape 1 (Départ)';
+    return '<div class="rd-tpl"><div class="rd-tpl-h">✦ Le Radar surveille les prix <b>pour toi</b> et te montre les baisses à chaque ouverture. Choisis un modèle, '+o+' :</div>'
+      +Object.entries(ZONE_TPL).map(([k,t])=>'<button class="rd-tpl-b" data-tpl="'+k+'"'+(origin?'':' disabled')+'><span class="ic">'+t.icon+'</span><span><b>'+t.label+'</b><small>'+t.desc+'</small></span></button>').join("")
+      +'<button class="rd-tpl-b alt" data-tpl="custom"><span class="ic">⚙️</span><span><b>Sur mesure</b><small>aéroports, mois, jours, semaines, direct… tout se règle</small></span></button>'
+      +'<div class="rd-tpl-f">Tu pourras modifier ou supprimer chaque zone ensuite (⚙ → Modifier / 🗑).</div></div>';
+  }
+  function bindTpl(){
+    document.querySelectorAll(".rd-tpl-b[data-tpl]").forEach(b=>b.onclick=()=>{
+      const k=b.dataset.tpl;
+      if(k==="custom"||!origin){ view="settings"; editing="new"; _edit=zoneDefault(); renderSettings(); return; }
+      const z=zoneFromTpl(k); const zs=loadZones(); zs.push(z); saveZones(zs);
+      view="results"; editing=null; _edit=null; pushResync(); rescan();
+    });
+  }
   function zoneDefault(){
     const first=monthsList()[1]||monthsList()[0];  // mois prochain par défaut
     return {id:newId(),label:"Nouvelle zone",origins:(origin?[origin.code]:[]),
@@ -4307,6 +4373,7 @@ window.Radar=(()=>{
     let allMovers=[], watched=0, zoneOut=[];
     for(const l of lanes){ const r=await scanLane(l); if(r){ watched+=r.count; allMovers=allMovers.concat(r.movers); } }
     for(const z of zones){ const r=await scanZone(z); watched+=r.watched; allMovers=allMovers.concat(r.movers); zoneOut.push({zone:z,...r}); }
+    { const ids=liveZoneIds(); zoneOut=zoneOut.filter(zr=>ids.has(zr.zone.id)); }   // zone supprimée pendant le scan
     _lastResults={movers:allMovers,watched,laneCount:lanes.length,zones:zoneOut};
     try{jset(RESULTS_KEY,_lastResults);}catch(_){}
     try{updateTargetBanner();}catch(_){}
@@ -4355,10 +4422,10 @@ window.Radar=(()=>{
   function renderIdle(){
     const sec=document.getElementById("radarSec"); if(!sec) return;
     revealRadar("✦ Radar");
-    sec.innerHTML=headHTML("aucune zone — appuie sur ⚙ pour surveiller tes bons plans")
-      +'<div class="radar-foot">Définis des zones (aéroports, mois, jours/semaines, ponts, direct/escale) et Escale te remonte les baisses à chaque ouverture.</div>'
+    sec.innerHTML=headHTML("aucune zone pour l'instant")
+      +tplHTML()
       +'<div id="raSugg"></div>';
-    bindHead();
+    bindHead(); bindTpl();
     loadRadarSuggestions();
   }
   // #13 — propose une liste de destinations pas chères depuis l'origine (1 appel /api/anywhere)
@@ -4385,12 +4452,13 @@ window.Radar=(()=>{
   function renderResults(){
     const sec=document.getElementById("radarSec"); if(!sec) return;
     const R=_lastResults||{movers:[],watched:0,laneCount:0,zones:[]};
+    { const ids=liveZoneIds(); R.zones=(R.zones||[]).filter(zr=>zr.zone&&ids.has(zr.zone.id)); }
     revealRadar("✦ Radar"+(R.watched?' <span class="rsum-c">'+R.watched+' surveillés</span>':""));
     const drops=dedupeDrops(R.movers).slice(0,MAX_ROWS);
     const zoneCount=R.zones.length;
     const sub=zoneCount?(zoneCount+" zone"+(zoneCount>1?"s":"")+" · "+R.watched+" liaisons surveillées")
       :(R.laneCount+" voie"+(R.laneCount>1?"s":"")+" · "+R.watched+" liaisons surveillées");
-    let html=headHTML(sub)+priceBarHTML();
+    let html=headHTML(sub)+(loadZones().length?"":tplHTML())+priceBarHTML();
     // 1) baisses transverses
     if(drops.length){
       drops.sort((a,b)=>(isWatched(b.dest)?1:0)-(isWatched(a.dest)?1:0));
@@ -4469,6 +4537,7 @@ window.Radar=(()=>{
     const b=document.getElementById("radarClear"); if(b)b.onclick=()=>{ if(confirm("Effacer le suivi du Radar (destinations auto-surveillées + remise à zéro de l'historique des prix) ?\n\nTes zones de surveillance, elles, sont conservées.")) clearAll(); };
   }
   function bindResults(){
+    bindTpl();
     document.querySelectorAll(".rd-live").forEach(b=>b.onclick=()=>radarLive(b.dataset.from,b.dataset.dest,b.dataset.dep,b.dataset.ret,b.dataset.ow==="1",b));
     document.querySelectorAll(".rd-winbtn").forEach(b=>b.onclick=()=>runZoneWindows(b.dataset.win,b));
     const pmin=document.getElementById("rdPMin"), pmax=document.getElementById("rdPMax");
@@ -4574,7 +4643,14 @@ window.Radar=(()=>{
         +'</div>';
       html+='<div class="rd-add"><input id="rdWatchInput" type="search" autocomplete="off" placeholder="Ville ou aéroport à surveiller (ex. Porto, Athènes…)"></div><div id="rdWatchAc"></div>';
       if(!zones.length && editing!=="new")
-        html+='<div class="rdz-empty" style="margin:12px 0">Aucune zone pour l\'instant.</div>';
+        html+=tplHTML();
+      const lanes=loadLanes(), autoOn=loadSet().auto!==false;
+      html+='<label class="rd-fld" style="margin-top:12px">🔁 Suivi automatique de tes recherches <span style="font-weight:400;color:var(--muted)">— chaque aéroport + mois consulté est surveillé tout seul</span></label>'
+        +'<div class="rd-chiprow"><button class="rd-mini'+(autoOn?" acc":"")+'" id="rdAutoToggle">'+(autoOn?"Activé — toucher pour couper":"Désactivé — toucher pour activer")+'</button>'
+        +(lanes.length?'<button class="rd-mini rd-del" id="rdAutoClear">Tout retirer</button>':'')+'</div>'
+        +'<div class="rd-chiprow" style="margin-top:6px">'+(lanes.length?lanes.map(l=>{ const p=l.month.split("-"); const mo=p[1]?MOIS[(+p[1])-1]:l.month;
+          return '<span class="rd-chip"><b>'+l.origin+'</b> '+mo+(l.oneway?' · aller':'')+' <button data-droplane="'+l.id+'" aria-label="Retirer">✕</button></span>'; }).join(""):'<span class="rdz-meta">aucune recherche suivie</span>')+'</div>'
+        +'<div class="rdz-meta" style="margin:4px 2px 10px">Une recherche retirée avec ✕ ne revient plus, même après fermeture de l\'appli.</div>';
     }
     zones.forEach(z=>{ html+= (editing===z.id) ? zoneEditor(_edit||z) : zoneSummary(z); });
     if(editing==="new") html+=zoneEditor(_edit||zoneDefault());
@@ -4679,7 +4755,8 @@ function targetHtml(set){
     return '<div class="rdzone'+(z.enabled?"":" off")+'"><div class="rdzone-head">'
       +'<b style="flex:1;color:var(--ink);font-size:13.5px">'+esc(z.label||"Zone")+'</b>'
       +'<button class="rd-mini" data-editz="'+z.id+'">Modifier</button>'
-      +'<button class="rd-mini" data-togglez="'+z.id+'">'+(z.enabled?"On":"Off")+'</button></div>'
+      +'<button class="rd-mini" data-togglez="'+z.id+'">'+(z.enabled?"On":"Off")+'</button>'
+      +'<button class="rd-mini rd-del" data-quickdel="'+z.id+'" title="Supprimer cette zone" aria-label="Supprimer">🗑</button></div>'
       +'<div class="rdzone-sum">'+bits.filter(Boolean).join(" · ")+'</div></div>';
   }
   // résumé compact des filtres actifs d'une zone, pour l'afficher dans les résultats
@@ -4810,7 +4887,12 @@ function targetHtml(set){
     };
     document.querySelectorAll("[data-rmwatch]").forEach(b=>b.onclick=()=>{ toggleWatch(b.dataset.rmwatch); renderSettings(); });
     document.querySelectorAll("[data-editz]").forEach(b=>b.onclick=()=>{ editing=b.dataset.editz; _edit=JSON.parse(JSON.stringify(loadZones().find(z=>z.id===editing)||zoneDefault())); renderSettings(); });
-    document.querySelectorAll("[data-togglez]").forEach(b=>b.onclick=()=>{ const zs=loadZones(); const z=zs.find(x=>x.id===b.dataset.togglez); if(z){z.enabled=!z.enabled;saveZones(zs);} renderSettings(); });
+    document.querySelectorAll("[data-togglez]").forEach(b=>b.onclick=()=>{ const zs=loadZones(); const z=zs.find(x=>x.id===b.dataset.togglez); if(z){z.enabled=!z.enabled;saveZones(zs);} try{pushResync();}catch(_){} renderSettings(); });
+    document.querySelectorAll("[data-quickdel]").forEach(b=>b.onclick=()=>{ const z=loadZones().find(x=>x.id===b.dataset.quickdel); if(!confirm("Supprimer définitivement la zone « "+((z&&z.label)||"Zone")+" » ?"))return; purgeZone(b.dataset.quickdel); renderSettings(); });
+    document.querySelectorAll("[data-droplane]").forEach(b=>b.onclick=()=>{ dropLane(b.dataset.droplane); renderSettings(); });
+    const autoT=document.getElementById("rdAutoToggle"); if(autoT)autoT.onclick=()=>{ const st=loadSet(); st.auto=(st.auto===false); saveSet(st); renderSettings(); };
+    const autoClr=document.getElementById("rdAutoClear"); if(autoClr)autoClr.onclick=()=>{ if(!confirm("Retirer toutes les recherches suivies automatiquement et arrêter ce suivi ?"))return; loadLanes().forEach(l=>dropLane(l.id)); const st=loadSet(); st.auto=false; saveSet(st); renderSettings(); };
+    bindTpl();
     if(editing!=null) bindEditor();
   }
   function bindEditor(){
@@ -4872,7 +4954,7 @@ function targetHtml(set){
     const sameWk=document.getElementById("rdSameWeek"); if(sameWk)sameWk.onclick=()=>{ _edit.sameWeek=!_edit.sameWeek; sameWk.classList.toggle("acc",_edit.sameWeek); };
     const save=document.getElementById("rdSaveZone"); if(save)save.onclick=saveEditor;
     const cancel=document.getElementById("rdCancelZone"); if(cancel)cancel.onclick=()=>{ editing=null;_edit=null; renderSettings(); };
-    const del=document.getElementById("rdDeleteZone"); if(del)del.onclick=()=>{ const zs=loadZones().filter(z=>z.id!==del.dataset.delz); saveZones(zs); try{localStorage.removeItem(SNAP_KEY("z:"+del.dataset.delz));}catch(_){} editing=null;_edit=null; renderSettings(); };
+    const del=document.getElementById("rdDeleteZone"); if(del)del.onclick=()=>{ if(!confirm("Supprimer définitivement cette zone ?"))return; purgeZone(del.dataset.delz); editing=null;_edit=null; renderSettings(); };
   }
   // re-render de l'éditeur en gardant le buffer _edit (préserve type de trajet/mois cochés)
   function redrawEditor(){ const y=window.scrollY; renderSettingsWithEdit(); window.scrollTo(0,y); }
