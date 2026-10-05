@@ -4082,8 +4082,17 @@ window.Radar=(()=>{
     trim:{icon:"🗓️",label:"Les 3 prochains mois",  desc:"tous les jours, direct ou escale"},
     pont:{icon:"🇫🇷",label:"Ponts et jours fériés", desc:"départs autour des fériés, 6 prochains mois"}
   };
+  // aéroport utilisé par les modèles : celui de l'étape 1, sinon le dernier choisi, sinon celui d'une zone ou d'une recherche suivie
+  function tplOrigin(){
+    if(origin) return origin;
+    const tryCode=c=>{ try{ return c ? findAirport(c) || {code:c, city:(typeof origName==="function" && origName(c)) || c} : null; }catch(_){ return null; } };
+    let c=null; try{ c=localStorage.getItem(LS_ORIG); }catch(_){}
+    const z=loadZones().find(x=>x.origins&&x.origins.length), l=loadLanes()[0];
+    return tryCode(c) || tryCode(z&&z.origins[0]) || tryCode(l&&l.origin) || null;
+  }
   function zoneFromTpl(k){
-    const z=zoneDefault(), ml=monthsList();
+    const z=zoneDefault(), ml=monthsList(), o=tplOrigin();
+    if(o && !(z.origins||[]).length) z.origins=[o.code];
     z.label=ZONE_TPL[k].label; z.oneway=false;
     if(k==="we"){ z.months=ml.slice(0,3).map(m=>m.ym); z.dowOut=[4,5]; z.dowRet=[6,0]; }
     else if(k==="ete"){ z.months=ml.filter(m=>/-0[78]$/.test(m.ym)).slice(0,2).map(m=>m.ym); }
@@ -4092,16 +4101,17 @@ window.Radar=(()=>{
     return z;
   }
   function tplHTML(){
-    const o=origin?('depuis <b>'+(origin.city||origin.code)+'</b>'):'<b>choisis d\'abord ton aéroport</b> à l\'étape 1 (Départ)';
+    const og=tplOrigin();
+    const o=og?('depuis <b>'+(og.city||og.code)+'</b> <span style="color:var(--muted)">('+og.code+', modifiable ensuite)</span>'):'<b>choisis d\'abord ton aéroport</b> à l\'étape 1 (Départ)';
     return '<div class="rd-tpl"><div class="rd-tpl-h">✦ Le Radar surveille les prix <b>pour toi</b> et te montre les baisses à chaque ouverture. Choisis un modèle, '+o+' :</div>'
-      +Object.entries(ZONE_TPL).map(([k,t])=>'<button class="rd-tpl-b" data-tpl="'+k+'"'+(origin?'':' disabled')+'><span class="ic">'+t.icon+'</span><span><b>'+t.label+'</b><small>'+t.desc+'</small></span></button>').join("")
+      +Object.entries(ZONE_TPL).map(([k,t])=>'<button class="rd-tpl-b" data-tpl="'+k+'"'+(og?'':' disabled')+'><span class="ic">'+t.icon+'</span><span><b>'+t.label+'</b><small>'+t.desc+'</small></span></button>').join("")
       +'<button class="rd-tpl-b alt" data-tpl="custom"><span class="ic">⚙️</span><span><b>Sur mesure</b><small>aéroports, mois, jours, semaines, direct… tout se règle</small></span></button>'
       +'<div class="rd-tpl-f">Tu pourras modifier ou supprimer chaque zone ensuite (⚙ → Modifier / 🗑).</div></div>';
   }
   function bindTpl(){
     document.querySelectorAll(".rd-tpl-b[data-tpl]").forEach(b=>b.onclick=()=>{
       const k=b.dataset.tpl;
-      if(k==="custom"||!origin){ view="settings"; editing="new"; _edit=zoneDefault(); renderSettings(); return; }
+      if(k==="custom"||!tplOrigin()){ view="settings"; editing="new"; _edit=zoneDefault(); const og=tplOrigin(); if(og&&!(_edit.origins||[]).length) _edit.origins=[og.code]; renderSettings(); return; }
       const z=zoneFromTpl(k); const zs=loadZones(); zs.push(z); saveZones(zs);
       view="results"; editing=null; _edit=null; pushResync(); rescan();
     });
