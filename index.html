@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>/* iPhone : pas de zoom automatique quand on touche un champ. iOS ne zoome que sur un champ écrit en moins de 16 px ; le zoom à deux doigts reste possible. */@supports(-webkit-touch-callout:none){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select,textarea{font-size:max(16px,1em)!important}}</style>
 <meta name="theme-color" content="#0e1b24">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -4642,7 +4643,7 @@ window.Radar=(()=>{
         +(watch.length?watch.map(c=>'<span class="rd-chip"><b>'+c+'</b>'+(NAMES[c]?' '+esc(NAMES[c]):'')+' <button data-rmwatch="'+c+'">✕</button></span>').join(""):'<span class="rdz-meta">aucune — ajoute-en ci-dessous ou touche l\'étoile ☆ d\'un résultat</span>')
         +'</div>';
       html+='<div class="rd-add"><input id="rdWatchInput" type="search" autocomplete="off" placeholder="Ville ou aéroport à surveiller (ex. Porto, Athènes…)"></div><div id="rdWatchAc"></div>';
-      if(!zones.length && editing!=="new")
+      if(editing!=="new")
         html+=tplHTML();
       const lanes=loadLanes(), autoOn=loadSet().auto!==false;
       html+='<label class="rd-fld" style="margin-top:12px">🔁 Suivi automatique de tes recherches <span style="font-weight:400;color:var(--muted)">— chaque aéroport + mois consulté est surveillé tout seul</span></label>'
